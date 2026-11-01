@@ -1,5 +1,7 @@
 // Cache hors ligne : l'app reste utilisable en salle sans réseau.
-const CACHE = 'musculation-v1';
+// Stratégie "réseau d'abord" : si internet est disponible, on prend toujours la dernière version ;
+// sinon on sert la copie en cache.
+const CACHE = 'musculation-v2';
 const FICHIERS = ['./', './index.html', './style.css', './app.js', './exercices.js', './manifest.json', './icon.svg'];
 
 self.addEventListener('install', (e) => {
@@ -16,10 +18,10 @@ self.addEventListener('activate', (e) => {
 self.addEventListener('fetch', (e) => {
   if (e.request.method !== 'GET') return;
   e.respondWith(
-    caches.match(e.request).then((rep) => rep || fetch(e.request).then((r) => {
+    fetch(e.request).then((r) => {
       const copie = r.clone();
       caches.open(CACHE).then((c) => c.put(e.request, copie));
       return r;
-    }).catch(() => caches.match('./index.html')))
+    }).catch(() => caches.match(e.request).then((rep) => rep || caches.match('./index.html')))
   );
 });
