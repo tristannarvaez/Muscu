@@ -14,30 +14,31 @@ const num = (v) => {
 const DEFAUT = {
   programme: [
     { id: 'A', nom: 'Lundi : full body A', exos: [
-      { nom: 'Presse à cuisses', series: 2, reps: '8-12' },
-      { nom: 'Développé incliné haltères', series: 2, reps: '8-12' },
-      { nom: 'Rowing haltère', series: 2, reps: '8-12' },
-      { nom: 'Face pulls', series: 2, reps: '12-15' },
-      { nom: 'Gainage', series: 2, reps: '30-45 s' }
+      { nom: 'Presse à cuisses', series: 3, reps: '8-12' },
+      { nom: 'Développé incliné haltères', series: 3, reps: '8-12' },
+      { nom: 'Rowing haltère', series: 3, reps: '8-12' },
+      { nom: 'Face pulls', series: 3, reps: '12-15' },
+      { nom: 'Gainage', series: 3, reps: '30-45 s' }
     ]},
     { id: 'B', nom: 'Mercredi : dos et tirages', exos: [
-      { nom: 'Tirage vertical', series: 2, reps: '8-12' },
-      { nom: 'Tirage horizontal', series: 2, reps: '8-12' },
-      { nom: 'Curl haltères', series: 2, reps: '10-12' },
-      { nom: 'Rotations externes', series: 2, reps: '12-15' },
-      { nom: 'Face pulls', series: 2, reps: '12-15' },
-      { nom: 'Gainage', series: 2, reps: '30-45 s' }
+      { nom: 'Tirage vertical', series: 3, reps: '8-12' },
+      { nom: 'Tirage horizontal', series: 3, reps: '8-12' },
+      { nom: 'Curl haltères', series: 3, reps: '10-12' },
+      { nom: 'Rotations externes', series: 3, reps: '12-15' },
+      { nom: 'Face pulls', series: 3, reps: '12-15' },
+      { nom: 'Gainage', series: 3, reps: '30-45 s' }
     ]},
     { id: 'C', nom: 'Samedi : full body B', exos: [
-      { nom: 'Soulevé de terre roumain', series: 2, reps: '8-10' },
-      { nom: 'Fentes', series: 2, reps: '8-10 par jambe' },
-      { nom: 'Pompes', series: 2, reps: '8-12' },
-      { nom: 'Élévations latérales', series: 2, reps: '12-15' },
-      { nom: 'Gainage', series: 2, reps: '30-45 s' }
+      { nom: 'Soulevé de terre roumain', series: 3, reps: '8-10' },
+      { nom: 'Fentes', series: 3, reps: '8-10 par jambe' },
+      { nom: 'Pompes', series: 3, reps: '8-12' },
+      { nom: 'Élévations latérales', series: 3, reps: '12-15' },
+      { nom: 'Gainage', series: 3, reps: '30-45 s' }
     ]}
   ],
   journal: [],
-  mensurations: []
+  mensurations: [],
+  version: 2
 };
 
 let state = charger();
@@ -47,7 +48,14 @@ let exoChoisi = null;
 function charger() {
   try {
     const s = JSON.parse(localStorage.getItem(KEY));
-    if (s && Array.isArray(s.programme)) return s;
+    if (s && Array.isArray(s.programme)) {
+      // Version 2 : 3 séries par exercice (une seule fois, pour les données existantes)
+      if (!s.version || s.version < 2) {
+        s.programme.forEach((seance) => seance.exos.forEach((e) => { e.series = 3; }));
+        s.version = 2;
+      }
+      return s;
+    }
   } catch (e) { /* données absentes ou corrompues : on repart du défaut */ }
   return structuredClone(DEFAUT);
 }
@@ -63,6 +71,7 @@ const VUES = {
   journal: vueJournal,
   progression: vueProgression,
   mensurations: vueMensurations,
+  nutrition: vueNutrition,
   reglages: vueReglages
 };
 
@@ -125,9 +134,8 @@ function ajouterExo(si) {
 }
 
 function demo(nom) {
-  const ex = EXERCICES[nom] || { type: 'core' };
   $('#demo-titre').textContent = nom;
-  $('#demo-anim').innerHTML = animationSVG(ex.type);
+  $('#demo-anim').innerHTML = conseilsHTML(nom);
   $('#demo-video').href = lienVideo(nom);
   $('#demo').showModal();
 }
@@ -457,6 +465,31 @@ $('#app').addEventListener('change', (e) => {
 });
 
 $('#demo-fermer').addEventListener('click', () => $('#demo').close());
+
+/* ---------- Glisser pour changer d'onglet ---------- */
+
+const ORDRE_ONGLETS = ['seances', 'journal', 'progression', 'nutrition', 'mensurations', 'reglages'];
+let debutX = null, debutY = null;
+
+document.querySelector('main').addEventListener('touchstart', (e) => {
+  debutX = e.touches[0].clientX;
+  debutY = e.touches[0].clientY;
+}, { passive: true });
+
+document.querySelector('main').addEventListener('touchend', (e) => {
+  if (debutX === null) return;
+  const dx = e.changedTouches[0].clientX - debutX;
+  const dy = e.changedTouches[0].clientY - debutY;
+  debutX = null;
+  // Glisse horizontale franche uniquement (pas un simple défilement vertical)
+  if (Math.abs(dx) < 70 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
+  // Ne pas déclencher pendant la saisie dans un champ
+  if (document.activeElement && ['INPUT', 'SELECT'].includes(document.activeElement.tagName)) return;
+
+  const actuel = ORDRE_ONGLETS.indexOf(document.querySelector('nav button.actif').dataset.tab);
+  const suivant = dx < 0 ? actuel + 1 : actuel - 1;
+  if (suivant >= 0 && suivant < ORDRE_ONGLETS.length) aller(ORDRE_ONGLETS[suivant]);
+}, { passive: true });
 
 aller('seances');
 

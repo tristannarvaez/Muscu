@@ -1,47 +1,82 @@
-// Types de mouvement (animations schématiques) et exercices du programme.
-// La vidéo de démonstration est une recherche YouTube générée à partir du nom de l'exercice.
+// Exercices du programme : points clés de réalisation et lien vers une vidéo de démonstration.
+// Pas d'animation : les conseils écrits sont plus utiles qu'un schéma approximatif.
 
 const EXERCICES = {
-  'Presse à cuisses':            { type: 'squat' },
-  'Développé incliné haltères':  { type: 'press' },
-  'Développé épaules haltères':  { type: 'press' },
-  'Rowing haltère':              { type: 'pull' },
-  'Tirage vertical':             { type: 'pull' },
-  'Tirage horizontal':           { type: 'pull' },
-  'Face pulls':                  { type: 'pull' },
-  'Rotations externes':          { type: 'curl' },
-  'Curl haltères':               { type: 'curl' },
-  'Élévations latérales':        { type: 'press' },
-  'Soulevé de terre roumain':    { type: 'hinge' },
-  'Fentes':                      { type: 'lunge' },
-  'Pompes':                      { type: 'push' },
-  'Gainage':                     { type: 'core' }
+  'Presse à cuisses': { conseils: [
+    'Dos bien plaqué au dossier, pieds à la largeur des épaules.',
+    'Descends sans décoller le bassin du siège, genoux dans l’axe des pieds.',
+    'Ne verrouille pas les genoux en haut du mouvement.'
+  ]},
+  'Développé incliné haltères': { conseils: [
+    'Banc entre 30 et 45°, omoplates serrées et rentrées.',
+    'Coudes à environ 45° du corps, pas à l’horizontale.',
+    'Descends lentement, sans rebondir ni remonter les épaules vers les oreilles.'
+  ]},
+  'Développé épaules haltères': { conseils: [
+    'Dos calé, abdos gainés, pas de cambrure.',
+    'Pousse les haltères vers le haut sans les ramener derrière la tête.',
+    'Stop à la moindre gêne à l’épaule.'
+  ]},
+  'Rowing haltère': { conseils: [
+    'Une main et un genou sur le banc, dos neutre et parallèle au sol.',
+    'Tire le coude vers le haut et l’arrière, en gardant le haltère proche du corps.',
+    'Marque une pause en haut, puis redescends lentement.'
+  ]},
+  'Tirage vertical': { conseils: [
+    'Prise un peu plus large que les épaules.',
+    'Tire la barre vers le haut de la poitrine, buste légèrement en arrière.',
+    'Pense à abaisser les omoplates avant de plier les coudes.'
+  ]},
+  'Tirage horizontal': { conseils: [
+    'Dos droit, buste légèrement incliné.',
+    'Tire vers le bas du ventre, coudes le long du corps.',
+    'Serre les omoplates en fin de mouvement, sans te pencher en arrière.'
+  ]},
+  'Face pulls': { conseils: [
+    'Câble à hauteur de visage, corde tirée vers toi.',
+    'Tire vers le visage en écartant les mains, coudes hauts.',
+    'Charge légère : c’est un exercice de santé d’épaule, pas de force.'
+  ]},
+  'Rotations externes': { conseils: [
+    'Coude collé au corps, plié à 90°, élastique ou poulie légère.',
+    'Tourne l’avant-bras vers l’extérieur sans bouger le coude.',
+    'Mouvement lent et petit : pas besoin de charge.'
+  ]},
+  'Curl haltères': { conseils: [
+    'Coudes collés au corps, buste immobile.',
+    'Monte sans balancer, en contractant le biceps.',
+    'Descends sur deux secondes.'
+  ]},
+  'Élévations latérales': { conseils: [
+    'Haltères légers, léger pli du coude.',
+    'Monte jusqu’à la hauteur des épaules, pas plus haut.',
+    'Guide le mouvement avec le coude, pas avec la main.'
+  ]},
+  'Soulevé de terre roumain': { conseils: [
+    'Barre ou haltères près des jambes, genoux légèrement fléchis.',
+    'Pousse les fesses vers l’arrière, dos plat du début à la fin.',
+    'Descends jusqu’au milieu des tibias, puis remonte en serrant les fessiers.'
+  ]},
+  'Fentes': { conseils: [
+    'Grand pas en avant, buste droit.',
+    'Le genou arrière descend vers le sol sans le toucher.',
+    'Pousse avec le talon de la jambe avant pour remonter.'
+  ]},
+  'Pompes': { conseils: [
+    'Corps aligné de la tête aux talons.',
+    'Coudes à environ 45° du corps.',
+    'Si c’est trop dur, pose les mains sur un banc ou une surface haute.'
+  ]},
+  'Gainage': { conseils: [
+    'Coudes sous les épaules, corps aligné.',
+    'Contracte abdos et fessiers.',
+    'Respire normalement, ne laisse pas le bassin tomber.'
+  ]}
 };
 
-function animationSVG(type) {
-  const figure = `
-    <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-      <line class="sol" x1="18" y1="110" x2="102" y2="110"/>
-      <g class="mv-${type}">
-        <g class="corps">
-          <g class="haut">
-            <circle class="tete" cx="60" cy="22" r="8"/>
-            <line class="trait" x1="60" y1="32" x2="60" y2="72"/>
-            <g class="bras">
-              <line class="trait" x1="60" y1="40" x2="42" y2="46"/>
-              <line class="trait" x1="42" y1="46" x2="42" y2="24"/>
-              <line class="trait" x1="60" y1="40" x2="78" y2="46"/>
-              <line class="trait" x1="78" y1="46" x2="78" y2="24"/>
-            </g>
-          </g>
-          <g class="bas">
-            <line class="trait" x1="60" y1="72" x2="48" y2="108"/>
-            <line class="trait" x1="60" y1="72" x2="72" y2="108"/>
-          </g>
-        </g>
-      </g>
-    </svg>`;
-  return figure;
+function conseilsHTML(nom) {
+  const ex = EXERCICES[nom] || { conseils: ['Pas encore de conseils pour cet exercice. La vidéo ci-dessous te montre la technique.'] };
+  return `<ol class="conseils">${ex.conseils.map((c) => `<li>${esc(c)}</li>`).join('')}</ol>`;
 }
 
 function lienVideo(nom) {

@@ -240,7 +240,7 @@ nav {
   left: 12px;
   right: 12px;
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(6, 1fr);
   background: rgba(14, 16, 24, 0.82);
   -webkit-backdrop-filter: blur(20px);
   backdrop-filter: blur(20px);
@@ -316,6 +316,43 @@ dialog h3 { font-size: 1.1rem; text-transform: none; letter-spacing: -0.01em; co
 @keyframes pull  { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(-28deg); } }
 @keyframes curl  { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(-14deg); } }
 @keyframes hinge { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(40deg); } }
+
+.badge-plaisir {
+  display: inline-block;
+  margin: 10px 0 0;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #1a0010;
+  background: linear-gradient(135deg, var(--accent-2), #ff7a4d);
+}
+
+/* Conseils d'exécution */
+.conseils { margin: 0; padding-left: 20px; line-height: 1.5; }
+.conseils li { margin-bottom: 10px; }
+.conseils li::marker { color: var(--accent); font-weight: 800; }
+
+/* Nutrition */
+.nut-nav { display: flex; align-items: center; justify-content: space-between; gap: 12px; text-align: center; }
+.nut-nav div { flex: 1; }
+.nut-nav strong { display: block; font-size: 1.05rem; font-weight: 800; }
+.nut-nav small { color: var(--discret); text-transform: capitalize; }
+.nut-nav button { width: 44px; height: 44px; border-radius: 50%; font-size: 1.4rem; padding: 0; }
+.repas-nom { font-size: 1.1rem; font-weight: 700; line-height: 1.35; }
+.macros { color: var(--discret); font-size: 0.85rem; margin-top: 6px; }
+.badge-alerte {
+  display: inline-block;
+  margin: 10px 6px 0 0;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #1a0a00;
+  background: linear-gradient(135deg, #ffb347, #ff6b3d);
+}
+.actions-repas { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.actions-repas button.secondaire { margin-top: 12px; }
 
 @media (prefers-reduced-motion: reduce) {
   .demo-anim * { animation: none !important; }
