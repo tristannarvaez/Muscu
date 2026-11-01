@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0f1115">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Musculation">
+  <title>Musculation</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icon.png">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header><h1>Musculation</h1></header>
+
+  <main id="app"></main>
+
+  <nav>
+    <button data-tab="seances" class="actif">Programme</button>
+    <button data-tab="journal">Journal</button>
+    <button data-tab="progression">Progression</button>
+    <button data-tab="mensurations">Mesures</button>
+    <button data-tab="reglages">Réglages</button>
+  </nav>
+
+  <dialog id="demo">
+    <h3 id="demo-titre"></h3>
+    <div id="demo-anim" class="demo-anim"></div>
+    <p class="demo-conseil">Animation schématique : le mouvement, pas la technique complète.</p>
+    <a id="demo-video" class="bouton principal" target="_blank" rel="noopener">Voir une vidéo de démonstration</a>
+    <button id="demo-fermer" class="secondaire">Fermer</button>
+  </dialog>
+
+  <script src="exercices.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
