@@ -445,7 +445,7 @@ function vueNutrition() {
 }
 
 // Saisie des aliments et recherche pendant la frappe
-$('#app').addEventListener('input', (e) => {
+document.querySelector('#app').addEventListener('input', (e) => {
   const t = e.target;
   if (t.classList.contains('recherche')) {
     document.querySelector(`[data-sugg="${t.dataset.cle}"]`).innerHTML = suggestionsHTML(t.value, 'ajouter', t.dataset.cle);
@@ -456,7 +456,7 @@ $('#app').addEventListener('input', (e) => {
 });
 
 // Modification des grammes : recalcul à la validation du champ
-$('#app').addEventListener('change', (e) => {
+document.querySelector('#app').addEventListener('change', (e) => {
   const t = e.target;
   if (t.classList.contains('item-g')) {
     const cle = t.dataset.cle;
@@ -472,7 +472,7 @@ $('#app').addEventListener('change', (e) => {
   }
 });
 
-$('#app').addEventListener('click', (e) => {
+document.querySelector('#app').addEventListener('click', (e) => {
   const b = e.target.closest('[data-nut]');
   if (!b) return;
   const action = b.dataset.nut;
