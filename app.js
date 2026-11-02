@@ -438,6 +438,7 @@ function vueReglages() {
   $('#app').innerHTML = `
     <h2>Paramètres</h2>
     ${blocTheme()}
+    ${blocAPropos()}
     <section class="carte">
       <h3>Sauvegarde</h3>
       <p class="vide">Tes données restent sur cet iPhone. iOS peut effacer le stockage d'une app peu utilisée : exporte une sauvegarde chaque semaine.</p>

@@ -435,6 +435,7 @@ function vueNutrition() {
         ${manque ? 'Il manque une collation protéinée (skyr, yaourt grec) pour atteindre l’objectif.' : 'Objectif atteint.'}</p>
       <p class="graphe-legende">Repas plaisir cette semaine : <strong>${plaisirsDeLaSemaine(jour).length}</strong> / 1</p>
     </section>
+    <section class="carte"><button class="principal" data-nut="courses">Liste de courses de la semaine</button></section>
     ${blocApports()}
     ${REPAS.map(([cle, titre]) => carteRepas(cle, titre)).join('')}
     <section class="carte">
@@ -443,6 +444,167 @@ function vueNutrition() {
       <p class="vide">Une modification s’applique à ce jour et à tous les jours de même rang, donc tous les 14 jours. Un repas plaisir ne concerne que ce jour.</p>
     </section>`;
 }
+
+/* ---------- Liste de courses de la semaine ---------- */
+
+const COURSES_KEY = 'musculation-courses-v1';
+let courses = chargerRepas(COURSES_KEY);   // { semaine: { perso: [{ nom, coche }], coches: { nom: true } } }
+let courseSemaine = null;
+
+function sauverCourses() {
+  localStorage.setItem(COURSES_KEY, JSON.stringify(courses));
+}
+
+function formatG(g) {
+  return g >= 1000 ? `${(g / 1000).toFixed(2).replace('.', ',')} kg` : `${g} g`;
+}
+
+// Lundi de la semaine s (index sur le plan)
+function debutSemaine(s) {
+  return Math.max(0, s * 7 - ((DEBUT_PLAN.getDay() + 6) % 7));
+}
+
+function donneesSemaine(s) {
+  return courses[s] || { perso: [], coches: {} };
+}
+
+// Quantités totales par aliment sur les jours de la semaine (plats libres exclus)
+function listeCourses(s) {
+  const total = {};
+  for (let j = 0; j < JOURS_PLAN; j++) {
+    if (semaineDe(j) !== s) continue;
+    REPAS.forEach(([cle]) => {
+      repasDuJour(j, cle).items.forEach((it) => {
+        if (it.libre) return;
+        total[it.n] = (total[it.n] || 0) + it.g;
+      });
+    });
+  }
+  return Object.keys(total)
+    .sort((a, b) => a.localeCompare(b, 'fr'))
+    .map((nom) => ({ nom, g: Math.round(total[nom]) }));
+}
+
+function vueCourses() {
+  if (courseSemaine === null) courseSemaine = semaineDe(jour === null ? 0 : jour);
+  const s = courseSemaine;
+  const d = donneesSemaine(s);
+  const auto = listeCourses(s);
+
+  document.querySelector('#app').innerHTML = `
+    <h2>Courses</h2>
+    <section class="carte">
+      <div class="nut-nav">
+        <button data-course="semaine-prev" aria-label="Semaine précédente">‹</button>
+        <div><strong>Semaine du</strong><small>${esc(libelleJour(debutSemaine(s)))}</small></div>
+        <button data-course="semaine-next" aria-label="Semaine suivante">›</button>
+      </div>
+    </section>
+    <section class="carte">
+      <h3>Depuis les menus</h3>
+      <ul class="items">
+        ${auto.length ? auto.map((a) => `
+          <li class="item">
+            <label class="coche">
+              <input type="checkbox" data-course-coche="${esc(a.nom)}" ${d.coches[a.nom] ? 'checked' : ''}>
+              <span class="${d.coches[a.nom] ? 'barre' : ''}">${esc(a.nom)}</span>
+            </label>
+            <span class="unite">${formatG(a.g)}</span>
+          </li>`).join('') : '<li class="vide">Aucun aliment prévu cette semaine.</li>'}
+      </ul>
+    </section>
+    <section class="carte">
+      <h3>Ajouté à la main</h3>
+      <ul class="items">
+        ${d.perso.length ? d.perso.map((x, i) => `
+          <li class="item">
+            <label class="coche">
+              <input type="checkbox" data-course-perso="${i}" ${x.coche ? 'checked' : ''}>
+              <span class="${x.coche ? 'barre' : ''}">${esc(x.nom)}</span>
+            </label>
+            <button class="retirer" data-course="supprimer" data-i="${i}" aria-label="Supprimer">✕</button>
+          </li>`).join('') : '<li class="vide">Rien pour l’instant.</li>'}
+      </ul>
+      <div class="ajout">
+        <input id="course-nouveau" type="text" placeholder="Ex. papier toilette, 2 citrons…" autocomplete="off">
+        <button class="secondaire" data-course="ajouter">+ Ajouter</button>
+      </div>
+    </section>
+    <section class="carte">
+      <button class="principal" data-course="partager">Envoyer vers Notes</button>
+      <button class="secondaire" data-course="retour">← Retour à la nutrition</button>
+    </section>`;
+}
+
+function texteCourses(s) {
+  const d = donneesSemaine(s);
+  const lignes = [`Courses semaine du ${libelleJour(debutSemaine(s))}`, ''];
+  listeCourses(s).forEach((a) => lignes.push(`${d.coches[a.nom] ? '✓' : '-'} ${a.nom} : ${formatG(a.g)}`));
+  d.perso.forEach((x) => lignes.push(`${x.coche ? '✓' : '-'} ${x.nom}`));
+  return lignes.join('\n');
+}
+
+// Sur iPhone, la feuille de partage permet d'envoyer la liste dans Notes
+async function partagerCourses() {
+  const texte = texteCourses(courseSemaine);
+  if (navigator.share) {
+    try {
+      await navigator.share({ title: 'Courses de la semaine', text: texte });
+    } catch (e) { /* partage annulé */ }
+    return;
+  }
+  try {
+    await navigator.clipboard.writeText(texte);
+    alert('Liste copiée. Colle-la dans l’app Notes.');
+  } catch (e) {
+    alert(texte);
+  }
+}
+
+document.querySelector('#app').addEventListener('click', (e) => {
+  const b = e.target.closest('[data-course]');
+  if (!b) return;
+  const action = b.dataset.course;
+  const d = donneesSemaine(courseSemaine);
+
+  if (action === 'semaine-prev') { courseSemaine = Math.max(0, courseSemaine - 1); return vueCourses(); }
+  if (action === 'semaine-next') { courseSemaine = Math.min(13, courseSemaine + 1); return vueCourses(); }
+  if (action === 'ajouter') {
+    const nom = document.querySelector('#course-nouveau').value.trim();
+    if (!nom) return;
+    d.perso.push({ nom, coche: false });
+    courses[courseSemaine] = d;
+    sauverCourses();
+    return vueCourses();
+  }
+  if (action === 'supprimer') {
+    d.perso.splice(Number(b.dataset.i), 1);
+    courses[courseSemaine] = d;
+    sauverCourses();
+    return vueCourses();
+  }
+  if (action === 'partager') return partagerCourses();
+  if (action === 'retour') return vueNutrition();
+});
+
+document.querySelector('#app').addEventListener('change', (e) => {
+  const t = e.target;
+  if (t.dataset.courseCoche !== undefined) {
+    const d = donneesSemaine(courseSemaine);
+    if (t.checked) d.coches[t.dataset.courseCoche] = true;
+    else delete d.coches[t.dataset.courseCoche];
+    courses[courseSemaine] = d;
+    sauverCourses();
+    return vueCourses();
+  }
+  if (t.dataset.coursePerso !== undefined) {
+    const d = donneesSemaine(courseSemaine);
+    d.perso[Number(t.dataset.coursePerso)].coche = t.checked;
+    courses[courseSemaine] = d;
+    sauverCourses();
+    return vueCourses();
+  }
+});
 
 // Saisie des aliments et recherche pendant la frappe
 document.querySelector('#app').addEventListener('input', (e) => {
@@ -478,6 +640,7 @@ document.querySelector('#app').addEventListener('click', (e) => {
   const action = b.dataset.nut;
   const cle = b.dataset.cle;
 
+  if (action === 'courses') { courseSemaine = semaineDe(jour); return vueCourses(); }
   if (action === 'prev') { jour = Math.max(0, jour - 1); return vueNutrition(); }
   if (action === 'next') { jour = Math.min(JOURS_PLAN - 1, jour + 1); return vueNutrition(); }
 
