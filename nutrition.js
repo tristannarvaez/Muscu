@@ -121,6 +121,206 @@ function alertesRepas(m) {
   return a;
 }
 
+// Valeurs indicatives pour 100 g : [nom, protéines, lipides, sucres] en grammes.
+// Elles viennent de tables nutritionnelles courantes et peuvent varier selon la marque ou la cuisson.
+const ALIMENTS = [
+  ['Poulet, blanc cuit', 31, 3.6, 0],
+  ['Dinde, blanc cuit', 29, 2, 0],
+  ['Bœuf haché 5 %, cuit', 26, 6, 0],
+  ['Saumon, cuit', 25, 13, 0],
+  ['Thon au naturel, égoutté', 26, 1, 0],
+  ['Cabillaud, cuit', 23, 0.7, 0],
+  ['Crevettes, cuites', 24, 1, 0],
+  ['Œuf entier', 13, 11, 1],
+  ['Blanc d’œuf', 11, 0, 0.7],
+  ['Skyr nature', 11, 0.2, 4],
+  ['Fromage blanc 0 %', 8, 0.2, 4],
+  ['Yaourt grec 0 %', 10, 0.4, 4],
+  ['Jambon blanc', 18, 3, 1],
+  ['Whey isolate (poudre)', 85, 1, 1],
+  ['Riz basmati, cuit', 2.7, 0.3, 0],
+  ['Pâtes complètes, cuites', 5, 1, 0.8],
+  ['Lentilles, cuites', 9, 0.4, 1.8],
+  ['Pommes de terre, vapeur', 2, 0.1, 0.8],
+  ['Patate douce, cuite', 1.6, 0.1, 4.2],
+  ['Flocons d’avoine, crus', 13, 7, 1],
+  ['Pain complet', 9, 3.5, 5],
+  ['Banane', 1.1, 0.3, 12],
+  ['Pomme', 0.3, 0.2, 10],
+  ['Myrtilles', 0.7, 0.3, 10],
+  ['Avocat', 2, 15, 0.7],
+  ['Amandes', 21, 50, 4.4],
+  ['Huile d’olive', 0, 100, 0],
+  ['Brocoli, cuit', 2.4, 0.4, 1.5],
+  ['Épinards, cuits', 2.9, 0.3, 0.4],
+  ['Tomate', 0.9, 0.2, 2.6],
+  ['Chocolat noir 70 %', 8, 43, 24],
+  // Viandes
+  ['Poulet, cuisse sans peau, cuite', 26, 9, 0],
+  ['Poulet rôti, sans peau', 27, 6, 0],
+  ['Dinde hachée 5 %, cuite', 27, 5, 0],
+  ['Bœuf, filet cuit', 30, 6, 0],
+  ['Bœuf haché 15 %, cuit', 24, 16, 0],
+  ['Veau, escalope cuite', 30, 4, 0],
+  ['Porc, filet mignon cuit', 29, 4, 0],
+  ['Agneau, gigot cuit', 27, 15, 0],
+  ['Lapin, cuit', 33, 5, 0],
+  ['Canard, magret cuit', 26, 12, 0],
+  ['Jambon cru (sec)', 28, 12, 0.5],
+  ['Saucisson sec', 25, 35, 1.5],
+  // Poissons et fruits de mer
+  ['Maquereau, cuit', 24, 20, 0],
+  ['Sardines à l’huile, égouttées', 25, 12, 0],
+  ['Truite, cuite', 25, 7, 0],
+  ['Lieu noir, cuit', 22, 0.6, 0],
+  ['Merlu, cuit', 21, 1.5, 0],
+  ['Dorade, cuite', 22, 4, 0],
+  ['Sole, cuite', 21, 2, 0],
+  ['Espadon, cuit', 24, 5, 0],
+  ['Hareng fumé', 25, 15, 0],
+  ['Saumon fumé', 22, 13, 0],
+  ['Moules, cuites', 24, 2.2, 1],
+  ['Calamar, cuit', 18, 2.5, 0],
+  // Œufs et produits laitiers
+  ['Œuf de caille', 13, 11, 0.4],
+  ['Lait demi-écrémé', 3.3, 1.6, 4.8],
+  ['Lait écrémé', 3.4, 0.1, 4.9],
+  ['Lait entier', 3.2, 3.6, 4.8],
+  ['Lait d’amande non sucré', 0.5, 1.1, 0],
+  ['Lait de soja nature', 3.3, 1.8, 0.7],
+  ['Fromage blanc 3 %', 7.5, 3, 4],
+  ['Cottage cheese', 11, 4, 3],
+  ['Yaourt nature entier', 4, 3, 5],
+  ['Kéfir nature', 3.5, 1.5, 4.5],
+  ['Mozzarella', 18, 22, 1],
+  ['Feta', 14, 21, 4],
+  ['Emmental', 28, 28, 0],
+  ['Comté', 27, 31, 0],
+  ['Parmesan', 35, 26, 0],
+  ['Ricotta', 11, 13, 3],
+  // Protéines végétales
+  ['Tofu ferme nature', 15, 9, 0.6],
+  ['Tempeh', 19, 11, 0],
+  ['Seitan', 25, 2, 2],
+  ['Edamame, cuits', 11, 5, 8],
+  ['Pois chiches, cuits', 9, 2.6, 1.7],
+  ['Haricots rouges, cuits', 9, 0.5, 0.3],
+  ['Haricots blancs, cuits', 8.5, 0.6, 0.3],
+  ['Protéine de pois (poudre)', 80, 6, 2],
+  ['Caséine (poudre)', 80, 2, 4],
+  // Féculents et céréales
+  ['Quinoa, cuit', 4.4, 1.9, 0.9],
+  ['Boulgour, cuit', 3.1, 0.2, 0.1],
+  ['Semoule complète, cuite', 4, 0.5, 0.3],
+  ['Sarrasin, cuit', 3.4, 0.9, 0.1],
+  ['Pâtes blanches, cuites', 5, 1, 1],
+  ['Nouilles de riz, cuites', 1.8, 0.2, 0],
+  ['Riz complet, cuit', 2.6, 0.9, 0.4],
+  ['Pain de seigle', 8.5, 1.5, 1],
+  ['Pain blanc', 8, 1.2, 2.5],
+  ['Céréales de maïs nature', 7, 1, 8],
+  ['Muesli sans sucre ajouté', 10, 6, 6],
+  ['Granola', 10, 20, 25],
+  ['Maïs doux, cuit', 3.2, 1.2, 3.2],
+  ['Châtaignes, cuites', 2, 1.2, 1],
+  // Légumes
+  ['Carotte crue', 0.9, 0.2, 4.7],
+  ['Courgette, cuite', 1.2, 0.3, 1.8],
+  ['Poivron rouge', 1, 0.3, 4.2],
+  ['Haricots verts, cuits', 1.8, 0.2, 2.2],
+  ['Concombre', 0.7, 0.1, 1.7],
+  ['Laitue', 1.4, 0.2, 0.8],
+  ['Champignons de Paris', 3.1, 0.3, 0.3],
+  ['Oignon', 1.1, 0.1, 4.2],
+  ['Chou-fleur, cuit', 1.9, 0.3, 1.9],
+  ['Asperges, cuites', 2.2, 0.1, 1.9],
+  ['Poireau, cuit', 1.5, 0.3, 2],
+  ['Aubergine, cuite', 0.8, 0.2, 2.2],
+  ['Chou, cuit', 1.3, 0.1, 3],
+  ['Betterave, cuite', 1.6, 0.2, 6.8],
+  ['Céleri-rave, cuit', 1.5, 0.3, 1.5],
+  // Fruits
+  ['Orange', 0.9, 0.1, 8.5],
+  ['Kiwi', 1.1, 0.5, 9],
+  ['Fraise', 0.7, 0.3, 4.9],
+  ['Framboise', 1.2, 0.7, 4.4],
+  ['Raisin', 0.7, 0.2, 16],
+  ['Poire', 0.4, 0.1, 10],
+  ['Pêche', 0.9, 0.3, 8.4],
+  ['Mangue', 0.8, 0.4, 14],
+  ['Ananas', 0.5, 0.1, 9.9],
+  ['Pastèque', 0.6, 0.2, 6.2],
+  ['Melon', 0.8, 0.2, 8.2],
+  ['Cerise', 1, 0.2, 13],
+  ['Abricot', 1.4, 0.4, 9],
+  ['Figue fraîche', 0.8, 0.3, 16],
+  ['Datte séchée', 1.8, 0.2, 63],
+  ['Raisins secs', 3, 0.5, 66],
+  // Oléagineux et graines
+  ['Noix', 15, 65, 2.6],
+  ['Noisettes', 15, 61, 4.3],
+  ['Cacahuètes', 26, 49, 4.7],
+  ['Beurre de cacahuète', 25, 50, 6],
+  ['Graines de chia', 17, 31, 0],
+  ['Graines de courge', 30, 49, 1.4],
+  ['Graines de tournesol', 21, 51, 2.6],
+  ['Graines de lin moulues', 18, 42, 1.6],
+  // Matières grasses et condiments
+  ['Beurre', 0.9, 82, 0.1],
+  ['Huile de colza', 0, 100, 0],
+  ['Miel', 0.3, 0, 82],
+  ['Sucre blanc', 0, 0, 100],
+  ['Ketchup', 1.5, 0.1, 22],
+  ['Moutarde', 6, 6, 3],
+  ['Mayonnaise', 1, 75, 2],
+  // Boissons
+  ['Jus d’orange', 0.7, 0.2, 8.4],
+  ['Soda classique', 0, 0, 10.6],
+  ['Café noir', 0.1, 0, 0],
+  ['Bière blonde', 0.4, 0, 3.6],
+  ['Vin rouge', 0.1, 0, 0.9],
+  // Produits transformés courants
+  ['Chips', 6, 34, 0.5],
+  ['Biscuit sec', 7, 20, 25],
+  ['Barre de céréales', 6, 10, 25],
+  ['Pizza margherita', 11, 10, 3.5]
+];
+
+let nutAli = { nom: '', g: '100' };
+
+function apportsAliment(nom, grammes) {
+  const a = ALIMENTS.find((x) => x[0] === nom);
+  if (!a) return null;
+  const f = grammes / 100;
+  return {
+    prot: Math.round(a[1] * f * 10) / 10,
+    gras: Math.round(a[2] * f * 10) / 10,
+    sucre: Math.round(a[3] * f * 10) / 10
+  };
+}
+
+function blocAliments() {
+  const grammes = num(nutAli.g) || 0;
+  const r = apportsAliment(nutAli.nom, grammes);
+  return `
+    <section class="carte">
+      <h3>Apports d’un aliment</h3>
+      <label>Aliment
+        <input id="ali-nom" list="ali-liste" placeholder="Tape pour chercher…" value="${esc(nutAli.nom)}">
+      </label>
+      <datalist id="ali-liste">${ALIMENTS.map((a) => `<option value="${esc(a[0])}">`).join('')}</datalist>
+      <label>Quantité (g)<input id="ali-g" inputmode="decimal" value="${esc(nutAli.g)}"></label>
+      <button class="secondaire" data-nut="aliment">Voir les apports</button>
+      ${r ? `
+        <div class="apports">
+          <div><strong>${r.prot} g</strong><small>Protéines</small></div>
+          <div><strong>${r.gras} g</strong><small>Lipides</small></div>
+          <div><strong>${r.sucre} g</strong><small>Sucres</small></div>
+        </div>` : (nutAli.nom ? '<p class="vide">Aliment introuvable : choisis-le dans la liste.</p>' : '')}
+      <p class="vide">Valeurs indicatives. Pour un produit précis, vérifie l’emballage.</p>
+    </section>`;
+}
+
 function vueNutrition() {
   if (nutJour === null) nutJour = Math.min(Math.max(jourAujourdhui(), 0), JOURS_PLAN - 1);
   const j = nutJour;
@@ -140,6 +340,7 @@ function vueNutrition() {
         ${manque ? 'Il manque une collation protéinée (skyr, yaourt grec) pour atteindre l’objectif.' : 'Objectif atteint.'}</p>
       <p class="graphe-legende">Repas plaisir cette semaine : <strong>${plaisirsDeLaSemaine(j).length}</strong> / 1</p>
     </section>
+    ${blocAliments()}
     ${repas.map(({ cle, titre, m }) => `
       <section class="carte">
         <h3>${titre}</h3>
@@ -221,6 +422,13 @@ document.querySelector('#app').addEventListener('click', (e) => {
   if (!b) return;
   const action = b.dataset.nut;
 
+  if (action === 'aliment') {
+    nutAli = {
+      nom: document.querySelector('#ali-nom').value.trim(),
+      g: document.querySelector('#ali-g').value.trim() || '100'
+    };
+    return vueNutrition();
+  }
   if (action === 'plaisir') return ajouterPlaisir(b.dataset.repas);
   if (action === 'plaisir-retirer') return retirerPlaisir();
   if (action === 'edit') return modifierRepas(b.dataset.repas);

@@ -76,7 +76,8 @@ const VUES = {
 };
 
 function aller(onglet) {
-  document.querySelectorAll('nav button').forEach((b) =>
+  ongletCourant = onglet;
+  document.querySelectorAll('[data-tab]').forEach((b) =>
     b.classList.toggle('actif', b.dataset.tab === onglet));
   window.scrollTo(0, 0);
   VUES[onglet]();
@@ -371,9 +372,72 @@ function supprimerMesure(i) {
 
 /* ---------- Réglages : sauvegarde ---------- */
 
+/* ---------- À propos : historique des évolutions ---------- */
+
+const EVOLUTIONS = [
+  { version: '1.8', titre: 'Nouveau nom : Cadence', items: [
+    'L’application s’appelle désormais Cadence.'
+  ]},
+  { version: '1.7', titre: 'Paramètres et À propos', items: [
+    'Le menu Réglages devient Paramètres, qui regroupe apparence, sauvegarde et historique.',
+    'Écran À propos avec l’historique complet des évolutions.'
+  ]},
+  { version: '1.6', titre: 'Thème clair ou sombre', items: [
+    'Choix du thème dans les paramètres, mémorisé sur l’appareil.'
+  ]},
+  { version: '1.5', titre: 'Repas plaisir et recherche d’aliments', items: [
+    'Un repas plaisir par semaine, sans contrôle des ingrédients.',
+    'Recherche d’aliment avec protéines, lipides et sucres (plus de 150 aliments).',
+    'Correction : les champs de date et de séance ne se chevauchent plus sur iPhone.'
+  ]},
+  { version: '1.4', titre: 'Onglet Nutrition', items: [
+    'Menus matin, midi et soir sur 14 jours, répétés sur 3 mois, modifiables.',
+    'Garde-fous : confirmation pour les repas riches, refus pour la friture, le fast-food et la pâtisserie.'
+  ]},
+  { version: '1.3', titre: 'Programme et conseils d’exécution', items: [
+    '3 séries par exercice.',
+    'Animations schématiques remplacées par des points clés d’exécution et un lien vers une vidéo.'
+  ]},
+  { version: '1.2', titre: 'Glissement entre onglets', items: [
+    'Glisser à gauche ou à droite pour changer d’onglet, avec un effet qui suit le doigt.',
+    'Correction : le glissement fonctionne aussi sur la page Progression.'
+  ]},
+  { version: '1.1', titre: 'Nouveau thème et cache hors ligne', items: [
+    'Thème sombre avec accents lumineux, cartes en verre.',
+    'Correction : la version la plus récente est chargée dès qu’il y a du réseau.'
+  ]},
+  { version: '1.0', titre: 'Première version', items: [
+    'Programme en 3 séances, journal d’entraînement, progression par exercice.',
+    'Mensurations, export et import des données, installation sur l’écran d’accueil.'
+  ]}
+];
+
+function blocAPropos() {
+  return `
+    <section class="carte">
+      <h3>À propos</h3>
+      <p class="vide">Historique des évolutions de l’application.</p>
+      <button class="secondaire" data-apropos="1">Voir les évolutions</button>
+    </section>`;
+}
+
+function vueApropos() {
+  $('#app').innerHTML = `
+    <h2>À propos</h2>
+    <p class="vide">Application de suivi musculation. Toutes tes données restent sur cet appareil.</p>
+    ${EVOLUTIONS.map((e) => `
+      <section class="carte">
+        <h3>Version ${esc(e.version)}</h3>
+        <strong>${esc(e.titre)}</strong>
+        <ul class="evol">${e.items.map((i) => `<li>${esc(i)}</li>`).join('')}</ul>
+      </section>`).join('')}
+    <button class="secondaire" data-retour="1">← Retour aux paramètres</button>`;
+}
+
 function vueReglages() {
   $('#app').innerHTML = `
-    <h2>Réglages</h2>
+    <h2>Paramètres</h2>
+    ${blocTheme()}
     <section class="carte">
       <h3>Sauvegarde</h3>
       <p class="vide">Tes données restent sur cet iPhone. iOS peut effacer le stockage d'une app peu utilisée : exporte une sauvegarde chaque semaine.</p>
@@ -426,7 +490,7 @@ function tout_effacer() {
 
 /* ---------- Événements ---------- */
 
-document.querySelectorAll('nav button').forEach((b) =>
+document.querySelectorAll('[data-tab]').forEach((b) =>
   b.addEventListener('click', () => aller(b.dataset.tab)));
 
 $('#app').addEventListener('click', (e) => {
@@ -444,6 +508,14 @@ $('#app').addEventListener('click', (e) => {
   if (b.dataset.add !== undefined) return ajouterExo(Number(b.dataset.add));
   if (b.dataset.supp !== undefined) return supprimerJournal(Number(b.dataset.supp));
   if (b.dataset.msupp !== undefined) return supprimerMesure(Number(b.dataset.msupp));
+  if (b.dataset.apropos !== undefined) return vueApropos();
+  if (b.dataset.retour !== undefined) return vueReglages();
+  if (b.dataset.themeChoix !== undefined) {
+    const t = b.dataset.themeChoix;
+    localStorage.setItem('musculation-theme', t);
+    appliquerTheme(t);
+    return vueReglages();
+  }
   if (b.id === 'j-enreg') return enregistrerSeance();
   if (b.id === 'm-enreg') return enregistrerMesures();
   if (b.id === 'r-export') return exporter();
@@ -468,27 +540,116 @@ $('#demo-fermer').addEventListener('click', () => $('#demo').close());
 
 /* ---------- Glisser pour changer d'onglet ---------- */
 
-const ORDRE_ONGLETS = ['seances', 'journal', 'progression', 'nutrition', 'mensurations', 'reglages'];
+const ORDRE_ONGLETS = ['seances', 'progression', 'journal', 'nutrition', 'mensurations', 'reglages'];
+let ongletCourant = 'seances';
 let debutX = null, debutY = null;
 
-document.querySelector('main').addEventListener('touchstart', (e) => {
-  debutX = e.touches[0].clientX;
-  debutY = e.touches[0].clientY;
+/* ---------- Thème clair / sombre ---------- */
+
+function themeActuel() {
+  return localStorage.getItem('musculation-theme') || 'sombre';
+}
+
+function appliquerTheme(t) {
+  document.documentElement.dataset.theme = t;
+  const meta = document.querySelector('meta[name="theme-color"]');
+  if (meta) meta.content = t === 'clair' ? '#f3f5f9' : '#0f1115';
+}
+
+function blocTheme() {
+  const t = themeActuel();
+  return `
+    <section class="carte">
+      <h3>Apparence</h3>
+      <div class="grille">
+        <button class="${t === 'sombre' ? 'principal' : 'secondaire'}" data-theme-choix="sombre">Sombre</button>
+        <button class="${t === 'clair' ? 'principal' : 'secondaire'}" data-theme-choix="clair">Clair</button>
+      </div>
+    </section>`;
+}
+
+appliquerTheme(themeActuel());
+
+const ZONE = document.querySelector('main');
+const CONTENU = $('#app');
+let geste = null;     // { x, y, dx, verrou } pendant un doigt posé
+let animation = false;
+
+function indexCourant() {
+  return ORDRE_ONGLETS.indexOf(ongletCourant);
+}
+
+function reglerContenu(transform, opacite, transition) {
+  CONTENU.style.transition = transition;
+  CONTENU.style.transform = transform;
+  CONTENU.style.opacity = opacite;
+}
+
+ZONE.addEventListener('touchstart', (e) => {
+  if (animation) return;
+  // Pas de glisse depuis un champ de saisie : on ne veut pas gêner la saisie
+  if (e.target.closest('input, select, textarea, dialog')) { geste = null; return; }
+  const t = e.touches[0];
+  geste = { x: t.clientX, y: t.clientY, dx: 0, verrou: null };
+  CONTENU.style.transition = 'none';
 }, { passive: true });
 
-document.querySelector('main').addEventListener('touchend', (e) => {
-  if (debutX === null) return;
-  const dx = e.changedTouches[0].clientX - debutX;
-  const dy = e.changedTouches[0].clientY - debutY;
-  debutX = null;
-  // Glisse horizontale franche uniquement (pas un simple défilement vertical)
-  if (Math.abs(dx) < 70 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
-  // Ne pas déclencher pendant la saisie dans un champ
-  if (document.activeElement && ['INPUT', 'SELECT'].includes(document.activeElement.tagName)) return;
+ZONE.addEventListener('touchmove', (e) => {
+  if (!geste) return;
+  const t = e.touches[0];
+  const dx = t.clientX - geste.x;
+  const dy = t.clientY - geste.y;
 
-  const actuel = ORDRE_ONGLETS.indexOf(document.querySelector('nav button.actif').dataset.tab);
-  const suivant = dx < 0 ? actuel + 1 : actuel - 1;
-  if (suivant >= 0 && suivant < ORDRE_ONGLETS.length) aller(ORDRE_ONGLETS[suivant]);
+  // On décide une fois la direction : horizontale (on suit le doigt) ou verticale (on laisse défiler)
+  if (geste.verrou === null) {
+    if (Math.abs(dx) < 8 && Math.abs(dy) < 8) return;
+    geste.verrou = Math.abs(dx) > Math.abs(dy) * 1.2 ? 'h' : 'v';
+  }
+  if (geste.verrou !== 'h') return;
+  e.preventDefault();
+
+  // Résistance aux extrémités : pas d'onglet au-delà de Programme et Réglages
+  const i = indexCourant();
+  const bord = (dx < 0 && i === ORDRE_ONGLETS.length - 1) || (dx > 0 && i === 0);
+  const facteur = bord ? 0.25 : 0.9;
+  geste.dx = dx;
+  reglerContenu(`translate3d(${dx * facteur}px, 0, 0)`, String(1 - Math.min(Math.abs(dx) / 700, 0.3)), 'none');
+}, { passive: false });
+
+function relacher() {
+  if (!geste) return;
+  const g = geste;
+  geste = null;
+  if (g.verrou !== 'h') return;
+
+  const dx = g.dx;
+  const cible = dx < 0 ? indexCourant() + 1 : indexCourant() - 1;
+  const valide = Math.abs(dx) > 60 && cible >= 0 && cible < ORDRE_ONGLETS.length;
+
+  if (!valide) {
+    // Pas assez loin : le contenu revient en place avec un léger rebond
+    reglerContenu('translate3d(0, 0, 0)', '1', 'transform .4s cubic-bezier(.2,.9,.25,1.1), opacity .3s ease-out');
+    return;
+  }
+
+  // Le contenu sort du côté du doigt, le nouvel onglet entre du côté opposé
+  animation = true;
+  const sortie = dx < 0 ? -100 : 100;
+  reglerContenu(`translate3d(${sortie}vw, 0, 0)`, '0', 'transform .24s cubic-bezier(.4,0,.8,.2), opacity .2s ease-in');
+
+  setTimeout(() => {
+    aller(ORDRE_ONGLETS[cible]);
+    reglerContenu(`translate3d(${-sortie}vw, 0, 0)`, '0', 'none');
+    CONTENU.offsetHeight; // force le recalcul avant la transition d'entrée
+    reglerContenu('translate3d(0, 0, 0)', '1', 'transform .42s cubic-bezier(.2,.9,.25,1), opacity .3s ease-out');
+    setTimeout(() => { animation = false; }, 420);
+  }, 240);
+}
+
+ZONE.addEventListener('touchend', relacher, { passive: true });
+ZONE.addEventListener('touchcancel', () => {
+  geste = null;
+  if (!animation) reglerContenu('translate3d(0, 0, 0)', '1', 'transform .3s ease-out, opacity .3s ease-out');
 }, { passive: true });
 
 aller('seances');

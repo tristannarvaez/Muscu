@@ -6,25 +6,46 @@
   <meta name="theme-color" content="#0f1115">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="Musculation">
-  <title>Musculation</title>
+  <meta name="apple-mobile-web-app-title" content="Cadence">
+  <title>Cadence</title>
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="icon.png">
   <link rel="icon" href="icon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <header><h1>Musculation</h1></header>
+  <header>
+    <h1>Cadence</h1>
+    <button class="engrenage" data-tab="reglages" aria-label="Paramètres">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M2 12h3M19 12h3M4.9 19.1L7 17M17 7l2.1-2.1"/></svg>
+    </button>
+  </header>
 
   <main id="app"></main>
 
-  <nav>
-    <button data-tab="seances" class="actif">Programme</button>
-    <button data-tab="journal">Journal</button>
-    <button data-tab="progression">Progression</button>
-    <button data-tab="nutrition">Nutrition</button>
-    <button data-tab="mensurations">Mesures</button>
-    <button data-tab="reglages">Réglages</button>
+  <nav class="barre">
+    <button data-tab="seances" class="actif">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 7v10M18 7v10M3 9v6M21 9v6M6 12h12"/></svg>
+      <span>Programme</span>
+    </button>
+    <button data-tab="progression">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19V5M4 19h16M8 15l4-4 3 3 5-6"/></svg>
+      <span>Progression</span>
+    </button>
+    <button data-tab="journal" class="centre">
+      <span class="rond">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16v4zM14 6l4 4"/></svg>
+      </span>
+      <span>Journal</span>
+    </button>
+    <button data-tab="nutrition">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 19C5 10 10 5 19 5c0 9-5 14-14 14zM5 19l8-8"/></svg>
+      <span>Nutrition</span>
+    </button>
+    <button data-tab="mensurations">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 12l4-3"/></svg>
+      <span>Mesures</span>
+    </button>
   </nav>
 
   <dialog id="demo">

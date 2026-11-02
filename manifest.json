@@ -1,6 +1,6 @@
 {
-  "name": "Musculation",
-  "short_name": "Musculation",
+  "name": "Cadence",
+  "short_name": "Cadence",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
