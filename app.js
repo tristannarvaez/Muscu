@@ -416,7 +416,7 @@ function blocAPropos() {
   return `
     <section class="carte">
       <h3>À propos</h3>
-      <p class="vide">Historique des évolutions de l’application.</p>
+      <p class="vide">Version actuelle : ${EVOLUTIONS[0].version}. Historique des évolutions ci-dessous.</p>
       <button class="secondaire" data-apropos="1">Voir les évolutions</button>
     </section>`;
 }
