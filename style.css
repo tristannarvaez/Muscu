@@ -376,6 +376,19 @@ select {
 .apports strong { display: block; font-size: 1.3rem; font-weight: 900; color: var(--accent); }
 .apports small { color: var(--discret); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em; }
 
+/* Logo à côté du nom */
+.logo-h {
+  width: 40px;
+  height: 40px;
+  vertical-align: middle;
+  margin-right: 10px;
+  border-radius: 12px;
+  -webkit-text-fill-color: initial;
+}
+
+/* Le défilement vertical reste natif, les glissements horizontaux sont pour les onglets */
+body { touch-action: pan-y; }
+
 /* Barre de navigation façon application */
 header {
   display: flex;

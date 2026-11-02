@@ -570,7 +570,8 @@ function blocTheme() {
 
 appliquerTheme(themeActuel());
 
-const ZONE = document.querySelector('main');
+// Le geste est écouté sur toute la page, pour fonctionner aussi sur Progression
+const ZONE = document.body;
 const CONTENU = $('#app');
 let geste = null;     // { x, y, dx, verrou } pendant un doigt posé
 let animation = false;
