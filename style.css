@@ -505,6 +505,48 @@ nav.barre button.centre.actif { color: #ffffff; }
 .evol li { margin-bottom: 6px; }
 .evol li::marker { color: var(--accent); }
 
+/* Repas composés d'aliments */
+.entete-repas { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.entete-repas h3 { margin: 0; }
+.items { list-style: none; margin: 12px 0 0; padding: 0; }
+.item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+.item:first-child { border-top: none; }
+.item-nom {
+  flex: 1;
+  min-width: 0;
+  font-size: 0.95rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.item .item-g { width: 84px !important; height: 40px; text-align: right; padding: 6px 8px; }
+.unite { color: var(--discret); font-size: 0.85rem; }
+.retirer { width: 34px; height: 34px; padding: 0; border-radius: 50%; color: var(--danger); flex-shrink: 0; }
+.items .vide { color: var(--discret); font-size: 0.9rem; padding: 6px 0; }
+.totaux {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  text-align: center;
+  margin-top: 12px;
+  color: var(--discret);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.totaux strong { display: block; color: var(--accent); font-size: 1.1rem; text-transform: none; letter-spacing: 0; }
+.ajout { margin-top: 14px; }
+.ajout .recherche { margin-bottom: 8px; }
+.suggestions { margin-bottom: 8px; }
+.liste-sugg { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
+.sugg { text-align: left; width: 100%; padding: 10px 12px; font-size: 0.9rem; }
+
 /* Conseils d'exécution */
 .conseils { margin: 0; padding-left: 20px; line-height: 1.5; }
 .conseils li { margin-bottom: 10px; }
