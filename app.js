@@ -379,6 +379,10 @@ function supprimerMesure(i) {
 /* ---------- À propos : historique des évolutions ---------- */
 
 const EVOLUTIONS = [
+  { version: '1.11', titre: 'Plats tout prêts', items: [
+    'Plat libre : recherche parmi plus de 60 plats courants, avec leurs apports par portion.',
+    'La saisie manuelle d’un plat reste possible.'
+  ]},
   { version: '1.10', titre: 'Corrections d’affichage', items: [
     'Les libellés de la barre du bas ne sont plus barrés.',
     'Les boutons de démonstration se voient en mode clair.',

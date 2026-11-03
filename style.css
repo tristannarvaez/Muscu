@@ -550,6 +550,9 @@ nav.barre button.centre.actif { color: #ffffff; }
 .suggestions { margin-bottom: 8px; }
 .liste-sugg { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
 .sugg { text-align: left; width: 100%; padding: 10px 12px; font-size: 0.9rem; }
+.sugg small { display: block; margin-top: 2px; color: var(--discret); font-size: 0.78rem; }
+.liste-plats { max-height: 300px; overflow-y: auto; -webkit-overflow-scrolling: touch; padding-right: 2px; }
+.plat-libre .recherche-plat { margin-bottom: 4px; }
 
 /* Liste de courses */
 .coche { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; font-size: 0.95rem; cursor: pointer; }

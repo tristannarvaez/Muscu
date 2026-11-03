@@ -171,6 +171,74 @@ const ALIMENTS = [
   ['Pizza margherita', 11, 10, 3.5]
 ];
 
+// Plats tout prêts pour « Plat libre » : [nom, protéines, lipides, sucres] en grammes, pour UNE portion.
+// Valeurs indicatives : elles varient selon la recette et la taille de la portion.
+const PLATS = [
+  ['Pizza margherita (1 pizza, 350 g)', 38, 35, 12],
+  ['Pizza reine (1 pizza, 380 g)', 45, 40, 12],
+  ['Pizza 4 fromages (1 pizza, 350 g)', 48, 55, 10],
+  ['Lasagnes bolognaise (1 part, 350 g)', 30, 28, 10],
+  ['Spaghetti bolognaise (1 assiette, 400 g)', 32, 18, 12],
+  ['Pâtes carbonara (1 assiette, 350 g)', 28, 35, 4],
+  ['Pâtes au pesto (1 assiette, 300 g)', 14, 25, 3],
+  ['Gratin de pâtes au jambon (1 part, 350 g)', 26, 24, 7],
+  ['Risotto aux champignons (1 assiette, 350 g)', 12, 18, 3],
+  ['Burger maison (1 burger)', 30, 28, 8],
+  ['Cheeseburger de restaurant (1 burger)', 32, 34, 10],
+  ['Hot-dog (1 pièce)', 14, 18, 6],
+  ['Kebab sandwich (1 pièce)', 35, 32, 6],
+  ['Tacos français (1 pièce)', 40, 50, 8],
+  ['Croque-monsieur (1 pièce)', 22, 22, 5],
+  ['Croque-madame (1 pièce)', 28, 28, 5],
+  ['Sandwich jambon-beurre (1 demi-baguette)', 22, 18, 4],
+  ['Sandwich poulet crudités (1 pièce)', 28, 14, 5],
+  ['Wrap au poulet (1 pièce)', 26, 14, 4],
+  ['Quiche lorraine (1 part, 150 g)', 15, 30, 3],
+  ['Tarte aux légumes (1 part, 150 g)', 8, 20, 4],
+  ['Hachis parmentier (1 part, 350 g)', 25, 22, 5],
+  ['Gratin dauphinois (1 part, 250 g)', 9, 22, 6],
+  ['Tartiflette (1 part, 400 g)', 32, 45, 4],
+  ['Raclette (1 repas)', 45, 60, 5],
+  ['Fondue savoyarde (1 repas)', 50, 55, 4],
+  ['Boeuf bourguignon (1 assiette, 350 g)', 38, 18, 5],
+  ['Blanquette de veau (1 assiette, 350 g)', 35, 20, 4],
+  ['Pot-au-feu (1 assiette, 450 g)', 35, 15, 8],
+  ['Poulet basquaise (1 assiette, 350 g)', 35, 14, 8],
+  ['Poulet curry coco et riz (1 assiette, 400 g)', 32, 22, 6],
+  ['Poulet tikka masala et riz (1 assiette, 400 g)', 34, 20, 8],
+  ['Chili con carne et riz (1 assiette, 400 g)', 30, 16, 7],
+  ['Couscous poulet merguez (1 assiette, 500 g)', 40, 28, 10],
+  ['Tajine de poulet (1 assiette, 400 g)', 34, 16, 12],
+  ['Paella (1 assiette, 400 g)', 32, 16, 4],
+  ['Choucroute garnie (1 assiette, 450 g)', 30, 40, 3],
+  ['Cassoulet (1 assiette, 400 g)', 30, 28, 4],
+  ['Moussaka (1 part, 350 g)', 22, 28, 9],
+  ['Saumon et riz (1 assiette, 350 g)', 32, 16, 1],
+  ['Poisson pané et purée (1 assiette)', 22, 20, 5],
+  ['Moules marinières (1 assiette, sans frites)', 30, 10, 3],
+  ['Steak frites (1 assiette)', 38, 35, 2],
+  ['Fish and chips (1 portion)', 30, 40, 3],
+  ['Nuggets de poulet (6 pièces)', 15, 16, 1],
+  ['Riz cantonais (1 assiette, 300 g)', 15, 12, 3],
+  ['Pad thaï au poulet (1 assiette, 350 g)', 28, 18, 14],
+  ['Nouilles sautées au boeuf (1 assiette, 350 g)', 26, 16, 8],
+  ['Poke bowl saumon (1 bol)', 28, 18, 10],
+  ['Sushis assortis (12 pièces)', 22, 8, 12],
+  ['Ramen (1 bol)', 25, 20, 6],
+  ['Bo bun (1 bol)', 26, 14, 10],
+  ['Burrito (1 pièce)', 28, 22, 5],
+  ['Fajitas au poulet (2 pièces)', 32, 18, 6],
+  ['Salade César (1 assiette)', 28, 30, 4],
+  ['Salade niçoise (1 assiette)', 22, 22, 6],
+  ['Taboulé (1 assiette, 250 g)', 6, 12, 4],
+  ['Omelette jambon fromage (3 œufs)', 32, 30, 1],
+  ['Crêpes salées complètes (1 galette)', 22, 20, 2],
+  ['Soupe de légumes (1 bol)', 3, 4, 8],
+  ['Velouté de potiron (1 bol)', 3, 8, 7],
+  ['Hamburger de fast-food avec frites', 30, 45, 12],
+  ['Pâtisserie (1 part)', 5, 20, 35]
+];
+
 // Un repas de base : un nom et des aliments [nom, grammes]
 const plat = (nom, items) => ({ nom, items: items.map(([n, g]) => ({ n, g })) });
 
@@ -252,6 +320,7 @@ let repasModifs = chargerRepas(NUT_KEY);     // 'rang-repas' -> { nom, items }
 let plaisirs = chargerRepas(PLAISIR_KEY);    // 'AAAA-MM-JJ' -> { j, cle, nom, items }
 let jour = null;
 let nutAli = { nom: '', g: '100' };
+let platOuvert = null;   // repas ('matin', 'midi', 'soir') où la recherche de plat est ouverte
 
 function sauverRepas() {
   localStorage.setItem(NUT_KEY, JSON.stringify(repasModifs));
@@ -356,6 +425,31 @@ function suggestionsHTML(q, action, cle) {
     `<button class="sugg" data-nut="${action}" data-cle="${esc(cle)}" data-n="${esc(a[0])}">${esc(a[0])}</button>`).join('')}</div>`;
 }
 
+// Liste des plats tout prêts : tous si rien n'est tapé, sinon ceux qui correspondent
+function suggestionsPlatsHTML(q, cle) {
+  const t = norm(String(q).trim());
+  const res = PLATS.map((p, i) => ({ p, i })).filter(({ p }) => !t || norm(p[0]).includes(t));
+  if (!res.length) return '<p class="vide">Aucun plat trouvé. Utilise la saisie manuelle.</p>';
+  return `<div class="liste-sugg liste-plats">${res.map(({ p, i }) =>
+    `<button class="sugg" data-nut="plat" data-cle="${esc(cle)}" data-i="${i}">${esc(p[0])}
+      <small>${p[1]} g prot · ${p[2]} g lip · ${p[3]} g sucres</small></button>`).join('')}</div>`;
+}
+
+function blocPlatLibre(cle) {
+  if (platOuvert !== cle) {
+    return `<button class="secondaire" data-nut="libre" data-cle="${cle}">+ Plat libre</button>`;
+  }
+  return `
+    <div class="plat-libre">
+      <input class="recherche-plat" type="search" name="plat-recherche" placeholder="Chercher un plat (pizza, lasagnes…)" data-cle="${cle}" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" enterkeyhint="search" data-1p-ignore>
+      <div class="suggestions" data-sugg-plat="${cle}">${suggestionsPlatsHTML('', cle)}</div>
+      <div class="actions-repas">
+        <button class="secondaire" data-nut="libre-manuel" data-cle="${cle}">Saisie manuelle</button>
+        <button class="secondaire" data-nut="libre-fermer">Fermer</button>
+      </div>
+    </div>`;
+}
+
 function carteRepas(cle, titre) {
   const r = repasDuJour(jour, cle);
   const t = totaux(r.items);
@@ -387,7 +481,7 @@ function carteRepas(cle, titre) {
       <div class="ajout">
         <input class="recherche" type="search" name="aliment-recherche" placeholder="Ajouter un aliment…" data-cle="${cle}" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" enterkeyhint="search" data-1p-ignore>
         <div class="suggestions" data-sugg="${cle}"></div>
-        <button class="secondaire" data-nut="libre" data-cle="${cle}">+ Plat libre (nom et valeurs)</button>
+        ${blocPlatLibre(cle)}
       </div>
       <div class="actions-repas">
         ${r.plaisir
@@ -612,6 +706,9 @@ document.querySelector('#app').addEventListener('input', (e) => {
   if (t.classList.contains('recherche')) {
     document.querySelector(`[data-sugg="${t.dataset.cle}"]`).innerHTML = suggestionsHTML(t.value, 'ajouter', t.dataset.cle);
   }
+  if (t.classList.contains('recherche-plat')) {
+    document.querySelector(`[data-sugg-plat="${t.dataset.cle}"]`).innerHTML = suggestionsPlatsHTML(t.value, t.dataset.cle);
+  }
   if (t.id === 'ali-recherche') {
     document.querySelector('#ali-sugg').innerHTML = suggestionsHTML(t.value, 'choisir-ali', '');
   }
@@ -641,6 +738,7 @@ document.querySelector('#app').addEventListener('click', (e) => {
   const cle = b.dataset.cle;
 
   if (action === 'courses') { courseSemaine = semaineDe(jour); return vueCourses(); }
+  if (action === 'prev' || action === 'next') platOuvert = null;
   if (action === 'prev') { jour = Math.max(0, jour - 1); return vueNutrition(); }
   if (action === 'next') { jour = Math.min(JOURS_PLAN - 1, jour + 1); return vueNutrition(); }
 
@@ -651,6 +749,23 @@ document.querySelector('#app').addEventListener('click', (e) => {
   }
 
   if (action === 'libre') {
+    platOuvert = platOuvert === cle ? null : cle;
+    vueNutrition();
+    const champ = document.querySelector(`.recherche-plat[data-cle="${cle}"]`);
+    if (champ) champ.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    return;
+  }
+
+  if (action === 'libre-fermer') { platOuvert = null; return vueNutrition(); }
+
+  if (action === 'plat') {
+    const [n, p, l, s] = PLATS[Number(b.dataset.i)];
+    const r = repasDuJour(jour, cle);
+    if (appliquer(jour, cle, [...r.items, { n, libre: true, p, l, s }], r.nom)) platOuvert = null;
+    return vueNutrition();
+  }
+
+  if (action === 'libre-manuel') {
     const nom = prompt('Nom du plat (ex. pizza, frites)', '');
     if (!nom || !nom.trim()) return;
     const v = prompt('Protéines, lipides, sucres en grammes (ex. 30 12 5)', '0 0 0');
@@ -661,7 +776,7 @@ document.querySelector('#app').addEventListener('click', (e) => {
       return;
     }
     const r = repasDuJour(jour, cle);
-    appliquer(jour, cle, [...r.items, { n: nom.trim(), libre: true, p, l, s }], r.nom);
+    if (appliquer(jour, cle, [...r.items, { n: nom.trim(), libre: true, p, l, s }], r.nom)) platOuvert = null;
     return vueNutrition();
   }
 
