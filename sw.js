@@ -1,7 +1,7 @@
 // Cache hors ligne : l'app reste utilisable en salle sans réseau.
 // Stratégie "réseau d'abord" : si internet est disponible, on prend toujours la dernière version ;
 // sinon on sert la copie en cache.
-const CACHE = 'musculation-v3';
+const CACHE = 'musculation-v4';
 const FICHIERS = [
   './', './index.html', './style.css', './app.js', './exercices.js', './cuisine.js',
   './manifest.json', './icon-cadence-v4.svg', './apple-touch-icon.png', './icon-192.png', './icon-512.png'

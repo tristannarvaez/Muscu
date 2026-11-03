@@ -385,7 +385,7 @@ function carteRepas(cle, titre) {
       </div>
       ${alertes.map((a) => `<span class="badge-alerte">${esc(a)}</span>`).join('')}
       <div class="ajout">
-        <input class="recherche" type="search" placeholder="Ajouter un aliment…" data-cle="${cle}" autocomplete="off">
+        <input class="recherche" type="search" name="aliment-recherche" placeholder="Ajouter un aliment…" data-cle="${cle}" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" enterkeyhint="search" data-1p-ignore>
         <div class="suggestions" data-sugg="${cle}"></div>
         <button class="secondaire" data-nut="libre" data-cle="${cle}">+ Plat libre (nom et valeurs)</button>
       </div>
@@ -404,7 +404,7 @@ function blocApports() {
   return `
     <section class="carte">
       <h3>Apports d’un aliment</h3>
-      <input id="ali-nom" type="search" placeholder="Tape pour chercher…" value="${esc(nutAli.nom)}" autocomplete="off">
+      <input id="ali-recherche" type="search" name="aliment-apports" placeholder="Tape pour chercher…" value="${esc(nutAli.nom)}" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" enterkeyhint="search" data-1p-ignore>
       <div class="suggestions" id="ali-sugg"></div>
       <label>Quantité (g)<input id="ali-g" inputmode="decimal" value="${esc(nutAli.g)}"></label>
       <button class="secondaire" data-nut="voir-apports">Voir les apports</button>
@@ -507,7 +507,7 @@ function vueCourses() {
           <li class="item">
             <label class="coche">
               <input type="checkbox" data-course-coche="${esc(a.nom)}" ${d.coches[a.nom] ? 'checked' : ''}>
-              <span class="${d.coches[a.nom] ? 'barre' : ''}">${esc(a.nom)}</span>
+              <span class="${d.coches[a.nom] ? 'raye' : ''}">${esc(a.nom)}</span>
             </label>
             <span class="unite">${formatG(a.g)}</span>
           </li>`).join('') : '<li class="vide">Aucun aliment prévu cette semaine.</li>'}
@@ -520,13 +520,13 @@ function vueCourses() {
           <li class="item">
             <label class="coche">
               <input type="checkbox" data-course-perso="${i}" ${x.coche ? 'checked' : ''}>
-              <span class="${x.coche ? 'barre' : ''}">${esc(x.nom)}</span>
+              <span class="${x.coche ? 'raye' : ''}">${esc(x.nom)}</span>
             </label>
             <button class="retirer" data-course="supprimer" data-i="${i}" aria-label="Supprimer">✕</button>
           </li>`).join('') : '<li class="vide">Rien pour l’instant.</li>'}
       </ul>
       <div class="ajout">
-        <input id="course-nouveau" type="text" placeholder="Ex. papier toilette, 2 citrons…" autocomplete="off">
+        <input id="course-nouveau" type="text" name="article-courses" placeholder="Ex. papier toilette, 2 citrons…" autocomplete="off" autocorrect="off" spellcheck="false" data-1p-ignore>
         <button class="secondaire" data-course="ajouter">+ Ajouter</button>
       </div>
     </section>
@@ -612,7 +612,7 @@ document.querySelector('#app').addEventListener('input', (e) => {
   if (t.classList.contains('recherche')) {
     document.querySelector(`[data-sugg="${t.dataset.cle}"]`).innerHTML = suggestionsHTML(t.value, 'ajouter', t.dataset.cle);
   }
-  if (t.id === 'ali-nom') {
+  if (t.id === 'ali-recherche') {
     document.querySelector('#ali-sugg').innerHTML = suggestionsHTML(t.value, 'choisir-ali', '');
   }
 });
@@ -689,7 +689,7 @@ document.querySelector('#app').addEventListener('click', (e) => {
 
   if (action === 'voir-apports') {
     nutAli = {
-      nom: document.querySelector('#ali-nom').value.trim(),
+      nom: document.querySelector('#ali-recherche').value.trim(),
       g: document.querySelector('#ali-g').value.trim() || '100'
     };
     return vueNutrition();

@@ -379,6 +379,11 @@ function supprimerMesure(i) {
 /* ---------- À propos : historique des évolutions ---------- */
 
 const EVOLUTIONS = [
+  { version: '1.10', titre: 'Corrections d’affichage', items: [
+    'Les libellés de la barre du bas ne sont plus barrés.',
+    'Les boutons de démonstration se voient en mode clair.',
+    'La recherche d’aliment ne propose plus de remplir un contact.'
+  ]},
   { version: '1.9', titre: 'Corrections', items: [
     'Le mode hors ligne s’installe correctement.',
     'Icône de l’app sur l’écran d’accueil.',
