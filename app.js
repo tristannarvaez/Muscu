@@ -5,7 +5,11 @@ const $ = (s) => document.querySelector(s);
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({
   '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
 }[c]));
-const today = () => new Date().toISOString().slice(0, 10);
+// Date du jour en heure locale (toISOString donnerait l'heure UTC, donc la veille après minuit)
+const today = () => {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+};
 const num = (v) => {
   const n = parseFloat(String(v).replace(',', '.'));
   return Number.isNaN(n) ? null : n;
@@ -375,6 +379,12 @@ function supprimerMesure(i) {
 /* ---------- À propos : historique des évolutions ---------- */
 
 const EVOLUTIONS = [
+  { version: '1.9', titre: 'Corrections', items: [
+    'Le mode hors ligne s’installe correctement.',
+    'Icône de l’app sur l’écran d’accueil.',
+    'La sauvegarde exportée inclut aussi la nutrition et les courses.',
+    'La date du jour est juste même après minuit.'
+  ]},
   { version: '1.8', titre: 'Nouveau nom : Cadence', items: [
     'L’application s’appelle désormais Cadence.'
   ]},
@@ -454,7 +464,9 @@ function vueReglages() {
 }
 
 function exporter() {
-  const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+  // La nutrition (repas modifiés, repas plaisir, courses) est stockée à part : on l'ajoute à l'export
+  const sauvegarde = { ...state, nutrition: { repas: repasModifs, plaisirs, courses } };
+  const blob = new Blob([JSON.stringify(sauvegarde, null, 2)], { type: 'application/json' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
   a.download = `musculation-${today()}.json`;
@@ -471,8 +483,18 @@ function importer(fichier) {
       data.journal = Array.isArray(data.journal) ? data.journal : [];
       data.mensurations = Array.isArray(data.mensurations) ? data.mensurations : [];
       if (!confirm('Remplacer les données actuelles par cette sauvegarde ?')) return;
+      const nut = data.nutrition;
+      delete data.nutrition;
       state = data;
       sauver();
+      // Les anciennes sauvegardes n'ont pas de nutrition : on garde alors celle de l'appareil
+      if (nut && typeof nut === 'object') {
+        repasModifs = nut.repas || {};
+        plaisirs = nut.plaisirs || {};
+        courses = nut.courses || {};
+        sauverRepas();
+        sauverCourses();
+      }
       aller('reglages');
       alert('Sauvegarde importée.');
     } catch (e) {
@@ -483,9 +505,12 @@ function importer(fichier) {
 }
 
 function tout_effacer() {
-  if (!confirm('Effacer toutes les séances et mesures ? Cette action est irréversible.')) return;
-  localStorage.removeItem(KEY);
+  if (!confirm('Effacer toutes les séances, mesures et modifications de nutrition ? Cette action est irréversible.')) return;
+  [KEY, NUT_KEY, PLAISIR_KEY, COURSES_KEY].forEach((k) => localStorage.removeItem(k));
   state = structuredClone(DEFAUT);
+  repasModifs = {};
+  plaisirs = {};
+  courses = {};
   aller('seances');
 }
 
