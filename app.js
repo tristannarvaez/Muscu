@@ -381,7 +381,7 @@ function supprimerMesure(i) {
 const EVOLUTIONS = [
   { version: '1.11', titre: 'Plats tout prêts', items: [
     'Plat libre : recherche parmi plus de 60 plats courants, avec leurs apports par portion.',
-    'Le plat choisi remplace le repas prévu (« Rétablir le menu » pour revenir en arrière).',
+    'Le plat choisi remplace le repas prévu, pour ce jour seulement (« Rétablir le menu » pour revenir en arrière).',
     'La saisie manuelle d’un plat reste possible.'
   ]},
   { version: '1.10', titre: 'Corrections d’affichage', items: [
@@ -475,7 +475,7 @@ function vueReglages() {
 
 function exporter() {
   // La nutrition (repas modifiés, repas plaisir, courses) est stockée à part : on l'ajoute à l'export
-  const sauvegarde = { ...state, nutrition: { repas: repasModifs, plaisirs, courses } };
+  const sauvegarde = { ...state, nutrition: { repas: repasModifs, plaisirs, jours: joursModifs, courses } };
   const blob = new Blob([JSON.stringify(sauvegarde, null, 2)], { type: 'application/json' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
@@ -501,6 +501,7 @@ function importer(fichier) {
       if (nut && typeof nut === 'object') {
         repasModifs = nut.repas || {};
         plaisirs = nut.plaisirs || {};
+        joursModifs = nut.jours || {};
         courses = nut.courses || {};
         sauverRepas();
         sauverCourses();
@@ -516,10 +517,11 @@ function importer(fichier) {
 
 function tout_effacer() {
   if (!confirm('Effacer toutes les séances, mesures et modifications de nutrition ? Cette action est irréversible.')) return;
-  [KEY, NUT_KEY, PLAISIR_KEY, COURSES_KEY].forEach((k) => localStorage.removeItem(k));
+  [KEY, NUT_KEY, PLAISIR_KEY, JOURS_KEY, COURSES_KEY].forEach((k) => localStorage.removeItem(k));
   state = structuredClone(DEFAUT);
   repasModifs = {};
   plaisirs = {};
+  joursModifs = {};
   courses = {};
   aller('seances');
 }

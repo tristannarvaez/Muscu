@@ -317,6 +317,17 @@ dialog h3 { font-size: 1.1rem; text-transform: none; letter-spacing: -0.01em; co
 @keyframes curl  { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(-14deg); } }
 @keyframes hinge { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(40deg); } }
 
+.badge-jour {
+  display: inline-block;
+  margin: 10px 0 0;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--accent);
+  border: 1px solid var(--accent);
+}
+
 .badge-plaisir {
   display: inline-block;
   margin: 10px 0 0;

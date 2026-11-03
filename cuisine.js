@@ -3,6 +3,7 @@
 
 const NUT_KEY = 'musculation-repas-v2';
 const PLAISIR_KEY = 'musculation-plaisirs-v2';
+const JOURS_KEY = 'musculation-jours-v1';   // plats choisis pour un seul jour
 const DEBUT_PLAN = new Date(2026, 10, 2); // 2 novembre 2026
 const JOURS_PLAN = 91;
 const ROTATION = 14;
@@ -318,6 +319,7 @@ function chargerRepas(cle) {
 
 let repasModifs = chargerRepas(NUT_KEY);     // 'rang-repas' -> { nom, items }
 let plaisirs = chargerRepas(PLAISIR_KEY);    // 'AAAA-MM-JJ' -> { j, cle, nom, items }
+let joursModifs = chargerRepas(JOURS_KEY);   // 'AAAA-MM-JJ-repas' -> { nom, items }, pour ce jour seulement
 let jour = null;
 let nutAli = { nom: '', g: '100' };
 let platOuvert = null;   // repas ('matin', 'midi', 'soir') où la recherche de plat est ouverte
@@ -325,6 +327,7 @@ let platOuvert = null;   // repas ('matin', 'midi', 'soir') où la recherche de 
 function sauverRepas() {
   localStorage.setItem(NUT_KEY, JSON.stringify(repasModifs));
   localStorage.setItem(PLAISIR_KEY, JSON.stringify(plaisirs));
+  localStorage.setItem(JOURS_KEY, JSON.stringify(joursModifs));
 }
 
 function jourISO(j) {
@@ -354,10 +357,13 @@ function plaisirsDeLaSemaine(j) {
   return Object.values(plaisirs).filter((x) => semaineDe(x.j) === semaineDe(j));
 }
 
-// Repas tel qu'il s'affiche ce jour-là : repas plaisir, modification, ou menu de base
+// Repas tel qu'il s'affiche ce jour-là, par priorité : repas plaisir, plat choisi pour ce jour,
+// modification répétée tous les 14 jours, ou menu de base
 function repasDuJour(j, cle) {
   const pl = plaisirs[jourISO(j)];
   if (pl && pl.cle === cle) return { nom: pl.nom, items: pl.items, plaisir: true, modifie: false };
+  const jm = joursModifs[`${jourISO(j)}-${cle}`];
+  if (jm) return { nom: jm.nom, items: jm.items, plaisir: false, modifie: true, ponctuel: true };
   const k = `${j % ROTATION}-${cle}`;
   if (repasModifs[k]) return { nom: repasModifs[k].nom, items: repasModifs[k].items, plaisir: false, modifie: true };
   const base = MENUS[j % ROTATION][cle];
@@ -383,12 +389,17 @@ function verifier(items, estPlaisir) {
   return true;
 }
 
-function appliquer(j, cle, items, nom) {
+// jourSeul : la modification ne vaut que pour ce jour (plat choisi dans « Plat libre »).
+// Un repas déjà modifié pour ce jour seulement le reste quand on retouche ses aliments.
+function appliquer(j, cle, items, nom, jourSeul = false) {
   const date = jourISO(j);
   const estPlaisir = !!plaisirs[date] && plaisirs[date].cle === cle;
+  const kJour = `${date}-${cle}`;
   if (!verifier(items, estPlaisir)) return false;
   if (estPlaisir) {
     plaisirs[date].items = items;
+  } else if (jourSeul || joursModifs[kJour]) {
+    joursModifs[kJour] = { nom: nom || repasDuJour(j, cle).nom, items };
   } else {
     repasModifs[`${j % ROTATION}-${cle}`] = { nom: nom || MENUS[j % ROTATION][cle].nom, items };
   }
@@ -463,6 +474,7 @@ function carteRepas(cle, titre) {
       <div class="entete-repas">
         <h3>${titre}</h3>
         ${r.plaisir ? '<span class="badge-plaisir">Repas plaisir</span>' : ''}
+        ${r.ponctuel ? '<span class="badge-jour">Ce jour seulement</span>' : ''}
       </div>
       <ul class="items">
         ${r.items.length ? r.items.map((it, i) => `
@@ -535,7 +547,7 @@ function vueNutrition() {
     <section class="carte">
       <h3>Règles</h3>
       <p class="vide">Au-delà de ${REGLES.grasAlerte} g de lipides ou ${REGLES.sucreAlerte} g de sucres dans un repas, une confirmation est demandée. Au-delà de ${REGLES.grasRefus} g, le repas est refusé. Friture, fast-food, frites et pâtisserie sont refusés, sauf en repas plaisir.</p>
-      <p class="vide">Une modification s’applique à ce jour et à tous les jours de même rang, donc tous les 14 jours. Un repas plaisir ne concerne que ce jour.</p>
+      <p class="vide">Ajouter, retirer ou peser un aliment s’applique à ce jour et à tous les jours de même rang, donc tous les 14 jours. Un plat choisi dans « Plat libre » et un repas plaisir ne concernent que ce jour.</p>
     </section>`;
 }
 
@@ -762,7 +774,7 @@ document.querySelector('#app').addEventListener('click', (e) => {
     // Le plat choisi remplace le repas prévu ; « Rétablir le menu » permet de revenir en arrière
     const [n, p, l, s] = PLATS[Number(b.dataset.i)];
     const nom = n.replace(/\s*\(.*\)\s*$/, '');
-    if (appliquer(jour, cle, [{ n, libre: true, p, l, s }], nom)) platOuvert = null;
+    if (appliquer(jour, cle, [{ n, libre: true, p, l, s }], nom, true)) platOuvert = null;
     return vueNutrition();
   }
 
@@ -776,7 +788,7 @@ document.querySelector('#app').addEventListener('click', (e) => {
       alert('Il faut trois nombres : protéines, lipides, sucres.');
       return;
     }
-    if (appliquer(jour, cle, [{ n: nom.trim(), libre: true, p, l, s }], nom.trim())) platOuvert = null;
+    if (appliquer(jour, cle, [{ n: nom.trim(), libre: true, p, l, s }], nom.trim(), true)) platOuvert = null;
     return vueNutrition();
   }
 
@@ -789,7 +801,10 @@ document.querySelector('#app').addEventListener('click', (e) => {
 
   if (action === 'reset') {
     if (!confirm('Rétablir le menu d’origine pour ce repas ?')) return;
-    delete repasModifs[`${jour % ROTATION}-${cle}`];
+    // D'abord le plat choisi pour ce jour, s'il y en a un ; sinon la modification tous les 14 jours
+    const kJour = `${jourISO(jour)}-${cle}`;
+    if (joursModifs[kJour]) delete joursModifs[kJour];
+    else delete repasModifs[`${jour % ROTATION}-${cle}`];
     sauverRepas();
     return vueNutrition();
   }
