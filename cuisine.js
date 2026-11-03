@@ -759,9 +759,10 @@ document.querySelector('#app').addEventListener('click', (e) => {
   if (action === 'libre-fermer') { platOuvert = null; return vueNutrition(); }
 
   if (action === 'plat') {
+    // Le plat choisi remplace le repas prévu ; « Rétablir le menu » permet de revenir en arrière
     const [n, p, l, s] = PLATS[Number(b.dataset.i)];
-    const r = repasDuJour(jour, cle);
-    if (appliquer(jour, cle, [...r.items, { n, libre: true, p, l, s }], r.nom)) platOuvert = null;
+    const nom = n.replace(/\s*\(.*\)\s*$/, '');
+    if (appliquer(jour, cle, [{ n, libre: true, p, l, s }], nom)) platOuvert = null;
     return vueNutrition();
   }
 
@@ -775,8 +776,7 @@ document.querySelector('#app').addEventListener('click', (e) => {
       alert('Il faut trois nombres : protéines, lipides, sucres.');
       return;
     }
-    const r = repasDuJour(jour, cle);
-    if (appliquer(jour, cle, [...r.items, { n: nom.trim(), libre: true, p, l, s }], r.nom)) platOuvert = null;
+    if (appliquer(jour, cle, [{ n: nom.trim(), libre: true, p, l, s }], nom.trim())) platOuvert = null;
     return vueNutrition();
   }
 

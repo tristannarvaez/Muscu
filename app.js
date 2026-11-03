@@ -381,6 +381,7 @@ function supprimerMesure(i) {
 const EVOLUTIONS = [
   { version: '1.11', titre: 'Plats tout prêts', items: [
     'Plat libre : recherche parmi plus de 60 plats courants, avec leurs apports par portion.',
+    'Le plat choisi remplace le repas prévu (« Rétablir le menu » pour revenir en arrière).',
     'La saisie manuelle d’un plat reste possible.'
   ]},
   { version: '1.10', titre: 'Corrections d’affichage', items: [
