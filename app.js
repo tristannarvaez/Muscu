@@ -6,10 +6,8 @@ const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({
   '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
 }[c]));
 // Date du jour en heure locale (toISOString donnerait l'heure UTC, donc la veille après minuit)
-const today = () => {
-  const d = new Date();
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-};
+const isoDate = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+const today = () => isoDate(new Date());
 const num = (v) => {
   const n = parseFloat(String(v).replace(',', '.'));
   return Number.isNaN(n) ? null : n;
@@ -17,14 +15,14 @@ const num = (v) => {
 
 const DEFAUT = {
   programme: [
-    { id: 'A', nom: 'Lundi : full body A', exos: [
+    { id: 'A', nom: 'Full body A', jour: 0, exos: [
       { nom: 'Presse à cuisses', series: 3, reps: '8-12' },
       { nom: 'Développé incliné haltères', series: 3, reps: '8-12' },
       { nom: 'Rowing haltère', series: 3, reps: '8-12' },
       { nom: 'Face pulls', series: 3, reps: '12-15' },
       { nom: 'Gainage', series: 3, reps: '30-45 s' }
     ]},
-    { id: 'B', nom: 'Mercredi : dos et tirages', exos: [
+    { id: 'B', nom: 'Dos et tirages', jour: 2, exos: [
       { nom: 'Tirage vertical', series: 3, reps: '8-12' },
       { nom: 'Tirage horizontal', series: 3, reps: '8-12' },
       { nom: 'Curl haltères', series: 3, reps: '10-12' },
@@ -32,7 +30,7 @@ const DEFAUT = {
       { nom: 'Face pulls', series: 3, reps: '12-15' },
       { nom: 'Gainage', series: 3, reps: '30-45 s' }
     ]},
-    { id: 'C', nom: 'Samedi : full body B', exos: [
+    { id: 'C', nom: 'Full body B', jour: 5, exos: [
       { nom: 'Soulevé de terre roumain', series: 3, reps: '8-10' },
       { nom: 'Fentes', series: 3, reps: '8-10 par jambe' },
       { nom: 'Pompes', series: 3, reps: '8-12' },
@@ -42,8 +40,35 @@ const DEFAUT = {
   ],
   journal: [],
   mensurations: [],
-  version: 2
+  decalages: {},   // lundi de la semaine 'AAAA-MM-JJ' -> { id de séance: jour (0 = lundi) }
+  version: 3
 };
+
+const JOURS_SEMAINE = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
+
+// Met à niveau des données plus anciennes (stockage local ou sauvegarde importée)
+function migrer(s) {
+  // Version 2 : 3 séries par exercice
+  if (!s.version || s.version < 2) {
+    s.programme.forEach((seance) => seance.exos.forEach((e) => { e.series = 3; }));
+    s.version = 2;
+  }
+  // Version 3 : le jour sort du nom de la séance (« Lundi : full body A ») et devient une donnée
+  if (s.version < 3) {
+    s.programme.forEach((seance, i) => {
+      const m = /^\s*(lundi|mardi|mercredi|jeudi|vendredi|samedi|dimanche)\s*:\s*(.+)$/i.exec(seance.nom || '');
+      if (m) {
+        seance.jour = JOURS_SEMAINE.findIndex((j) => j.toLowerCase() === m[1].toLowerCase());
+        seance.nom = m[2].charAt(0).toUpperCase() + m[2].slice(1);
+      } else if (seance.jour === undefined) {
+        seance.jour = [0, 2, 5][i] ?? 0;
+      }
+    });
+    s.version = 3;
+  }
+  s.decalages = s.decalages || {};
+  return s;
+}
 
 let state = charger();
 let seanceChoisie = null;
@@ -53,12 +78,7 @@ function charger() {
   try {
     const s = JSON.parse(localStorage.getItem(KEY));
     if (s && Array.isArray(s.programme)) {
-      // Version 2 : 3 séries par exercice (une seule fois, pour les données existantes)
-      if (!s.version || s.version < 2) {
-        s.programme.forEach((seance) => seance.exos.forEach((e) => { e.series = 3; }));
-        s.version = 2;
-      }
-      return s;
+      return migrer(s);
     }
   } catch (e) { /* données absentes ou corrompues : on repart du défaut */ }
   return structuredClone(DEFAUT);
@@ -89,8 +109,118 @@ function aller(onglet) {
 
 /* ---------- Programme ---------- */
 
+/* ---------- Planning de la semaine ---------- */
+
+let decalageOuvert = null;   // id de la séance dont on choisit le nouveau jour
+
+// Jour où la séance est prévue dans la semaine de ce lundi (0 = lundi)
+function jourPrevu(seance, cleSemaine) {
+  const d = (state.decalages[cleSemaine] || {})[seance.id];
+  return d ?? seance.jour;
+}
+
+// Entrée du journal de cette séance dans la semaine, s'il y en a une
+function seanceFaite(seance, lundi) {
+  const debut = isoDate(lundi);
+  const dim = new Date(lundi);
+  dim.setDate(dim.getDate() + 6);
+  const fin = isoDate(dim);
+  return state.journal.find((j) => j.seance === seance.id && j.date >= debut && j.date <= fin);
+}
+
+// Séance prévue aujourd'hui et pas encore faite : celle que le journal propose d'abord
+function seanceDuJour() {
+  const auj = lireDate(today());
+  const lundi = lundiDe(auj);
+  const cle = isoDate(lundi);
+  const idx = ecartJours(lundi, auj);
+  return state.programme.find((s) => jourPrevu(s, cle) === idx && !seanceFaite(s, lundi));
+}
+
+function blocSemaine() {
+  if (!planLance) return '';
+  const auj = lireDate(today());
+  // Avant le lancement, on montre déjà la première semaine du programme
+  const lundi = lundiDe(DEBUT_PLAN > auj ? DEBUT_PLAN : auj);
+  const cle = isoDate(lundi);
+  const idxAuj = ecartJours(lundi, auj);
+  const idxDebut = ecartJours(lundi, DEBUT_PLAN);
+  const premierLibre = Math.max(idxAuj, idxDebut, 0);
+  const dim = new Date(lundi);
+  dim.setDate(dim.getDate() + 6);
+  const fmt = (d) => d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' });
+
+  const lignes = state.programme
+    .map((s) => ({ s, p: jourPrevu(s, cle), faite: seanceFaite(s, lundi) }))
+    .sort((a, b) => a.p - b.p)
+    .map(({ s, p, faite }) => {
+      const nomJour = JOURS_SEMAINE[p];
+      const prevuInit = JOURS_SEMAINE[s.jour].toLowerCase();
+      let etat;
+      let classe = '';
+      if (faite) {
+        const jourFait = JOURS_SEMAINE[ecartJours(lundi, lireDate(faite.date))].toLowerCase();
+        etat = `Faite ${jourFait}`;
+        classe = 'plan-faite';
+      } else if (p < idxDebut) {
+        etat = `${nomJour} : avant le début du programme`;
+      } else if (p < idxAuj) {
+        etat = `Prévue ${nomJour.toLowerCase()}, pas encore faite`;
+        classe = 'plan-retard';
+      } else if (p === idxAuj) {
+        etat = 'Aujourd’hui';
+        classe = 'plan-auj';
+      } else {
+        etat = nomJour;
+      }
+      if (!faite && p !== s.jour) etat += ` (décalée, prévue au départ ${prevuInit})`;
+
+      const choix = decalageOuvert === s.id && !faite ? `
+        <div class="plan-jours" role="group" aria-label="Nouveau jour pour ${esc(s.nom)}">
+          ${JOURS_SEMAINE.map((j, i) => `
+            <button class="${i === p ? 'plan-choisi' : ''}" data-plan-jour="${i}" data-plan-seance="${esc(s.id)}"
+              aria-label="${j}" ${i < premierLibre ? 'disabled' : ''}>${j.charAt(0)}</button>`).join('')}
+        </div>
+        <p class="vide">Le décalage ne vaut que pour cette semaine.</p>` : '';
+
+      return `
+        <div class="plan-ligne">
+          <div class="plan-haut">
+            <div>
+              <strong>${faite ? '✓ ' : ''}${esc(s.nom)}</strong>
+              <small class="${classe}">${esc(etat)}</small>
+            </div>
+            ${faite ? '' : `<button class="plan-decaler" data-plan-decaler="${esc(s.id)}">${decalageOuvert === s.id ? 'Fermer' : 'Décaler'}</button>`}
+          </div>
+          ${choix}
+        </div>`;
+    }).join('');
+
+  return `
+    <section class="carte">
+      <h3>Cette semaine</h3>
+      <p class="graphe-legende">Du ${esc(fmt(lundi))} au ${esc(fmt(dim))}</p>
+      ${lignes}
+    </section>`;
+}
+
+function decalerSeance(id, nouveauJour) {
+  const auj = lireDate(today());
+  const lundi = lundiDe(DEBUT_PLAN > auj ? DEBUT_PLAN : auj);
+  const cle = isoDate(lundi);
+  const seance = state.programme.find((s) => s.id === id);
+  if (!seance) return;
+  const semaine = state.decalages[cle] || {};
+  if (nouveauJour === seance.jour) delete semaine[id];
+  else semaine[id] = nouveauJour;
+  state.decalages = { [cle]: semaine };   // les semaines passées ne servent plus
+  decalageOuvert = null;
+  sauver();
+  vueSeances();
+}
+
 function vueSeances() {
-  $('#app').innerHTML = '<h2>Programme</h2>' + blocEtatProgramme() + state.programme.map((s, si) => `
+  $('#app').innerHTML = '<h2>Programme</h2>' + blocEtatProgramme() + blocSemaine() + state.programme.map((s, si) => `
     <section class="carte">
       <h3>${esc(s.nom)}</h3>
       ${s.exos.map((e, ei) => `
@@ -160,7 +290,7 @@ function dernierResultat(nom) {
 }
 
 function vueJournal() {
-  const seance = state.programme.find((s) => s.id === seanceChoisie) || state.programme[0];
+  const seance = state.programme.find((s) => s.id === seanceChoisie) || seanceDuJour() || state.programme[0];
   seanceChoisie = seance.id;
   const options = state.programme.map((s) =>
     `<option value="${s.id}" ${s.id === seance.id ? 'selected' : ''}>${esc(s.nom)}</option>`).join('');
@@ -379,6 +509,11 @@ function supprimerMesure(i) {
 /* ---------- À propos : historique des évolutions ---------- */
 
 const EVOLUTIONS = [
+  { version: '1.15', titre: 'Planning de la semaine', items: [
+    'Carte « Cette semaine » : les séances prévues, celles déjà faites et celles en retard.',
+    'Bouton Décaler pour changer le jour d’une séance, pour cette semaine seulement.',
+    'Les séances ne portent plus de jour dans leur nom. Le journal propose d’abord la séance du jour.'
+  ]},
   { version: '1.14', titre: 'Date de début au choix', items: [
     'Tu choisis le jour où tu lances le programme : le jour 1 des menus tombe à cette date.',
     'La date se change dans les paramètres et elle est incluse dans la sauvegarde.'
@@ -506,7 +641,7 @@ function importer(fichier) {
       if (!confirm('Remplacer les données actuelles par cette sauvegarde ?')) return;
       const nut = data.nutrition;
       delete data.nutrition;
-      state = data;
+      state = migrer(data);
       sauver();
       // Les anciennes sauvegardes n'ont pas de nutrition : on garde alors celle de l'appareil
       if (nut && typeof nut === 'object') {
@@ -547,6 +682,11 @@ document.querySelectorAll('[data-tab]').forEach((b) =>
 $('#app').addEventListener('click', (e) => {
   const b = e.target.closest('button');
   if (!b) return;
+  if (b.dataset.planDecaler !== undefined) {
+    decalageOuvert = decalageOuvert === b.dataset.planDecaler ? null : b.dataset.planDecaler;
+    return vueSeances();
+  }
+  if (b.dataset.planJour !== undefined) return decalerSeance(b.dataset.planSeance, Number(b.dataset.planJour));
   if (b.dataset.demo !== undefined) return demo(b.dataset.demo);
   if (b.dataset.edit !== undefined) {
     const [si, ei] = b.dataset.edit.split(':').map(Number);

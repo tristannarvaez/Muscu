@@ -592,6 +592,20 @@ nav.barre button.centre.actif { color: #ffffff; }
 .nut-nav button { width: 44px; height: 44px; border-radius: 50%; font-size: 1.4rem; padding: 0; }
 .repas-nom { font-size: 1.1rem; font-weight: 700; line-height: 1.35; }
 .macros { color: var(--discret); font-size: 0.85rem; margin-top: 6px; }
+/* Planning de la semaine */
+.plan-ligne { padding: 10px 0; border-top: 1px solid var(--bord); }
+.plan-ligne:first-of-type { border-top: none; }
+.plan-haut { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.plan-haut small { display: block; margin-top: 2px; color: var(--discret); }
+.plan-haut small.plan-faite, .plan-haut small.plan-auj { color: var(--accent); }
+.plan-haut small.plan-retard { color: var(--danger); }
+.plan-decaler { flex-shrink: 0; font-size: 0.85rem; }
+.plan-jours { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-top: 10px; }
+.plan-jours button { padding: 9px 0; text-align: center; font-weight: 700; }
+.plan-jours button:disabled { opacity: 0.3; cursor: default; }
+.plan-jours button.plan-choisi { background: var(--accent); color: #0a0f00; border-color: var(--accent); }
+:root[data-theme="clair"] .plan-jours button.plan-choisi { background: var(--accent); color: #ffffff; }
+
 .badge-alerte {
   display: inline-block;
   margin: 10px 6px 0 0;
