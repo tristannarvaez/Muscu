@@ -574,6 +574,113 @@ function donneesSemaine(s) {
   return courses[s] || { perso: [], coches: {} };
 }
 
+// Conversion de ce qui est dans l'assiette vers ce qu'il faut acheter. Valeurs moyennes, à ajuster ici.
+// poids : multiplie le poids cuit (ex. 0,35 : 100 g de riz cuit = 35 g de riz cru).
+// piece : poids moyen d'une pièce, la quantité devient un nombre de pièces.
+// ml : quantité affichée en millilitres. Un aliment absent de la liste garde son poids.
+const poids = (nom, f) => ({ nom, f });
+const piece = (nom, g) => ({ nom, piece: g });
+const ml = (nom, f) => ({ nom, f, ml: true });
+const ACHATS = {
+  // Féculents et légumineuses : poids sec
+  'Riz basmati, cuit': poids('Riz basmati (cru)', 0.35),
+  'Riz complet, cuit': poids('Riz complet (cru)', 0.38),
+  'Pâtes complètes, cuites': poids('Pâtes complètes (crues)', 0.42),
+  'Pâtes blanches, cuites': poids('Pâtes blanches (crues)', 0.42),
+  'Nouilles de riz, cuites': poids('Nouilles de riz (sèches)', 0.4),
+  'Quinoa, cuit': poids('Quinoa (cru)', 0.36),
+  'Boulgour, cuit': poids('Boulgour (cru)', 0.4),
+  'Semoule complète, cuite': poids('Semoule complète (crue)', 0.4),
+  'Sarrasin, cuit': poids('Sarrasin (cru)', 0.4),
+  'Lentilles, cuites': poids('Lentilles (sèches)', 0.4),
+  'Pois chiches, cuits': poids('Pois chiches (secs)', 0.45),
+  'Haricots rouges, cuits': poids('Haricots rouges (secs)', 0.4),
+  'Haricots blancs, cuits': poids('Haricots blancs (secs)', 0.4),
+  'Pommes de terre, vapeur': poids('Pommes de terre', 1.1),
+  'Patate douce, cuite': poids('Patate douce', 1.2),
+  // Viandes : poids cru
+  'Poulet, blanc cuit': poids('Blanc de poulet (cru)', 1.3),
+  'Poulet, cuisse sans peau, cuite': poids('Cuisse de poulet sans peau (crue)', 1.35),
+  'Dinde, blanc cuit': poids('Blanc de dinde (cru)', 1.3),
+  'Dinde hachée 5 %, cuite': poids('Dinde hachée 5 % (crue)', 1.3),
+  'Bœuf haché 5 %, cuit': poids('Bœuf haché 5 % (cru)', 1.3),
+  'Bœuf haché 15 %, cuit': poids('Bœuf haché 15 % (cru)', 1.35),
+  'Bœuf, filet cuit': poids('Filet de bœuf (cru)', 1.3),
+  'Veau, escalope cuite': poids('Escalope de veau (crue)', 1.3),
+  'Porc, filet mignon cuit': poids('Filet mignon de porc (cru)', 1.3),
+  'Agneau, gigot cuit': poids('Gigot d’agneau (cru)', 1.4),
+  'Lapin, cuit': poids('Lapin (cru)', 1.4),
+  'Canard, magret cuit': poids('Magret de canard (cru)', 1.4),
+  // Poissons et fruits de mer : poids cru
+  'Saumon, cuit': poids('Saumon (cru)', 1.2),
+  'Cabillaud, cuit': poids('Cabillaud (cru)', 1.2),
+  'Maquereau, cuit': poids('Maquereau (cru)', 1.2),
+  'Truite, cuite': poids('Truite (crue)', 1.2),
+  'Lieu noir, cuit': poids('Lieu noir (cru)', 1.2),
+  'Merlu, cuit': poids('Merlu (cru)', 1.2),
+  'Dorade, cuite': poids('Dorade (crue)', 1.2),
+  'Sole, cuite': poids('Sole (crue)', 1.2),
+  'Espadon, cuit': poids('Espadon (cru)', 1.2),
+  'Calamar, cuit': poids('Calamar (cru)', 1.3),
+  'Moules, cuites': poids('Moules (avec coquilles)', 4),
+  // Légumes : poids frais
+  'Brocoli, cuit': poids('Brocoli', 1.25),
+  'Épinards, cuits': poids('Épinards frais', 2.5),
+  'Courgette, cuite': poids('Courgette', 1.2),
+  'Haricots verts, cuits': poids('Haricots verts', 1.1),
+  'Chou-fleur, cuit': poids('Chou-fleur', 1.3),
+  'Asperges, cuites': poids('Asperges', 1.4),
+  'Poireau, cuit': poids('Poireau', 1.4),
+  'Aubergine, cuite': poids('Aubergine', 1.3),
+  'Chou, cuit': poids('Chou', 1.3),
+  'Céleri-rave, cuit': poids('Céleri-rave', 1.3),
+  // Vendus à la pièce
+  'Œuf entier': piece('Œufs', 50),
+  'Œuf de caille': piece('Œufs de caille', 10),
+  'Banane': piece('Bananes', 120),
+  'Pomme': piece('Pommes', 150),
+  'Poire': piece('Poires', 160),
+  'Orange': piece('Oranges', 180),
+  'Pêche': piece('Pêches', 130),
+  'Abricot': piece('Abricots', 40),
+  'Kiwi': piece('Kiwis', 80),
+  'Avocat': piece('Avocats', 150),
+  'Mangue': piece('Mangues', 300),
+  'Ananas': piece('Ananas', 900),
+  'Melon': piece('Melons', 800),
+  'Figue fraîche': piece('Figues fraîches', 50),
+  'Tomate': piece('Tomates', 120),
+  'Poivron rouge': piece('Poivrons rouges', 150),
+  'Concombre': piece('Concombres', 300),
+  'Oignon': piece('Oignons', 110),
+  'Carotte crue': piece('Carottes', 100),
+  'Laitue': piece('Laitues', 250),
+  'Pizza margherita': piece('Pizzas margherita', 350),
+  // Liquides
+  'Huile d’olive': ml('Huile d’olive', 1.1),
+  'Huile de colza': ml('Huile de colza', 1.1),
+  'Lait demi-écrémé': ml('Lait demi-écrémé', 1),
+  'Lait écrémé': ml('Lait écrémé', 1),
+  'Lait entier': ml('Lait entier', 1),
+  'Lait d’amande non sucré': ml('Lait d’amande non sucré', 1),
+  'Lait de soja nature': ml('Lait de soja nature', 1),
+  'Jus d’orange': ml('Jus d’orange', 1),
+  'Soda classique': ml('Soda classique', 1),
+  'Bière blonde': ml('Bière blonde', 1),
+  'Vin rouge': ml('Vin rouge', 1)
+};
+
+// Ce qu'il faut acheter pour g grammes d'un aliment : libellé et quantité affichée.
+// Arrondi au-dessus (à la pièce ou aux 10 g) pour ne pas être juste.
+function quantiteAchat(nom, g) {
+  const a = ACHATS[nom];
+  if (!a) return { label: nom, quantite: formatG(Math.round(g)) };
+  if (a.piece) return { label: a.nom, quantite: String(Math.ceil(g / a.piece - 1e-9)) };
+  const q = Math.ceil(g * a.f / 10 - 1e-9) * 10;
+  if (!a.ml) return { label: a.nom, quantite: formatG(q) };
+  return { label: a.nom, quantite: q >= 1000 ? `${(q / 1000).toFixed(2).replace('.', ',')} L` : `${q} ml` };
+}
+
 // Quantités totales par aliment sur les jours de la semaine (plats libres exclus)
 function listeCourses(s) {
   const total = {};
@@ -587,8 +694,8 @@ function listeCourses(s) {
     });
   }
   return Object.keys(total)
-    .sort((a, b) => a.localeCompare(b, 'fr'))
-    .map((nom) => ({ nom, g: Math.round(total[nom]) }));
+    .map((nom) => ({ nom, g: Math.round(total[nom]), ...quantiteAchat(nom, total[nom]) }))
+    .sort((a, b) => a.label.localeCompare(b.label, 'fr'));
 }
 
 // Rayons de la liste de courses, dans l'ordre d'un parcours en magasin
@@ -635,6 +742,7 @@ function vueCourses() {
     </section>
     <section class="carte">
       <h3>Depuis les menus</h3>
+      <p class="vide">Quantités à acheter, estimées : poids cru ou sec, nombre de pièces ou millilitres, arrondis au-dessus. Les plats libres n’y figurent pas.</p>
       ${auto.length ? coursesParRayon(auto).map((g) => `
         <h4 class="rayon">${esc(g.rayon)}</h4>
         <ul class="items items-rayon">
@@ -642,9 +750,9 @@ function vueCourses() {
             <li class="item">
               <label class="coche">
                 <input type="checkbox" data-course-coche="${esc(a.nom)}" ${d.coches[a.nom] ? 'checked' : ''}>
-                <span class="${d.coches[a.nom] ? 'raye' : ''}">${esc(a.nom)}</span>
+                <span class="${d.coches[a.nom] ? 'raye' : ''}">${esc(a.label)}</span>
               </label>
-              <span class="unite">${formatG(a.g)}</span>
+              <span class="unite">${esc(a.quantite)}</span>
             </li>`).join('')}
         </ul>`).join('') : '<p class="vide">Aucun aliment prévu cette semaine.</p>'}
     </section>
@@ -676,7 +784,7 @@ function texteCourses(s) {
   const lignes = [`Courses semaine du ${libelleJour(debutSemaine(s))}`, ''];
   coursesParRayon(listeCourses(s)).forEach((g) => {
     lignes.push(g.rayon.toUpperCase());
-    g.articles.forEach((a) => lignes.push(`${d.coches[a.nom] ? '✓' : '-'} ${a.nom} : ${formatG(a.g)}`));
+    g.articles.forEach((a) => lignes.push(`${d.coches[a.nom] ? '✓' : '-'} ${a.label} : ${a.quantite}`));
     lignes.push('');
   });
   if (d.perso.length) {

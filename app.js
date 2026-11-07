@@ -379,6 +379,9 @@ function supprimerMesure(i) {
 /* ---------- À propos : historique des évolutions ---------- */
 
 const EVOLUTIONS = [
+  { version: '1.13', titre: 'Quantités à acheter', items: [
+    'La liste de courses indique ce qu’il faut acheter : poids cru ou sec, nombre de pièces ou millilitres.'
+  ]},
   { version: '1.12', titre: 'Courses par catégorie', items: [
     'La liste de courses est classée par rayon, à l’écran et dans l’envoi vers Notes.'
   ]},
