@@ -591,6 +591,33 @@ function listeCourses(s) {
     .map((nom) => ({ nom, g: Math.round(total[nom]) }));
 }
 
+// Rayons de la liste de courses, dans l'ordre d'un parcours en magasin
+const RAYONS = [
+  ['Fruits', ['Banane', 'Pomme', 'Myrtilles', 'Avocat', 'Orange', 'Kiwi', 'Fraise', 'Framboise', 'Raisin', 'Poire', 'Pêche', 'Mangue', 'Ananas', 'Pastèque', 'Melon', 'Cerise', 'Abricot', 'Figue fraîche']],
+  ['Légumes', ['Brocoli, cuit', 'Épinards, cuits', 'Tomate', 'Carotte crue', 'Courgette, cuite', 'Poivron rouge', 'Haricots verts, cuits', 'Concombre', 'Laitue', 'Champignons de Paris', 'Oignon', 'Chou-fleur, cuit', 'Asperges, cuites', 'Poireau, cuit', 'Aubergine, cuite', 'Chou, cuit', 'Betterave, cuite', 'Céleri-rave, cuit', 'Pommes de terre, vapeur', 'Patate douce, cuite']],
+  ['Viandes et charcuterie', ['Poulet, blanc cuit', 'Poulet, cuisse sans peau, cuite', 'Poulet rôti, sans peau', 'Dinde, blanc cuit', 'Dinde hachée 5 %, cuite', 'Bœuf haché 5 %, cuit', 'Bœuf haché 15 %, cuit', 'Bœuf, filet cuit', 'Veau, escalope cuite', 'Porc, filet mignon cuit', 'Agneau, gigot cuit', 'Lapin, cuit', 'Canard, magret cuit', 'Jambon blanc', 'Jambon cru (sec)', 'Saucisson sec']],
+  ['Poissons et fruits de mer', ['Saumon, cuit', 'Saumon fumé', 'Thon au naturel, égoutté', 'Cabillaud, cuit', 'Crevettes, cuites', 'Maquereau, cuit', 'Sardines à l’huile, égouttées', 'Truite, cuite', 'Lieu noir, cuit', 'Merlu, cuit', 'Dorade, cuite', 'Sole, cuite', 'Espadon, cuit', 'Hareng fumé', 'Moules, cuites', 'Calamar, cuit']],
+  ['Œufs et produits laitiers', ['Œuf entier', 'Blanc d’œuf', 'Œuf de caille', 'Skyr nature', 'Fromage blanc 0 %', 'Fromage blanc 3 %', 'Yaourt grec 0 %', 'Yaourt nature entier', 'Cottage cheese', 'Kéfir nature', 'Lait demi-écrémé', 'Lait écrémé', 'Lait entier', 'Mozzarella', 'Feta', 'Emmental', 'Comté', 'Parmesan', 'Ricotta', 'Beurre']],
+  ['Féculents, pain et céréales', ['Riz basmati, cuit', 'Riz complet, cuit', 'Pâtes complètes, cuites', 'Pâtes blanches, cuites', 'Nouilles de riz, cuites', 'Quinoa, cuit', 'Boulgour, cuit', 'Semoule complète, cuite', 'Sarrasin, cuit', 'Flocons d’avoine, crus', 'Muesli sans sucre ajouté', 'Granola', 'Céréales de maïs nature', 'Pain complet', 'Pain de seigle', 'Pain blanc', 'Maïs doux, cuit', 'Châtaignes, cuites']],
+  ['Légumineuses et protéines végétales', ['Lentilles, cuites', 'Pois chiches, cuits', 'Haricots rouges, cuits', 'Haricots blancs, cuits', 'Edamame, cuits', 'Tofu ferme nature', 'Tempeh', 'Seitan']],
+  ['Fruits secs et graines', ['Amandes', 'Noix', 'Noisettes', 'Cacahuètes', 'Beurre de cacahuète', 'Graines de chia', 'Graines de courge', 'Graines de tournesol', 'Graines de lin moulues', 'Datte séchée', 'Raisins secs']],
+  ['Huiles, sauces et sucre', ['Huile d’olive', 'Huile de colza', 'Moutarde', 'Ketchup', 'Mayonnaise', 'Miel', 'Sucre blanc']],
+  ['Compléments', ['Whey isolate (poudre)', 'Protéine de pois (poudre)', 'Caséine (poudre)']],
+  ['Boissons', ['Lait d’amande non sucré', 'Lait de soja nature', 'Jus d’orange', 'Soda classique', 'Café noir', 'Bière blonde', 'Vin rouge']],
+  ['Épicerie sucrée et plats préparés', ['Chocolat noir 70 %', 'Biscuit sec', 'Barre de céréales', 'Chips', 'Pizza margherita']]
+];
+const RAYON_DE = new Map(RAYONS.flatMap(([rayon, noms]) => noms.map((n) => [n, rayon])));
+
+// Regroupe la liste par rayon ; ne garde que les rayons non vides
+function coursesParRayon(liste) {
+  const groupes = [...RAYONS.map(([rayon]) => rayon), 'Autres'].map((rayon) => ({ rayon, articles: [] }));
+  liste.forEach((a) => {
+    const rayon = RAYON_DE.get(a.nom) || 'Autres';
+    groupes.find((g) => g.rayon === rayon).articles.push(a);
+  });
+  return groupes.filter((g) => g.articles.length);
+}
+
 function vueCourses() {
   if (courseSemaine === null) courseSemaine = semaineDe(jour === null ? 0 : jour);
   const s = courseSemaine;
@@ -608,16 +635,18 @@ function vueCourses() {
     </section>
     <section class="carte">
       <h3>Depuis les menus</h3>
-      <ul class="items">
-        ${auto.length ? auto.map((a) => `
-          <li class="item">
-            <label class="coche">
-              <input type="checkbox" data-course-coche="${esc(a.nom)}" ${d.coches[a.nom] ? 'checked' : ''}>
-              <span class="${d.coches[a.nom] ? 'raye' : ''}">${esc(a.nom)}</span>
-            </label>
-            <span class="unite">${formatG(a.g)}</span>
-          </li>`).join('') : '<li class="vide">Aucun aliment prévu cette semaine.</li>'}
-      </ul>
+      ${auto.length ? coursesParRayon(auto).map((g) => `
+        <h4 class="rayon">${esc(g.rayon)}</h4>
+        <ul class="items items-rayon">
+          ${g.articles.map((a) => `
+            <li class="item">
+              <label class="coche">
+                <input type="checkbox" data-course-coche="${esc(a.nom)}" ${d.coches[a.nom] ? 'checked' : ''}>
+                <span class="${d.coches[a.nom] ? 'raye' : ''}">${esc(a.nom)}</span>
+              </label>
+              <span class="unite">${formatG(a.g)}</span>
+            </li>`).join('')}
+        </ul>`).join('') : '<p class="vide">Aucun aliment prévu cette semaine.</p>'}
     </section>
     <section class="carte">
       <h3>Ajouté à la main</h3>
@@ -645,9 +674,16 @@ function vueCourses() {
 function texteCourses(s) {
   const d = donneesSemaine(s);
   const lignes = [`Courses semaine du ${libelleJour(debutSemaine(s))}`, ''];
-  listeCourses(s).forEach((a) => lignes.push(`${d.coches[a.nom] ? '✓' : '-'} ${a.nom} : ${formatG(a.g)}`));
-  d.perso.forEach((x) => lignes.push(`${x.coche ? '✓' : '-'} ${x.nom}`));
-  return lignes.join('\n');
+  coursesParRayon(listeCourses(s)).forEach((g) => {
+    lignes.push(g.rayon.toUpperCase());
+    g.articles.forEach((a) => lignes.push(`${d.coches[a.nom] ? '✓' : '-'} ${a.nom} : ${formatG(a.g)}`));
+    lignes.push('');
+  });
+  if (d.perso.length) {
+    lignes.push('AJOUTÉ À LA MAIN');
+    d.perso.forEach((x) => lignes.push(`${x.coche ? '✓' : '-'} ${x.nom}`));
+  }
+  return lignes.join('\n').trim();
 }
 
 // Sur iPhone, la feuille de partage permet d'envoyer la liste dans Notes

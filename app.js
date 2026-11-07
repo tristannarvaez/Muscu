@@ -379,6 +379,9 @@ function supprimerMesure(i) {
 /* ---------- À propos : historique des évolutions ---------- */
 
 const EVOLUTIONS = [
+  { version: '1.12', titre: 'Courses par catégorie', items: [
+    'La liste de courses est classée par rayon, à l’écran et dans l’envoi vers Notes.'
+  ]},
   { version: '1.11', titre: 'Plats tout prêts', items: [
     'Plat libre : recherche parmi plus de 60 plats courants, avec leurs apports par portion.',
     'Le plat choisi remplace le repas prévu, pour ce jour seulement (« Rétablir le menu » pour revenir en arrière).',
