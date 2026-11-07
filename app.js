@@ -90,7 +90,7 @@ function aller(onglet) {
 /* ---------- Programme ---------- */
 
 function vueSeances() {
-  $('#app').innerHTML = '<h2>Programme</h2>' + state.programme.map((s, si) => `
+  $('#app').innerHTML = '<h2>Programme</h2>' + blocEtatProgramme() + state.programme.map((s, si) => `
     <section class="carte">
       <h3>${esc(s.nom)}</h3>
       ${s.exos.map((e, ei) => `
@@ -379,6 +379,10 @@ function supprimerMesure(i) {
 /* ---------- À propos : historique des évolutions ---------- */
 
 const EVOLUTIONS = [
+  { version: '1.14', titre: 'Date de début au choix', items: [
+    'Tu choisis le jour où tu lances le programme : le jour 1 des menus tombe à cette date.',
+    'La date se change dans les paramètres et elle est incluse dans la sauvegarde.'
+  ]},
   { version: '1.13', titre: 'Quantités à acheter', items: [
     'La liste de courses indique ce qu’il faut acheter : poids cru ou sec, nombre de pièces ou millilitres.'
   ]},
@@ -463,6 +467,7 @@ function vueApropos() {
 function vueReglages() {
   $('#app').innerHTML = `
     <h2>Paramètres</h2>
+    ${blocDateProgramme()}
     ${blocTheme()}
     ${blocAPropos()}
     <section class="carte">
@@ -481,7 +486,7 @@ function vueReglages() {
 
 function exporter() {
   // La nutrition (repas modifiés, repas plaisir, courses) est stockée à part : on l'ajoute à l'export
-  const sauvegarde = { ...state, nutrition: { repas: repasModifs, plaisirs, jours: joursModifs, courses } };
+  const sauvegarde = { ...state, nutrition: { repas: repasModifs, plaisirs, jours: joursModifs, courses, debut: planLance ? jourISO(0) : null } };
   const blob = new Blob([JSON.stringify(sauvegarde, null, 2)], { type: 'application/json' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
@@ -511,6 +516,7 @@ function importer(fichier) {
         courses = nut.courses || {};
         sauverRepas();
         sauverCourses();
+        appliquerDebutImporte(nut.debut);
       }
       aller('reglages');
       alert('Sauvegarde importée.');
@@ -523,12 +529,13 @@ function importer(fichier) {
 
 function tout_effacer() {
   if (!confirm('Effacer toutes les séances, mesures et modifications de nutrition ? Cette action est irréversible.')) return;
-  [KEY, NUT_KEY, PLAISIR_KEY, JOURS_KEY, COURSES_KEY].forEach((k) => localStorage.removeItem(k));
+  [KEY, NUT_KEY, PLAISIR_KEY, JOURS_KEY, COURSES_KEY, DEBUT_KEY].forEach((k) => localStorage.removeItem(k));
   state = structuredClone(DEFAUT);
   repasModifs = {};
   plaisirs = {};
   joursModifs = {};
   courses = {};
+  reinitialiserDebut();
   aller('seances');
 }
 

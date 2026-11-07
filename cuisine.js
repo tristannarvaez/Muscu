@@ -4,7 +4,8 @@
 const NUT_KEY = 'musculation-repas-v2';
 const PLAISIR_KEY = 'musculation-plaisirs-v2';
 const JOURS_KEY = 'musculation-jours-v1';   // plats choisis pour un seul jour
-const DEBUT_PLAN = new Date(2026, 10, 2); // 2 novembre 2026
+const DEBUT_KEY = 'musculation-debut-v1';   // date de début choisie, 'AAAA-MM-JJ'
+const DEBUT_DEFAUT = new Date(2026, 10, 2); // référence tant qu'aucune date n'est choisie
 const JOURS_PLAN = 91;
 const ROTATION = 14;
 
@@ -317,6 +318,121 @@ function chargerRepas(cle) {
   try { return JSON.parse(localStorage.getItem(cle)) || {}; } catch (e) { return {}; }
 }
 
+/* ---------- Date de début du programme ---------- */
+
+function lireDate(iso) {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso || '');
+  return m ? new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3])) : null;
+}
+
+const debutEnregistre = lireDate(localStorage.getItem(DEBUT_KEY));
+let DEBUT_PLAN = debutEnregistre || DEBUT_DEFAUT;
+let planLance = !!debutEnregistre;
+
+function ecartJours(a, b) {
+  return Math.round((b - a) / 86400000);
+}
+
+function lundiDe(d) {
+  const l = new Date(d);
+  l.setDate(l.getDate() - ((l.getDay() + 6) % 7));
+  return l;
+}
+
+// Après un changement de date : les repas plaisir et les courses restent sur leur date du calendrier
+function rebaserPlan(ancien) {
+  Object.keys(plaisirs).forEach((iso) => {
+    const d = lireDate(iso);
+    if (d) plaisirs[iso].j = ecartJours(DEBUT_PLAN, d);
+  });
+  const decalage = Math.round(ecartJours(lundiDe(DEBUT_PLAN), lundiDe(ancien)) / 7);
+  const nouvelles = {};
+  Object.keys(courses).forEach((s) => {
+    const ns = Number(s) + decalage;
+    if (ns >= 0 && ns <= 13) nouvelles[ns] = courses[s];
+  });
+  courses = nouvelles;
+}
+
+function definirDebut(iso) {
+  const d = lireDate(iso);
+  if (!d) return false;
+  const ancien = DEBUT_PLAN;
+  DEBUT_PLAN = d;
+  planLance = true;
+  localStorage.setItem(DEBUT_KEY, iso);
+  rebaserPlan(ancien);
+  jour = null;
+  courseSemaine = null;
+  sauverRepas();
+  sauverCourses();
+  return true;
+}
+
+// Après un import. Une ancienne sauvegarde n'a pas de date : ses données suivaient la date de référence.
+function appliquerDebutImporte(iso) {
+  const d = lireDate(iso);
+  if (d) {
+    DEBUT_PLAN = d;
+    planLance = true;
+    localStorage.setItem(DEBUT_KEY, iso);
+  } else {
+    rebaserPlan(DEBUT_DEFAUT);
+  }
+  jour = null;
+  courseSemaine = null;
+  sauverRepas();
+  sauverCourses();
+}
+
+function reinitialiserDebut() {
+  DEBUT_PLAN = DEBUT_DEFAUT;
+  planLance = false;
+  jour = null;
+  courseSemaine = null;
+}
+
+function dateLongue(d) {
+  return d.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
+}
+
+function formDebut(libelleBouton, action, valeur) {
+  return `
+    <label>Date de début<input type="date" id="debut-date" value="${esc(valeur)}"></label>
+    <button class="principal" data-nut="${action}">${esc(libelleBouton)}</button>`;
+}
+
+function blocLancement() {
+  return `
+    <section class="carte">
+      <h3>Lancer le programme</h3>
+      <p class="vide">Choisis le jour où tu commences. Le jour 1 des menus tombera à cette date, pour ${JOURS_PLAN} jours.</p>
+      ${formDebut('Lancer le programme', 'debut-lancer', today())}
+    </section>`;
+}
+
+// En haut de l'onglet Programme : lancement ou avancement
+function blocEtatProgramme() {
+  if (!planLance) return blocLancement();
+  const j = jourAujourdhui();
+  let texte;
+  if (j < 0) texte = `Le programme commence ${dateLongue(DEBUT_PLAN)}.`;
+  else if (j >= JOURS_PLAN) texte = `Programme terminé (commencé ${dateLongue(DEBUT_PLAN)}).`;
+  else texte = `Jour ${j + 1} / ${JOURS_PLAN}, commencé ${dateLongue(DEBUT_PLAN)}.`;
+  return `<p class="graphe-legende">${esc(texte)}</p>`;
+}
+
+// Dans les paramètres : changer la date
+function blocDateProgramme() {
+  if (!planLance) return blocLancement();
+  return `
+    <section class="carte">
+      <h3>Programme</h3>
+      <p class="vide">Le jour 1 des menus tombe à cette date. Les plats du jour et les repas plaisir restent à leur date du calendrier.</p>
+      ${formDebut('Changer la date de début', 'debut-changer', jourISO(0))}
+    </section>`;
+}
+
 let repasModifs = chargerRepas(NUT_KEY);     // 'rang-repas' -> { nom, items }
 let plaisirs = chargerRepas(PLAISIR_KEY);    // 'AAAA-MM-JJ' -> { j, cle, nom, items }
 let joursModifs = chargerRepas(JOURS_KEY);   // 'AAAA-MM-JJ-repas' -> { nom, items }, pour ce jour seulement
@@ -525,6 +641,10 @@ function blocApports() {
 }
 
 function vueNutrition() {
+  if (!planLance) {
+    $('#app').innerHTML = `<h2>Nutrition</h2>${blocLancement()}`;
+    return;
+  }
   if (jour === null) jour = Math.min(Math.max(jourAujourdhui(), 0), JOURS_PLAN - 1);
   const prot = REPAS.reduce((s, [cle]) => s + totaux(repasDuJour(jour, cle).items).p, 0);
   const manque = prot < REGLES.protJour;
@@ -537,6 +657,7 @@ function vueNutrition() {
         <div><strong>Jour ${jour + 1} / ${JOURS_PLAN}</strong><small>${esc(libelleJour(jour))}</small></div>
         <button data-nut="next" aria-label="Jour suivant">›</button>
       </div>
+      ${jourAujourdhui() < 0 ? `<p class="graphe-legende">Le programme commence ${esc(dateLongue(DEBUT_PLAN))}. Tu peux déjà consulter les menus.</p>` : ''}
       <p class="graphe-legende">Protéines du jour : <strong>${arrondi(prot)} g</strong> / ${REGLES.protJour} g.
         ${manque ? 'Il manque une collation protéinée (skyr, yaourt grec) pour atteindre l’objectif.' : 'Objectif atteint.'}</p>
       <p class="graphe-legende">Repas plaisir cette semaine : <strong>${plaisirsDeLaSemaine(jour).length}</strong> / 1</p>
@@ -892,6 +1013,18 @@ document.querySelector('#app').addEventListener('click', (e) => {
   if (!b) return;
   const action = b.dataset.nut;
   const cle = b.dataset.cle;
+
+  if (action === 'debut-lancer' || action === 'debut-changer') {
+    const iso = document.querySelector('#debut-date').value;
+    if (!lireDate(iso)) {
+      alert('Choisis une date de début.');
+      return;
+    }
+    if (action === 'debut-changer' && iso === jourISO(0)) return;
+    if (action === 'debut-changer' && !confirm(`Le jour 1 des menus passera au ${iso.split('-').reverse().join('/')}. Continuer ?`)) return;
+    definirDebut(iso);
+    return aller(ongletCourant);
+  }
 
   if (action === 'courses') { courseSemaine = semaineDe(jour); return vueCourses(); }
   if (action === 'prev' || action === 'next') platOuvert = null;
