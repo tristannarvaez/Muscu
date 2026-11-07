@@ -461,7 +461,17 @@ nav.barre button svg {
 nav.barre button.actif { background: none; box-shadow: none; color: var(--accent); }
 
 /* Bouton central surélevé, comme sur l'application ADN1 */
-nav.barre button.centre { color: #ffffff; margin-top: -26px; }
+nav.barre button.centre {
+  color: #ffffff;
+  margin-top: -26px;
+  background: none;
+  -webkit-appearance: none;
+  appearance: none;
+  outline: none;
+}
+nav.barre button.centre:active { transform: none; }
+nav.barre button.centre:active .rond { transform: scale(0.94); }
+nav.barre button.centre:focus-visible .rond { outline: 2px solid var(--texte); outline-offset: 3px; }
 nav.barre button.centre .rond {
   width: 62px;
   height: 62px;
@@ -472,6 +482,7 @@ nav.barre button.centre .rond {
   background: linear-gradient(135deg, var(--accent), #8dff3d);
   box-shadow: 0 0 0 5px #0d1017, 0 0 26px rgba(200, 255, 61, 0.45);
   color: #0a0f00;
+  transition: transform 0.12s ease;
 }
 nav.barre button.centre .rond svg { width: 28px; height: 28px; stroke: #0a0f00; }
 nav.barre button.centre.actif { color: #ffffff; }
@@ -494,7 +505,7 @@ nav.barre button.centre.actif { color: #ffffff; }
 :root[data-theme="clair"] input,
 :root[data-theme="clair"] select { background: #ffffff; border-color: rgba(0, 0, 0, 0.12); }
 :root[data-theme="clair"] nav.barre { background: #ffffff; border-top-color: rgba(0, 0, 0, 0.08); box-shadow: 0 -10px 30px rgba(20, 30, 50, 0.08); }
-:root[data-theme="clair"] nav.barre button { color: #6b7385; }
+:root[data-theme="clair"] nav.barre button { color: #6b7385; background: none; }
 :root[data-theme="clair"] nav.barre button.actif { background: none; color: var(--accent); }
 :root[data-theme="clair"] nav.barre button.centre .rond { box-shadow: 0 0 0 5px #ffffff, 0 0 22px rgba(90, 158, 0, 0.3); }
 :root[data-theme="clair"] nav.barre button.centre { color: var(--texte); }

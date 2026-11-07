@@ -509,6 +509,9 @@ function supprimerMesure(i) {
 /* ---------- À propos : historique des évolutions ---------- */
 
 const EVOLUTIONS = [
+  { version: '1.16', titre: 'Bouton Journal', items: [
+    'Le bouton central de la barre du bas est bien rond, sans carré autour.'
+  ]},
   { version: '1.15', titre: 'Planning de la semaine', items: [
     'Carte « Cette semaine » : les séances prévues, celles déjà faites et celles en retard.',
     'Bouton Décaler pour changer le jour d’une séance, pour cette semaine seulement.',
