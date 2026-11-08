@@ -360,7 +360,7 @@ function vueSeances() {
         <div class="ligne">
           <div>
             <strong>${esc(e.nom)}</strong>
-            <small>${e.series} × ${esc(e.reps)}</small>
+            <small>${e.series} × ${esc(e.reps)}${musclesDe(e.nom) ? ` · <span class="muscles-ligne">${esc(nomsMuscles(musclesDe(e.nom).p).join(', '))}</span>` : ''}</small>
             ${VERSION_MAISON[e.nom] ? `<button class="lien-maison" data-demo="${esc(VERSION_MAISON[e.nom])}">Maison : ${esc(VERSION_MAISON[e.nom])}</button>` : ''}
           </div>
           <div class="actions">
@@ -404,9 +404,11 @@ function ajouterExo(si) {
 
 function demo(nom) {
   $('#demo-titre').textContent = nom;
-  $('#demo-anim').innerHTML = conseilsHTML(nom);
+  $('#demo-anim').innerHTML = ficheExercice(nom);
   $('#demo-video').href = lienVideo(nom);
   $('#demo').showModal();
+  $('#demo-anim').scrollTop = 0;
+  demarrerAnimationExo(nom);
 }
 
 /* ---------- Journal ---------- */
@@ -759,6 +761,11 @@ function supprimerMesure(i) {
 /* ---------- À propos : historique des évolutions ---------- */
 
 const EVOLUTIONS = [
+  { version: '1.34', titre: 'Fiches d’exercice animées', items: [
+    'Le bouton ▶ ouvre une fiche avec un mannequin animé qui fait le geste ; les muscles travaillés s’allument pendant le mouvement.',
+    'Une carte du corps de face et de dos montre les muscles principaux (rose vif) et secondaires (rose pâle).',
+    'Les 25 exercices du programme et de la version maison sont animés. Dans l’onglet Programme, les muscles principaux sont indiqués sous chaque exercice.'
+  ]},
   { version: '1.33', titre: 'Planning minuté plus clair', items: [
     'Le planning du batch devient ta liste d’actions, regroupée heure par heure.',
     'Trois types d’étapes : « À faire » (tu as les mains occupées), « Lance » (tu mets en route une cuisson, avec l’heure où elle sera prête) et « C’est prêt » (rappel pour sortir le plat ou couper le feu).',

@@ -1,5 +1,5 @@
 // Exercices du programme : points clés de réalisation et lien vers une vidéo de démonstration.
-// Pas d'animation : les conseils écrits sont plus utiles qu'un schéma approximatif.
+// L'animation et les muscles travaillés sont dans anatomie.js.
 
 const EXERCICES = {
   'Presse à cuisses': { conseils: [

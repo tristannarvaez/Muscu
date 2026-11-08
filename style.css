@@ -778,3 +778,62 @@ button.lien-maison {
 
 .proposition { border-color: var(--accent); }
 .proposition p { color: var(--discret); font-size: 0.88rem; line-height: 1.45; }
+
+/* Fiche d'exercice : mannequin animé et muscles travaillés */
+#demo { max-height: 92vh; overflow-y: auto; }
+.fiche-exo .scene {
+  border-radius: 18px;
+  background: radial-gradient(circle at 50% 35%, rgba(255, 61, 127, 0.14), transparent 65%), #0a0c13;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  padding: 6px;
+}
+.fiche-exo .scene svg { display: block; width: 100%; height: auto; }
+.scene .sol { stroke: rgba(255, 255, 255, 0.14); stroke-width: 1.5; }
+.scene .tapis { stroke: rgba(200, 255, 61, 0.3); stroke-width: 3; stroke-linecap: round; }
+.scene line, .scene path { stroke-linecap: round; stroke-linejoin: round; fill: none; }
+.scene .seg { stroke: #e3e7f0; }
+.scene .seg-f { fill: #e3e7f0; }
+.scene .seg-loin { stroke: #6f7789; }
+.scene .seg-loin-f { fill: #6f7789; }
+.scene .m-p { stroke: #ff3d7f; filter: drop-shadow(0 0 3px rgba(255, 61, 127, 0.8)); }
+.scene .m-s { stroke: #ff8fb4; opacity: 0.75; }
+.scene .m-p-f { fill: #ff3d7f; filter: drop-shadow(0 0 3px rgba(255, 61, 127, 0.8)); }
+.scene .m-s-f { fill: #ff8fb4; opacity: 0.75; }
+.scene .acc { stroke: #3b4254; }
+.scene .haltere { fill: #c8ff3d; stroke: #0a0c13; stroke-width: 1.5; }
+.scene .disque { fill: #2b3142; stroke: #c8ff3d; stroke-width: 2; }
+.scene .moyeu { fill: #c8ff3d; }
+.scene .cable { stroke: #9aa3b5; stroke-width: 1.4; }
+.scene .elastique { stroke: #ffb347; stroke-width: 2.2; }
+.scene .poulie { fill: #2b3142; stroke: #9aa3b5; stroke-width: 1.5; }
+
+.muscles-fiche { display: grid; grid-template-columns: 1.25fr 1fr; gap: 12px; align-items: center; margin: 12px 0 4px; }
+.carte-corps { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.carte-corps figure { margin: 0; text-align: center; }
+.carte-corps svg { width: 100%; height: auto; display: block; }
+.carte-corps figcaption { font-size: 0.68rem; color: var(--discret); text-transform: uppercase; letter-spacing: 0.08em; margin-top: 2px; }
+.carte-corps .silhouette, .carte-corps .tete-carte { fill: #232837; }
+.carte-corps .zone { fill: #39404f; }
+.carte-corps .zone-p { fill: #ff3d7f; filter: drop-shadow(0 0 2px rgba(255, 61, 127, 0.7)); }
+.carte-corps .zone-s { fill: #ff8fb4; opacity: 0.7; }
+.muscles-liste p { margin: 0 0 10px; font-size: 0.86rem; line-height: 1.35; }
+.muscles-liste strong { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--discret); }
+.pastille { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 6px; vertical-align: 1px; }
+.pastille.p { background: #ff3d7f; }
+.pastille.s { background: #ff8fb4; opacity: 0.8; }
+.fiche-titre { margin: 12px 0 6px; }
+.muscles-ligne { color: #ff6b9a; }
+
+:root[data-theme="clair"] .fiche-exo .scene { background: radial-gradient(circle at 50% 35%, rgba(224, 36, 107, 0.1), transparent 65%), #f4f6fa; border-color: rgba(0, 0, 0, 0.06); }
+:root[data-theme="clair"] .scene .seg { stroke: #3a4254; }
+:root[data-theme="clair"] .scene .seg-f { fill: #3a4254; }
+:root[data-theme="clair"] .scene .seg-loin { stroke: #a9b0bf; }
+:root[data-theme="clair"] .scene .seg-loin-f { fill: #a9b0bf; }
+:root[data-theme="clair"] .scene .sol { stroke: rgba(0, 0, 0, 0.15); }
+:root[data-theme="clair"] .scene .acc { stroke: #c3c9d5; }
+:root[data-theme="clair"] .scene .haltere { fill: #5a9e00; stroke: #ffffff; }
+:root[data-theme="clair"] .scene .disque { fill: #dfe3ea; stroke: #5a9e00; }
+:root[data-theme="clair"] .scene .moyeu { fill: #5a9e00; }
+:root[data-theme="clair"] .carte-corps .silhouette, :root[data-theme="clair"] .carte-corps .tete-carte { fill: #e3e7ef; }
+:root[data-theme="clair"] .carte-corps .zone { fill: #c9cfdb; }
+:root[data-theme="clair"] .muscles-ligne { color: #e0246b; }
