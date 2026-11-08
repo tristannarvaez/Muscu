@@ -603,6 +603,10 @@ nav.barre button.centre.actif { color: #ffffff; }
 .nut-nav button { width: 44px; height: 44px; border-radius: 50%; font-size: 1.4rem; padding: 0; }
 .repas-nom { font-size: 1.1rem; font-weight: 700; line-height: 1.35; }
 .macros { color: var(--discret); font-size: 0.85rem; margin-top: 6px; }
+/* Nombre de personnes (courses) */
+.choix-personnes { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: 6px; }
+.choix-personnes button { margin-top: 0; padding: 10px 0; font-size: 0.9rem; }
+
 /* Version maison */
 .grille.lieu { margin-top: 4px; }
 .grille.lieu button { margin-top: 0; padding: 10px; }

@@ -524,6 +524,9 @@ function supprimerMesure(i) {
 /* ---------- À propos : historique des évolutions ---------- */
 
 const EVOLUTIONS = [
+  { version: '1.19', titre: 'Courses pour plusieurs personnes', items: [
+    'Liste de courses calculée pour 1 à 4 personnes, à l’écran et dans l’envoi vers Notes.'
+  ]},
   { version: '1.18', titre: 'Séances à la maison', items: [
     'Dans le journal, choix Salle ou Maison : les exercices de machine sont remplacés par une version haltères, traction ou élastique.',
     'Le programme indique la version maison de chaque exercice, avec ses points clés.',
@@ -647,7 +650,7 @@ function vueReglages() {
 
 function exporter() {
   // La nutrition (repas modifiés, repas plaisir, courses) est stockée à part : on l'ajoute à l'export
-  const sauvegarde = { ...state, nutrition: { repas: repasModifs, plaisirs, jours: joursModifs, courses, debut: planLance ? jourISO(0) : null } };
+  const sauvegarde = { ...state, nutrition: { repas: repasModifs, plaisirs, jours: joursModifs, courses, debut: planLance ? jourISO(0) : null, personnes } };
   const blob = new Blob([JSON.stringify(sauvegarde, null, 2)], { type: 'application/json' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
@@ -678,6 +681,7 @@ function importer(fichier) {
         sauverRepas();
         sauverCourses();
         appliquerDebutImporte(nut.debut);
+        if (nut.personnes) definirPersonnes(nut.personnes);
       }
       aller('reglages');
       alert('Sauvegarde importée.');
@@ -690,13 +694,14 @@ function importer(fichier) {
 
 function tout_effacer() {
   if (!confirm('Effacer toutes les séances, mesures et modifications de nutrition ? Cette action est irréversible.')) return;
-  [KEY, NUT_KEY, PLAISIR_KEY, JOURS_KEY, COURSES_KEY, DEBUT_KEY].forEach((k) => localStorage.removeItem(k));
+  [KEY, NUT_KEY, PLAISIR_KEY, JOURS_KEY, COURSES_KEY, DEBUT_KEY, PERSONNES_KEY].forEach((k) => localStorage.removeItem(k));
   state = structuredClone(DEFAUT);
   repasModifs = {};
   plaisirs = {};
   joursModifs = {};
   courses = {};
   reinitialiserDebut();
+  personnes = 1;
   aller('seances');
 }
 

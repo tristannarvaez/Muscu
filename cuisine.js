@@ -803,6 +803,19 @@ function quantiteAchat(nom, g) {
 }
 
 // Quantités totales par aliment sur les jours de la semaine (plats libres exclus)
+// Nombre de personnes pour les courses (les menus et les apports restent ceux d'une personne)
+const PERSONNES_KEY = 'musculation-personnes';
+let personnes = (() => {
+  try { return Math.min(4, Math.max(1, Number(localStorage.getItem(PERSONNES_KEY)) || 1)); } catch (e) { return 1; }
+})();
+
+function definirPersonnes(n) {
+  personnes = Math.min(4, Math.max(1, Number(n) || 1));
+  try { localStorage.setItem(PERSONNES_KEY, String(personnes)); } catch (e) { /* non bloquant */ }
+}
+
+const libellePersonnes = (n) => `${n} personne${n > 1 ? 's' : ''}`;
+
 function listeCourses(s) {
   const total = {};
   for (let j = 0; j < JOURS_PLAN; j++) {
@@ -815,7 +828,7 @@ function listeCourses(s) {
     });
   }
   return Object.keys(total)
-    .map((nom) => ({ nom, g: Math.round(total[nom]), ...quantiteAchat(nom, total[nom]) }))
+    .map((nom) => ({ nom, g: Math.round(total[nom] * personnes), ...quantiteAchat(nom, total[nom] * personnes) }))
     .sort((a, b) => a.label.localeCompare(b.label, 'fr'));
 }
 
@@ -860,10 +873,16 @@ function vueCourses() {
         <div><strong>Semaine du</strong><small>${esc(libelleJour(debutSemaine(s)))}</small></div>
         <button data-course="semaine-next" aria-label="Semaine suivante">›</button>
       </div>
+      <p class="graphe-legende">Quantités pour</p>
+      <div class="choix-personnes" role="group" aria-label="Nombre de personnes">
+        ${[1, 2, 3, 4].map((n) => `
+          <button class="${n === personnes ? 'principal' : 'secondaire'}" data-course="personnes" data-n="${n}"
+            aria-pressed="${n === personnes}">${n === 1 ? '1 pers.' : `${n} pers.`}</button>`).join('')}
+      </div>
     </section>
     <section class="carte">
       <h3>Depuis les menus</h3>
-      <p class="vide">Quantités à acheter, estimées : poids cru ou sec, nombre de pièces ou millilitres, arrondis au-dessus. Les plats libres n’y figurent pas.</p>
+      <p class="vide">Quantités à acheter pour ${libellePersonnes(personnes)}, estimées : poids cru ou sec, nombre de pièces ou millilitres, arrondis au-dessus. Les plats libres n’y figurent pas.</p>
       ${auto.length ? coursesParRayon(auto).map((g) => `
         <h4 class="rayon">${esc(g.rayon)}</h4>
         <ul class="items items-rayon">
@@ -902,7 +921,7 @@ function vueCourses() {
 
 function texteCourses(s) {
   const d = donneesSemaine(s);
-  const lignes = [`Courses semaine du ${libelleJour(debutSemaine(s))}`, ''];
+  const lignes = [`Courses semaine du ${libelleJour(debutSemaine(s))} (${libellePersonnes(personnes)})`, ''];
   coursesParRayon(listeCourses(s)).forEach((g) => {
     lignes.push(g.rayon.toUpperCase());
     g.articles.forEach((a) => lignes.push(`${d.coches[a.nom] ? '✓' : '-'} ${a.label} : ${a.quantite}`));
@@ -954,6 +973,7 @@ document.querySelector('#app').addEventListener('click', (e) => {
     sauverCourses();
     return vueCourses();
   }
+  if (action === 'personnes') { definirPersonnes(b.dataset.n); return vueCourses(); }
   if (action === 'partager') return partagerCourses();
   if (action === 'retour') return vueNutrition();
 });
