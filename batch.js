@@ -670,29 +670,45 @@ function gesteHTML(e) {
 
 /* ---------- Minuteur de l'iPhone, via l'app Raccourcis ---------- */
 
-// Une appli web ne peut pas régler l'Horloge elle-même : elle lance le raccourci
-// « Minuteur Cadence » en lui passant la durée en minutes.
-const NOM_RACCOURCI = 'Minuteur Cadence';
-const lienMinuteur = (min) => `shortcuts://run-shortcut?name=${encodeURIComponent(NOM_RACCOURCI)}&input=text&text=${Math.max(1, Math.round(min))}`;
+// Une appli web ne peut pas régler l'Horloge elle-même : elle lance un raccourci de l'app
+// Raccourcis en lui passant la durée en minutes. Son nom se règle dans le guide (onglet Cuisine).
+const RACCOURCI_KEY = 'musculation-raccourci';
+const RACCOURCI_DEFAUT = 'Minuteur Cadence';
+function nomRaccourci() {
+  try { return (localStorage.getItem(RACCOURCI_KEY) || '').trim() || RACCOURCI_DEFAUT; } catch (e) { return RACCOURCI_DEFAUT; }
+}
+function definirRaccourci(nom) {
+  try {
+    const n = String(nom || '').trim();
+    if (n && n !== RACCOURCI_DEFAUT) localStorage.setItem(RACCOURCI_KEY, n);
+    else localStorage.removeItem(RACCOURCI_KEY);
+  } catch (e) { /* non bloquant */ }
+}
+const lienMinuteur = (min) => `shortcuts://run-shortcut?name=${encodeURIComponent(nomRaccourci())}&input=text&text=${Math.max(1, Math.round(min))}`;
 
 function boutonMinuteur(min, quoi = '') {
   return `<a class="bouton-minuteur" href="${lienMinuteur(min)}" aria-label="Lancer un minuteur de ${Math.round(min)} min sur l’iPhone${quoi ? ` pour ${esc(quoi)}` : ''}">⏰ Minuteur ${fmtMin(Math.round(min))}</a>`;
 }
 
+let guideMinuteurOuvert = false;
+
 function guideMinuteur() {
+  const nom = nomRaccourci();
   return `
-    <details class="guide-minuteur">
+    <details class="guide-minuteur" ${guideMinuteurOuvert ? 'open' : ''}>
       <summary>⏰ Minuteurs sur ton iPhone : à régler une fois</summary>
-      <p>Les boutons <strong>⏰ Minuteur</strong> lancent le vrai minuteur de l’iPhone (il sonne même écran verrouillé). Il faut d’abord créer ce raccourci, une seule fois :</p>
+      <p>Les boutons <strong>⏰ Minuteur</strong> lancent le vrai minuteur de l’iPhone (il sonne même écran verrouillé), grâce à un raccourci à créer une seule fois :</p>
       <ol>
-        <li>Ouvre l’app <strong>Raccourcis</strong>, touche <strong>+</strong> en haut à droite.</li>
-        <li>Touche le nom en haut et appelle le raccourci exactement <strong>${NOM_RACCOURCI}</strong>.</li>
-        <li>Cherche l’action <strong>Obtenir les nombres de l’entrée</strong> (« Get Numbers from Input » si ton iPhone est en anglais) et ajoute-la : elle doit afficher « Entrée du raccourci ».</li>
-        <li>Cherche l’action <strong>Démarrer le minuteur</strong> (app Horloge) et ajoute-la en dessous.</li>
-        <li>Dans cette action, touche la durée, choisis la variable <strong>Nombres</strong> et l’unité <strong>minutes</strong>.</li>
-        <li>Touche <strong>OK</strong>. C’est prêt.</li>
+        <li>Ouvre l’app <strong>Raccourcis</strong>, onglet <strong>Raccourcis</strong>, et touche <strong>+</strong> en haut à droite.</li>
+        <li>Ajoute l’action <strong>Obtenir les nombres de l’entrée</strong> (« Get Numbers from Input » en anglais). Elle doit afficher « Entrée du raccourci ».</li>
+        <li>Ajoute en dessous l’action <strong>Démarrer le minuteur</strong> (app Horloge). Touche sa durée, choisis la variable <strong>Nombres</strong> et l’unité <strong>minutes</strong>.</li>
+        <li>Nomme le raccourci : touche son nom tout en haut (« Nouveau raccourci ») puis <strong>Renommer</strong>, et tape <strong>${esc(nom)}</strong>. Touche <strong>OK</strong>.</li>
       </ol>
-      <p>La première fois, l’iPhone te demande d’autoriser Cadence à lancer le raccourci : réponds <strong>Toujours autoriser</strong>. Le raccourci s’ouvre une seconde puis tu peux revenir dans Cadence.</p>
+      <label class="champ-raccourci">Nom exact de ton raccourci
+        <input id="nom-raccourci" value="${esc(nom)}" autocomplete="off" autocapitalize="off" spellcheck="false">
+      </label>
+      <p class="vide">« Raccourci introuvable » ? Le nom ici doit être identique à celui de l’app Raccourcis, majuscules, accents et espaces compris. Recopie ici le nom affiché sous ton raccourci, ou renomme-le.</p>
+      <p>La première fois, réponds <strong>Toujours autoriser</strong> quand l’iPhone demande si Cadence peut lancer le raccourci.</p>
       ${boutonMinuteur(1)} <span class="vide">← pour tester avec 1 minute</span>
     </details>`;
 }
@@ -1024,6 +1040,16 @@ document.querySelector('#app').addEventListener('click', (e) => {
 
 document.querySelector('#app').addEventListener('change', (e) => {
   const t = e.target;
+  if (t.id === 'nom-raccourci') {
+    // Tous les boutons minuteur de la page prennent le nouveau nom
+    definirRaccourci(t.value);
+    guideMinuteurOuvert = true;
+    const y = window.scrollY;
+    vueCuisine();
+    window.scrollTo(0, y);
+    toast(`Raccourci utilisé : « ${nomRaccourci()} »`);
+    return;
+  }
   if (t.dataset.batchCoche !== undefined) {
     const c = batch.coches[cuisineSemaine] || {};
     if (t.checked) c[t.dataset.batchCoche] = true;

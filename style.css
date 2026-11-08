@@ -847,3 +847,5 @@ button.lien-maison {
 .guide-minuteur ol { padding-left: 20px; margin: 8px 0; }
 .guide-minuteur li { margin-bottom: 6px; }
 :root[data-theme="clair"] .bouton-minuteur { color: #ffffff; }
+.champ-raccourci { display: block; margin: 10px 0 4px; }
+.champ-raccourci input { margin-top: 6px; }
