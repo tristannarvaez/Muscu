@@ -509,6 +509,9 @@ function supprimerMesure(i) {
 /* ---------- À propos : historique des évolutions ---------- */
 
 const EVOLUTIONS = [
+  { version: '1.17', titre: 'Mises à jour plus rapides', items: [
+    'Les nouvelles versions s’affichent dès l’ouverture de l’app, sans attendre.'
+  ]},
   { version: '1.16', titre: 'Bouton Journal', items: [
     'Le bouton central de la barre du bas est bien rond, sans carré autour.'
   ]},
@@ -850,5 +853,12 @@ ZONE.addEventListener('touchcancel', () => {
 aller('seances');
 
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('sw.js').catch(() => {});
+  const ouverture = Date.now();
+  const avaitUneVersion = !!navigator.serviceWorker.controller;
+  // Une nouvelle version prend la main juste après l'ouverture : on recharge pour l'afficher.
+  // Seulement dans les premières secondes, pour ne jamais perdre une saisie en cours.
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (avaitUneVersion && Date.now() - ouverture < 15000) location.reload();
+  });
+  navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }).catch(() => {});
 }
