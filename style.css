@@ -619,7 +619,7 @@ nav.barre button.centre.actif { color: #ffffff; }
 .nut-nav button:disabled { opacity: 0.3; cursor: default; }
 
 /* Autres idées de repas */
-.menu-jour li { grid-template-columns: 52px 1fr 36px; align-items: start; }
+.menu-jour li { grid-template-columns: 70px 1fr 36px; align-items: start; }
 .menu-jour .alt-ligne { grid-column: 1 / -1; }
 button.autre-idee { width: 32px; height: 32px; padding: 0; border-radius: 50%; font-size: 1rem; line-height: 1; justify-self: end; }
 .alternatives { margin-top: 8px; display: flex; flex-direction: column; gap: 6px; }
