@@ -967,8 +967,8 @@ const ACHATS = {
   'Sarrasin, cuit': poids('Sarrasin (cru)', 0.4),
   'Lentilles, cuites': poids('Lentilles (sèches)', 0.4),
   'Pois chiches, cuits': poids('Pois chiches (secs)', 0.45),
-  'Haricots rouges, cuits': poids('Haricots rouges (secs)', 0.4),
-  'Haricots blancs, cuits': poids('Haricots blancs (secs)', 0.4),
+  'Haricots rouges, cuits': poids('Haricots rouges en boîte (égouttés)', 1),
+  'Haricots blancs, cuits': poids('Haricots blancs en boîte (égouttés)', 1),
   'Pommes de terre, vapeur': poids('Pommes de terre', 1.1),
   'Patate douce, cuite': poids('Patate douce', 1.2),
   // Viandes : poids cru

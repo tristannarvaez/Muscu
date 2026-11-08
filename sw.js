@@ -2,9 +2,9 @@
 // Stratégie "réseau d'abord" : si internet est disponible, on prend toujours la dernière version ;
 // sinon on sert la copie en cache. GitHub Pages autorise 10 minutes de cache navigateur :
 // on demande donc toujours au serveur de confirmer la version (cache 'no-cache' / 'reload').
-const CACHE = 'musculation-v19';
+const CACHE = 'musculation-v20';
 const FICHIERS = [
-  './', './index.html', './style.css', './app.js', './exercices.js', './cuisine.js',
+  './', './index.html', './style.css', './app.js', './exercices.js', './cuisine.js', './batch.js',
   './manifest.json', './icon-cadence-v4.svg', './apple-touch-icon.png', './icon-192.png', './icon-512.png'
 ];
 

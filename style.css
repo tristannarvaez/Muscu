@@ -423,7 +423,7 @@ nav.barre {
   left: 0;
   right: 0;
   bottom: 0;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(6, 1fr);
   align-items: end;
   background: #0d1017;
   border: none;
@@ -444,7 +444,7 @@ nav.barre button {
   border-radius: 0;
   padding: 6px 0 2px;
   color: #8b93a4;
-  font-size: 0.68rem;
+  font-size: 0.62rem;
   font-weight: 600;
   box-shadow: none;
   transition: color 0.2s;
@@ -677,3 +677,58 @@ button.lien-maison {
 @media (prefers-reduced-motion: reduce) {
   .demo-anim * { animation: none !important; }
 }
+
+/* Onglet Cuisine : batch cooking */
+.batch-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 12px; text-align: center; }
+.batch-stats div { background: var(--bord); border-radius: 12px; padding: 10px 4px; }
+.batch-stats strong { display: block; font-size: 1.05rem; }
+.batch-stats small { color: var(--discret); font-size: 0.72rem; }
+.petit-titre { margin: 14px 0 0; font-size: 0.8rem; color: var(--discret); font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; }
+.titre-ligne { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.titre-ligne h3 { margin: 0; }
+.titre-section { margin: 22px 4px 4px; }
+.avant-batch { margin: 8px 0 0; padding-left: 18px; line-height: 1.5; }
+.planning-batch { display: flex; flex-direction: column; margin-top: 10px; }
+.etape-batch { display: grid; grid-template-columns: 22px 46px 1fr; gap: 8px; align-items: start; padding: 10px 0; border-top: 1px solid var(--bord); margin: 0; font-weight: 400; text-transform: none; letter-spacing: normal; font-size: 0.9rem; color: var(--texte); }
+.nut-nav small.sans-maj { text-transform: none; }
+.etape-batch input { width: 20px; height: 20px; margin: 2px 0 0; accent-color: var(--accent); }
+.etape-heure { font-variant-numeric: tabular-nums; font-weight: 700; color: var(--accent); }
+.etape-texte { display: flex; flex-direction: column; gap: 3px; font-size: 0.9rem; line-height: 1.4; }
+.etape-texte strong { font-size: 0.95rem; }
+.etape-app { font-size: 0.72rem; font-weight: 700; color: var(--discret); text-transform: uppercase; letter-spacing: 0.05em; }
+.etape-app.four { color: #ff9a3d; }
+.etape-app.plaques { color: #ff5f7e; }
+.etape-app.airfryer { color: #5fb8ff; }
+.etape-app.cuiseur { color: #b58cff; }
+.etape-qte { color: var(--discret); }
+.etape-batch.faite .etape-texte { opacity: 0.45; text-decoration: line-through; }
+.liste-prep { list-style: none; margin: 0; padding: 0; }
+.liste-prep li { display: flex; justify-content: space-between; gap: 10px; padding: 8px 0; border-top: 1px solid var(--bord); }
+.liste-prep li small { display: block; color: var(--discret); font-size: 0.78rem; }
+.prep-cons { color: var(--discret); font-size: 0.8rem; white-space: nowrap; }
+.jour-boites .jour-titre { text-transform: capitalize; }
+.boites-jour { list-style: none; margin: 8px 0 0; padding: 0; }
+.boites-jour li { display: grid; grid-template-columns: 70px 1fr; gap: 8px; padding: 7px 0; border-top: 1px solid var(--bord); font-size: 0.88rem; }
+.boites-jour li > span:last-child { display: flex; flex-direction: column; gap: 2px; }
+.boites-jour small { color: var(--discret); font-size: 0.78rem; line-height: 1.35; }
+.boites-jour small.jourj { color: var(--texte); }
+.boites-jour li.hors { opacity: 0.6; }
+.alerte-fraicheur { color: #ff9a3d !important; }
+.recettes { display: flex; flex-direction: column; margin-top: 8px; }
+.recette { border-top: 1px solid var(--bord); }
+.recette summary { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 11px 0; cursor: pointer; list-style: none; font-weight: 600; }
+.recette summary::-webkit-details-marker { display: none; }
+.recette summary::after { content: '›'; color: var(--discret); transition: transform 0.2s; }
+.recette[open] summary::after { transform: rotate(90deg); }
+.recette summary small { color: var(--discret); font-weight: 400; margin-left: auto; font-size: 0.75rem; }
+.recette-corps { padding: 0 0 12px; font-size: 0.9rem; line-height: 1.45; }
+.recette-corps h4 { margin: 12px 0 4px; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--accent); }
+.ingredients { list-style: none; margin: 0; padding: 0; }
+.ingredients li { display: flex; flex-wrap: wrap; gap: 4px 8px; padding: 4px 0; }
+.ingredients li span { flex: 1; }
+.ingredients li small { width: 100%; color: var(--discret); }
+.etapes-recette { margin: 0; padding-left: 20px; }
+.etapes-recette li { margin: 6px 0; }
+.etapes-recette em { color: var(--discret); font-style: normal; display: block; font-size: 0.82rem; }
+.recette-apports, .recette-extras, .recette-conservation { color: var(--discret); font-size: 0.82rem; margin: 6px 0 0; }
+#recette-recherche { margin-top: 8px; }

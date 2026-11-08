@@ -96,6 +96,7 @@ const VUES = {
   progression: vueProgression,
   mensurations: vueMensurations,
   nutrition: vueNutrition,
+  cuisine: vueCuisine,
   reglages: vueReglages
 };
 
@@ -524,6 +525,12 @@ function supprimerMesure(i) {
 /* ---------- À propos : historique des évolutions ---------- */
 
 const EVOLUTIONS = [
+  { version: '1.24', titre: 'Onglet Cuisine : batch cooking', items: [
+    'Nouvel onglet Cuisine : le batch du dimanche est calculé à partir de tes menus de la semaine, modifications comprises, pour le nombre de personnes choisi.',
+    'Planning minuté avec cases à cocher, organisé selon le four, l’air fryer, le cuiseur et les plaques, plus la liste de ce que tu prépares avec les quantités à acheter.',
+    'Boîtes de la semaine jour par jour, avec ce qui reste à faire le jour même (poissons, omelettes, steaks hachés) et une alerte quand un plat est gardé trop longtemps.',
+    'Fiches recettes détaillées pour chaque plat : ingrédients, étapes, conservation et réchauffage, avec une recherche dans toutes les recettes.'
+  ]},
   { version: '1.23', titre: 'Menus de saison', items: [
     'Nouveaux menus d’automne-hiver (octobre à mars) : potiron, poireaux, chou, endives, clémentines, plats mijotés comme le pot-au-feu, le hachis parmentier ou le chili.',
     'L’app choisit automatiquement les menus selon la saison de chaque jour ; ceux de printemps-été reviennent en avril.',
@@ -667,7 +674,7 @@ function vueReglages() {
 
 function exporter() {
   // La nutrition (repas modifiés, repas plaisir, courses) est stockée à part : on l'ajoute à l'export
-  const sauvegarde = { ...state, nutrition: { repas: repasModifs, plaisirs, jours: joursModifs, courses, debut: planLance ? jourISO(0) : null, personnes } };
+  const sauvegarde = { ...state, nutrition: { repas: repasModifs, plaisirs, jours: joursModifs, courses, debut: planLance ? jourISO(0) : null, personnes, batch } };
   const blob = new Blob([JSON.stringify(sauvegarde, null, 2)], { type: 'application/json' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
@@ -699,6 +706,10 @@ function importer(fichier) {
         sauverCourses();
         appliquerDebutImporte(nut.debut);
         if (nut.personnes) definirPersonnes(nut.personnes);
+        if (nut.batch && typeof nut.batch === 'object') {
+          batch = { coches: nut.batch.coches || {}, heure: nut.batch.heure || '10:00', finSemaine: nut.batch.finSemaine === 'express' ? 'express' : 'dimanche' };
+          sauverBatch();
+        }
       }
       aller('reglages');
       alert('Sauvegarde importée.');
@@ -711,7 +722,7 @@ function importer(fichier) {
 
 function tout_effacer() {
   if (!confirm('Effacer toutes les séances, mesures et modifications de nutrition ? Cette action est irréversible.')) return;
-  [KEY, NUT_KEY, PLAISIR_KEY, JOURS_KEY, COURSES_KEY, DEBUT_KEY, PERSONNES_KEY].forEach((k) => localStorage.removeItem(k));
+  [KEY, NUT_KEY, PLAISIR_KEY, JOURS_KEY, COURSES_KEY, DEBUT_KEY, PERSONNES_KEY, BATCH_KEY].forEach((k) => localStorage.removeItem(k));
   state = structuredClone(DEFAUT);
   repasModifs = {};
   plaisirs = {};
@@ -719,6 +730,7 @@ function tout_effacer() {
   courses = {};
   reinitialiserDebut();
   personnes = 1;
+  batch = { coches: {}, heure: '10:00', finSemaine: 'dimanche' };
   aller('seances');
 }
 
@@ -788,7 +800,7 @@ $('#demo-fermer').addEventListener('click', () => $('#demo').close());
 
 /* ---------- Glisser pour changer d'onglet ---------- */
 
-const ORDRE_ONGLETS = ['seances', 'progression', 'journal', 'nutrition', 'mensurations', 'reglages'];
+const ORDRE_ONGLETS = ['seances', 'progression', 'journal', 'nutrition', 'cuisine', 'mensurations', 'reglages'];
 let ongletCourant = 'seances';
 let debutX = null, debutY = null;
 
