@@ -525,6 +525,13 @@ function supprimerMesure(i) {
 /* ---------- À propos : historique des évolutions ---------- */
 
 const EVOLUTIONS = [
+  { version: '1.26', titre: 'Recettes du monde et menus sans fin', items: [
+    '34 recettes du monde (Asie, Inde et Moyen-Orient, Méditerranée, Amériques et Afrique), dont 13 végétariennes, avec leur préparation au batch.',
+    'Bibliothèque de recettes avec filtres par région et « Végétarien ».',
+    'Chaque fiche recette a un bouton « Ajouter à mes menus » : pour un jour, ou à la place d’un repas tous les 14 jours. Le batch et les courses suivent.',
+    'Les idées « ↻ autres idées » de Nutrition proposent aussi les recettes du monde.',
+    'Les menus, les courses et le batch continuent après les 3 mois du programme, sans date de fin.'
+  ]},
   { version: '1.25', titre: 'Plats rapides en fin de semaine', items: [
     'Les menus sont réorganisés : du lundi au vendredi midi, des plats qui se préparent au batch du dimanche ; le vendredi soir et le week-end, des plats rapides cuisinés le jour même (poisson, œufs, steak).',
     'Les plats fragiles (épinards, courgettes, haché, pancakes) tombent en début de semaine, pour que tout reste frais. Chaque jour garde au moins 160 g de protéines.',

@@ -407,8 +407,7 @@ function analyseSemaine(s) {
     return taches[id];
   };
 
-  for (let j = 0; j < JOURS_PLAN; j++) {
-    if (semaineDe(j) !== s) continue;
+  for (const j of joursSemaine(s)) {
     const rang = rangSemaine(j);
     const repas = REPAS.map(([cle, titre]) => {
       const r = repasDuJour(j, cle);
@@ -579,7 +578,7 @@ function etapesRecette(nom, items) {
   return { etapes, cons: cons === 99 ? 0 : cons, rech: rechs.join('<br>') };
 }
 
-function carteRecette(nom, items) {
+function carteRecette(nom, items, cleDefaut = 'soir') {
   const rec = RECETTES[nom] || {};
   const { etapes, cons, rech } = etapesRecette(nom, items);
   const t = totaux(items);
@@ -591,17 +590,66 @@ function carteRecette(nom, items) {
     <h4>Préparation</h4>
     <ol class="etapes-recette">${etapes.map((e) => `<li>${e}</li>`).join('')}</ol>
     ${cons ? `<p class="recette-conservation"><strong>Conservation :</strong> ${cons} jours au frigo, dans une boîte fermée.</p>` : ''}
-    ${rech ? `<p class="recette-conservation"><strong>Réchauffage :</strong><br>${rech}</p>` : ''}`;
+    ${rech ? `<p class="recette-conservation"><strong>Réchauffage :</strong><br>${rech}</p>` : ''}
+    ${formAjoutMenu(cleDefaut)}`;
 }
 
-// Tous les plats des deux saisons, pour la bibliothèque de recettes
+// Mettre une recette dans les menus de l'onglet Nutrition
+function formAjoutMenu(cleDefaut) {
+  if (!planLance) return '';
+  const demain = Math.max(0, jourAujourdhui() + 1);
+  return `
+    <div class="ajout-menu">
+      <h4>Ajouter à mes menus</h4>
+      <div class="ajout-ligne">
+        <input type="date" class="ajout-date" value="${jourISO(demain)}" min="${jourISO(0)}">
+        <select class="ajout-repas">${REPAS.map(([c, t]) => `<option value="${c}" ${c === cleDefaut ? 'selected' : ''}>${t}</option>`).join('')}</select>
+      </div>
+      <select class="ajout-portee">
+        <option value="jour">Ce jour seulement</option>
+        <option value="rotation">Tous les 14 jours, à la place de ce repas</option>
+      </select>
+      <button class="principal" data-ajout-recette>Ajouter</button>
+    </div>`;
+}
+
+function toast(texte) {
+  let t = document.querySelector('#toast');
+  if (!t) {
+    t = document.createElement('div');
+    t.id = 'toast';
+    t.setAttribute('role', 'status');
+    document.body.appendChild(t);
+  }
+  t.textContent = texte;
+  t.classList.add('visible');
+  clearTimeout(toast.minuteur);
+  toast.minuteur = setTimeout(() => t.classList.remove('visible'), 3500);
+}
+
+// Viandes et poissons : un plat qui n'en contient pas est végétarien
+const CHAIRS = new Set(RAYONS.filter(([r]) => r === 'Viandes et charcuterie' || r === 'Poissons et fruits de mer').flatMap(([, noms]) => noms));
+const estVegetarien = (items) => !items.some((it) => CHAIRS.has(it.n));
+
+// Tous les plats : menus des deux saisons, puis recettes du monde
+let bibliothequeCache = null;
 function bibliotheque() {
+  if (bibliothequeCache) return bibliothequeCache;
   const vus = new Map();
   [MENUS, MENUS_HIVER].forEach((menus) => menus.forEach((m) => REPAS.forEach(([cle, titre]) => {
-    if (!vus.has(m[cle].nom)) vus.set(m[cle].nom, { nom: m[cle].nom, items: m[cle].items, titre });
+    if (!vus.has(m[cle].nom)) {
+      vus.set(m[cle].nom, { nom: m[cle].nom, items: m[cle].items, cle, titre, region: 'menus',
+        v: (cle === 'midi' || cle === 'soir') && estVegetarien(m[cle].items) });
+    }
   })));
-  return [...vus.values()].sort((a, b) => a.nom.localeCompare(b.nom, 'fr'));
+  PLATS_MONDE.forEach((p) => vus.set(p.nom, { nom: p.nom, items: p.items, cle: 'soir', titre: p.pays, region: p.region, v: p.v || estVegetarien(p.items) }));
+  bibliothequeCache = [...vus.values()].sort((a, b) => a.nom.localeCompare(b.nom, 'fr'));
+  return bibliothequeCache;
 }
+
+// REGIONS vient de monde.js, chargé après ce fichier
+const filtresRecettes = () => [['tous', 'Tout'], ['menus', 'Mes menus'], ...REGIONS, ['vege', 'Végétarien']];
+let filtreRecette = 'tous';
 
 /* ---------- Vue ---------- */
 
@@ -612,7 +660,7 @@ function vueCuisine() {
     document.querySelector('#app').innerHTML = `<h2>Cuisine</h2>${blocLancement()}`;
     return;
   }
-  const derniere = semaineDe(JOURS_PLAN - 1);
+  const derniere = semaineDe(HORIZON - 1);
   if (cuisineSemaine === null) {
     // Le dimanche, on prépare la semaine qui commence le lendemain
     cuisineSemaine = Math.min(derniere, Math.max(0, semaineDe(Math.max(0, jourAujourdhui() + 1))));
@@ -731,6 +779,8 @@ function vueCuisine() {
 
     <section class="carte">
       <h3>Toutes les recettes</h3>
+      <p class="graphe-legende">Les menus de saison et ${PLATS_MONDE.length} recettes du monde, dont ${PLATS_MONDE.filter((p) => p.v).length} végétariennes. Ouvre une fiche pour la mettre dans tes menus.</p>
+      <div class="filtres-recettes">${filtresRecettes().map(([k, t]) => `<button data-filtre-recette="${k}" class="${k === filtreRecette ? 'principal' : 'secondaire'}">${t}</button>`).join('')}</div>
       <input id="recette-recherche" type="search" placeholder="Chercher un plat ou un aliment" value="${esc(rechercheRecette)}"
         autocomplete="off" autocorrect="off" spellcheck="false" enterkeyhint="search">
       <div class="recettes" id="biblio">${listeBibliotheque()}</div>
@@ -746,11 +796,13 @@ function quantitesTache(t) {
 
 function listeBibliotheque() {
   const q = norm(rechercheRecette.trim());
-  const plats = bibliotheque().filter((p) => !q || norm(p.nom).includes(q) || p.items.some((it) => norm(it.n).includes(q)));
+  const plats = bibliotheque()
+    .filter((p) => filtreRecette === 'tous' || (filtreRecette === 'vege' ? p.v : p.region === filtreRecette))
+    .filter((p) => !q || norm(p.nom).includes(q) || norm(p.titre).includes(q) || p.items.some((it) => norm(it.n).includes(q)));
   if (!plats.length) return '<p class="graphe-legende">Aucun plat trouvé.</p>';
   return plats.map((p) => `
     <details class="recette" data-recette-nom="${esc(p.nom)}">
-      <summary><span>${esc(p.nom)}</span><small>${esc(p.titre)}</small></summary>
+      <summary><span>${esc(p.nom)}${p.v ? ' <em class="vege">végé</em>' : ''}</span><small>${esc(p.titre)}</small></summary>
       <div class="recette-corps"></div>
     </details>`).join('');
 }
@@ -765,18 +817,55 @@ document.querySelector('#app').addEventListener('toggle', (e) => {
   if (corps.innerHTML.trim()) return;
   if (d.dataset.recetteJ !== undefined) {
     const r = repasDuJour(Number(d.dataset.recetteJ), d.dataset.recetteCle);
-    corps.innerHTML = carteRecette(r.nom, r.items);
+    corps.innerHTML = carteRecette(r.nom, r.items, d.dataset.recetteCle);
   } else {
     const p = bibliotheque().find((x) => x.nom === d.dataset.recetteNom);
-    if (p) corps.innerHTML = carteRecette(p.nom, p.items);
+    if (p) corps.innerHTML = carteRecette(p.nom, p.items, p.cle);
   }
 }, true);
+
+// Recette vers les menus : pour un jour, ou à la place du repas tous les 14 jours
+document.querySelector('#app').addEventListener('click', (e) => {
+  const f = e.target.closest('[data-filtre-recette]');
+  if (f) {
+    filtreRecette = f.dataset.filtreRecette;
+    document.querySelectorAll('[data-filtre-recette]').forEach((x) => {
+      x.className = x.dataset.filtreRecette === filtreRecette ? 'principal' : 'secondaire';
+    });
+    document.querySelector('#biblio').innerHTML = listeBibliotheque();
+    return;
+  }
+  const b = e.target.closest('[data-ajout-recette]');
+  if (!b) return;
+  const d = b.closest('details.recette');
+  const zone = b.closest('.ajout-menu');
+  const date = lireDate(zone.querySelector('.ajout-date').value);
+  const cle = zone.querySelector('.ajout-repas').value;
+  const rotation = zone.querySelector('.ajout-portee').value === 'rotation';
+  if (!date) { alert('Choisis une date.'); return; }
+  const j = ecartJours(DEBUT_PLAN, date);
+  if (j < 0) { alert('Cette date est avant le début de tes menus.'); return; }
+  const source = d.dataset.recetteJ !== undefined
+    ? repasDuJour(Number(d.dataset.recetteJ), d.dataset.recetteCle)
+    : bibliotheque().find((x) => x.nom === d.dataset.recetteNom);
+  if (!source) return;
+  const items = source.items.map((it) => ({ ...it }));
+  if (!appliquer(j, cle, items, source.nom, !rotation)) return;
+  const titre = REPAS.find(([c]) => c === cle)[1].toLowerCase();
+  toast(`${source.nom} : ${libelleJour(j)}, ${titre}${rotation ? ', puis tous les 14 jours' : ''}.`);
+  // Le batch de la semaine affichée change si la date en fait partie
+  if (semaineDe(j) === cuisineSemaine && ongletCourant === 'cuisine') {
+    const y = window.scrollY;
+    vueCuisine();
+    window.scrollTo(0, y);
+  }
+});
 
 document.querySelector('#app').addEventListener('click', (e) => {
   const b = e.target.closest('[data-cuisine]');
   if (!b) return;
   const action = b.dataset.cuisine;
-  const derniere = semaineDe(JOURS_PLAN - 1);
+  const derniere = semaineDe(HORIZON - 1);
   if (action === 'prev') { cuisineSemaine = Math.max(0, cuisineSemaine - 1); window.scrollTo(0, 0); return vueCuisine(); }
   if (action === 'next') { cuisineSemaine = Math.min(derniere, cuisineSemaine + 1); window.scrollTo(0, 0); return vueCuisine(); }
   if (action === 'personnes') { definirPersonnes(b.dataset.n); return vueCuisine(); }

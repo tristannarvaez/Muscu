@@ -6,7 +6,8 @@ const PLAISIR_KEY = 'musculation-plaisirs-v2';
 const JOURS_KEY = 'musculation-jours-v1';   // plats choisis pour un seul jour
 const DEBUT_KEY = 'musculation-debut-v1';   // date de début choisie, 'AAAA-MM-JJ'
 const DEBUT_DEFAUT = new Date(2026, 10, 2); // référence tant qu'aucune date n'est choisie
-const JOURS_PLAN = 91;
+const JOURS_PLAN = 91;   // durée du programme sportif de départ (3 mois)
+const HORIZON = 3650;     // les menus continuent ensuite, sans date de fin
 const ROTATION = 14;
 
 const REGLES = {
@@ -467,7 +468,7 @@ function rebaserPlan(ancien) {
   const nouvelles = {};
   Object.keys(courses).forEach((s) => {
     const ns = Number(s) + decalage;
-    if (ns >= 0 && ns <= 13) nouvelles[ns] = courses[s];
+    if (ns >= 0) nouvelles[ns] = courses[s];
   });
   courses = nouvelles;
 }
@@ -524,7 +525,7 @@ function blocLancement() {
   return `
     <section class="carte">
       <h3>Lancer le programme</h3>
-      <p class="vide">Choisis le jour où tu commences. Le jour 1 des menus tombera à cette date, pour ${JOURS_PLAN} jours.</p>
+      <p class="vide">Choisis le jour où tu commences. Le jour 1 des menus tombera à cette date. Le programme dure 3 mois, puis les menus continuent sans fin.</p>
       ${formDebut('Lancer le programme', 'debut-lancer', today())}
     </section>`;
 }
@@ -535,7 +536,7 @@ function blocEtatProgramme() {
   const j = jourAujourdhui();
   let texte;
   if (j < 0) texte = `Le programme commence ${dateLongue(DEBUT_PLAN)}.`;
-  else if (j >= JOURS_PLAN) texte = `Programme terminé (commencé ${dateLongue(DEBUT_PLAN)}).`;
+  else if (j >= JOURS_PLAN) texte = `Programme de 3 mois terminé : les menus continuent (jour ${j + 1}, commencé ${dateLongue(DEBUT_PLAN)}).`;
   else texte = `Jour ${j + 1} / ${JOURS_PLAN}, commencé ${dateLongue(DEBUT_PLAN)}.`;
   return `<p class="graphe-legende">${esc(texte)}</p>`;
 }
@@ -613,6 +614,13 @@ function libelleJour(j) {
 // Semaine calendaire (lundi à dimanche) du jour j
 function semaineDe(j) {
   return Math.floor((j + ((DEBUT_PLAN.getDay() + 6) % 7)) / 7);
+}
+
+// Jours du plan (index) qui tombent dans la semaine s
+function joursSemaine(s) {
+  const jours = [];
+  for (let j = Math.max(0, debutSemaine(s)); semaineDe(j) === s; j++) jours.push(j);
+  return jours;
 }
 
 function plaisirsDeLaSemaine(j) {
@@ -817,7 +825,7 @@ function vueNutrition() {
     $('#app').innerHTML = `<h2>Nutrition</h2>${blocLancement()}`;
     return;
   }
-  if (jour === null) jour = Math.min(Math.max(jourAujourdhui(), 0), JOURS_PLAN - 1);
+  if (jour === null) jour = Math.min(Math.max(jourAujourdhui(), 0), HORIZON - 1);
   const prot = REPAS.reduce((s, [cle]) => s + totaux(repasDuJour(jour, cle).items).p, 0);
   const manque = prot < REGLES.protJour;
 
@@ -826,7 +834,7 @@ function vueNutrition() {
     <section class="carte">
       <div class="nut-nav">
         <button data-nut="prev" aria-label="Jour précédent">‹</button>
-        <div><strong>Jour ${jour + 1} / ${JOURS_PLAN}</strong><small>${esc(libelleJour(jour))}</small><small class="saison">${esc(libelleSaison(jour))}</small></div>
+        <div><strong>Jour ${jour + 1}${jour < JOURS_PLAN ? ` / ${JOURS_PLAN}` : ''}</strong><small>${esc(libelleJour(jour))}</small><small class="saison">${esc(libelleSaison(jour))}</small></div>
         <button data-nut="next" aria-label="Jour suivant">›</button>
       </div>
       ${jourAujourdhui() < 0 ? `<p class="graphe-legende">Le programme commence ${esc(dateLongue(DEBUT_PLAN))}. Tu peux déjà consulter les menus.</p>` : ''}
@@ -859,13 +867,13 @@ const ALT_PAR_PAGE = 3;
 function alternatives(j, cle) {
   const actuel = repasDuJour(j, cle);
   const protActuelle = totaux(actuel.items).p;
-  const dejaPrevus = new Set();
-  for (let k = 0; k < JOURS_PLAN; k++) {
-    if (semaineDe(k) === semaineDe(j)) dejaPrevus.add(repasDuJour(k, cle).nom);
-  }
+  const dejaPrevus = new Set(joursSemaine(semaineDe(j)).map((k) => repasDuJour(k, cle).nom));
   const vus = new Set();
-  return menusDe(j)
-    .map((m, i) => ({ i, plat: m[cle], prot: totaux(m[cle].items).p }))
+  // Menus de la saison, plus les recettes du monde pour le midi et le soir
+  const pool = menusDe(j).map((m, i) => ({ src: 'menu', i, plat: m[cle] }));
+  if (cle === 'midi' || cle === 'soir') PLATS_MONDE.forEach((p, i) => pool.push({ src: 'monde', i, plat: p }));
+  return pool
+    .map((x) => ({ ...x, prot: totaux(x.plat.items).p }))
     .filter(({ plat }) => {
       if (plat.nom === actuel.nom || dejaPrevus.has(plat.nom) || vus.has(plat.nom)) return false;
       vus.add(plat.nom);
@@ -882,9 +890,9 @@ function blocAlternatives(j, cle) {
   const choix = [...toutes, ...toutes].slice(debut, debut + Math.min(ALT_PAR_PAGE, toutes.length));
   return `
     <div class="alternatives">
-      ${choix.map(({ i, plat, prot }) => `
-        <button class="sugg" data-alt="choisir" data-j="${j}" data-cle="${cle}" data-i="${i}">${esc(plat.nom)}
-          <small>${Math.round(prot)} g de protéines</small></button>`).join('')}
+      ${choix.map(({ src, i, plat, prot }) => `
+        <button class="sugg" data-alt="choisir" data-src="${src}" data-j="${j}" data-cle="${cle}" data-i="${i}">${esc(plat.nom)}
+          <small>${plat.pays ? `${esc(plat.pays)}${plat.v ? ' · végétarien' : ''} · ` : ''}${Math.round(prot)} g de protéines</small></button>`).join('')}
       <div class="actions-repas">
         <button class="secondaire" data-alt="plus">Autres idées</button>
         <button class="secondaire" data-alt="fermer">Fermer</button>
@@ -916,7 +924,7 @@ document.querySelector('#app').addEventListener('click', (e) => {
   if (action === 'choisir') {
     const j = Number(b.dataset.j);
     const cle = b.dataset.cle;
-    const plat = menusDe(j)[Number(b.dataset.i)][cle];
+    const plat = b.dataset.src === 'monde' ? PLATS_MONDE[Number(b.dataset.i)] : menusDe(j)[Number(b.dataset.i)][cle];
     const items = plat.items.map((it) => ({ ...it }));
     if (appliquer(j, cle, items, plat.nom, true)) altOuvert = null;
     return rafraichirAlt(vue);
@@ -930,10 +938,9 @@ let menuSemaine = null;   // index de la semaine affichée
 function vueMenusSemaine() {
   if (menuSemaine === null) menuSemaine = semaineDe(jour === null ? 0 : jour);
   const s = menuSemaine;
-  const derniere = semaineDe(JOURS_PLAN - 1);
+  const derniere = semaineDe(HORIZON - 1);
   const auj = jourAujourdhui();
-  const jours = [];
-  for (let j = 0; j < JOURS_PLAN; j++) if (semaineDe(j) === s) jours.push(j);
+  const jours = joursSemaine(s);
 
   const cartes = jours.map((j) => {
     const prot = REPAS.reduce((t, [cle]) => t + totaux(repasDuJour(j, cle).items).p, 0);
@@ -980,7 +987,7 @@ document.querySelector('#app').addEventListener('click', (e) => {
   const b = e.target.closest('[data-menu]');
   if (!b) return;
   const action = b.dataset.menu;
-  const derniere = semaineDe(JOURS_PLAN - 1);
+  const derniere = semaineDe(HORIZON - 1);
   if (action === 'prev' || action === 'next' || action === 'ouvrir' || action === 'retour') altOuvert = null;
   if (action === 'prev') { menuSemaine = Math.max(0, menuSemaine - 1); window.scrollTo(0, 0); return vueMenusSemaine(); }
   if (action === 'next') { menuSemaine = Math.min(derniere, menuSemaine + 1); window.scrollTo(0, 0); return vueMenusSemaine(); }
@@ -1142,8 +1149,7 @@ const libellePersonnes = (n) => `${n} personne${n > 1 ? 's' : ''}`;
 
 function listeCourses(s) {
   const total = {};
-  for (let j = 0; j < JOURS_PLAN; j++) {
-    if (semaineDe(j) !== s) continue;
+  for (const j of joursSemaine(s)) {
     REPAS.forEach(([cle]) => {
       repasDuJour(j, cle).items.forEach((it) => {
         if (it.libre) return;
@@ -1282,7 +1288,7 @@ document.querySelector('#app').addEventListener('click', (e) => {
   const d = donneesSemaine(courseSemaine);
 
   if (action === 'semaine-prev') { courseSemaine = Math.max(0, courseSemaine - 1); return vueCourses(); }
-  if (action === 'semaine-next') { courseSemaine = Math.min(13, courseSemaine + 1); return vueCourses(); }
+  if (action === 'semaine-next') { courseSemaine = Math.min(semaineDe(HORIZON - 1), courseSemaine + 1); return vueCourses(); }
   if (action === 'ajouter') {
     const nom = document.querySelector('#course-nouveau').value.trim();
     if (!nom) return;
@@ -1375,7 +1381,7 @@ document.querySelector('#app').addEventListener('click', (e) => {
   if (action === 'courses') { courseSemaine = semaineDe(jour); return vueCourses(); }
   if (action === 'prev' || action === 'next') { platOuvert = null; altOuvert = null; }
   if (action === 'prev') { jour = Math.max(0, jour - 1); return vueNutrition(); }
-  if (action === 'next') { jour = Math.min(JOURS_PLAN - 1, jour + 1); return vueNutrition(); }
+  if (action === 'next') { jour = Math.min(HORIZON - 1, jour + 1); return vueNutrition(); }
 
   if (action === 'ajouter') {
     const r = repasDuJour(jour, cle);

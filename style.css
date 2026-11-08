@@ -732,3 +732,14 @@ button.lien-maison {
 .etapes-recette em { color: var(--discret); font-style: normal; display: block; font-size: 0.82rem; }
 .recette-apports, .recette-extras, .recette-conservation { color: var(--discret); font-size: 0.82rem; margin: 6px 0 0; }
 #recette-recherche { margin-top: 8px; }
+
+/* Recettes du monde et ajout aux menus */
+.filtres-recettes { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 4px; }
+.filtres-recettes button { width: auto; margin: 0; padding: 7px 12px; font-size: 0.8rem; border-radius: 999px; }
+.recette summary em.vege { font-style: normal; font-size: 0.68rem; font-weight: 700; color: var(--accent); border: 1px solid var(--accent); border-radius: 999px; padding: 1px 6px; margin-left: 4px; vertical-align: middle; }
+.ajout-menu { margin-top: 14px; padding-top: 10px; border-top: 1px dashed var(--bord); }
+.ajout-ligne { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; }
+.ajout-menu select, .ajout-menu input { margin: 0; }
+.ajout-menu .ajout-portee { margin-bottom: 8px; }
+#toast { position: fixed; left: 16px; right: 16px; bottom: calc(96px + env(safe-area-inset-bottom)); z-index: 50; background: var(--accent); color: #0a0f00; font-weight: 600; font-size: 0.88rem; padding: 12px 14px; border-radius: 14px; box-shadow: 0 10px 30px rgba(0,0,0,0.35); opacity: 0; transform: translateY(10px); transition: opacity 0.25s, transform 0.25s; pointer-events: none; }
+#toast.visible { opacity: 1; transform: none; }
