@@ -13,35 +13,67 @@ const num = (v) => {
   return Number.isNaN(n) ? null : n;
 };
 
+// Programme d'origine (versions 1 à 3), gardé pour reconnaître un programme jamais modifié
+const PROGRAMME_V3 = [
+  { id: 'A', nom: 'Full body A', exos: [['Presse à cuisses', 3, '8-12'], ['Développé incliné haltères', 3, '8-12'], ['Rowing haltère', 3, '8-12'], ['Face pulls', 3, '12-15'], ['Gainage', 3, '30-45 s']] },
+  { id: 'B', nom: 'Dos et tirages', exos: [['Tirage vertical', 3, '8-12'], ['Tirage horizontal', 3, '8-12'], ['Curl haltères', 3, '10-12'], ['Rotations externes', 3, '12-15'], ['Face pulls', 3, '12-15'], ['Gainage', 3, '30-45 s']] },
+  { id: 'C', nom: 'Full body B', exos: [['Soulevé de terre roumain', 3, '8-10'], ['Fentes', 3, '8-10 par jambe'], ['Pompes', 3, '8-12'], ['Élévations latérales', 3, '12-15'], ['Gainage', 3, '30-45 s']] }
+];
+
+// Programme rééquilibré (version 4) : environ 10 séries par semaine pour chaque grand groupe musculaire,
+// jambes réparties sur les trois séances, développé épaules ajouté, travail de posture conservé.
+const ex = (nom, series, reps) => ({ nom, series, reps });
+const PROGRAMME_V4 = [
+  { id: 'A', nom: 'Full body A', jour: 0, exos: [
+    ex('Presse à cuisses', 3, '8-12'),
+    ex('Développé incliné haltères', 3, '8-12'),
+    ex('Rowing haltère', 3, '8-12'),
+    ex('Leg curl', 3, '10-15'),
+    ex('Face pulls', 3, '12-15'),
+    ex('Gainage', 3, '30-45 s')
+  ]},
+  { id: 'B', nom: 'Dos, épaules et fessiers', jour: 2, exos: [
+    ex('Tirage vertical', 3, '8-12'),
+    ex('Développé épaules haltères', 3, '8-12'),
+    ex('Tirage horizontal', 3, '8-12'),
+    ex('Hip thrust', 3, '8-12'),
+    ex('Curl haltères', 2, '10-12'),
+    ex('Extensions triceps poulie', 2, '10-15'),
+    ex('Rotations externes', 2, '12-15')
+  ]},
+  { id: 'C', nom: 'Full body B', jour: 5, exos: [
+    ex('Squat gobelet', 3, '8-12'),
+    ex('Soulevé de terre roumain', 3, '8-10'),
+    ex('Pompes', 3, '8-12'),
+    ex('Fentes', 2, '8-10 par jambe'),
+    ex('Élévations latérales', 3, '12-15'),
+    ex('Gainage', 3, '30-45 s')
+  ]}
+];
+
+const programmeV4 = () => structuredClone(PROGRAMME_V4);
+
+// Vrai si le programme est encore celui d'origine (jours exceptés)
+function estProgrammeV3(programme) {
+  return programme.length === PROGRAMME_V3.length && PROGRAMME_V3.every((ref, i) => {
+    const s = programme[i];
+    return s.id === ref.id && s.nom === ref.nom && s.exos.length === ref.exos.length
+      && ref.exos.every(([n, se, r], k) => s.exos[k].nom === n && s.exos[k].series === se && s.exos[k].reps === r);
+  });
+}
+
+// Garde les jours choisis par l'utilisateur en passant au nouveau programme
+function appliquerProgrammeV4(s) {
+  const jours = Object.fromEntries(s.programme.map((x) => [x.id, x.jour]));
+  s.programme = programmeV4().map((x) => ({ ...x, jour: jours[x.id] ?? x.jour }));
+}
+
 const DEFAUT = {
-  programme: [
-    { id: 'A', nom: 'Full body A', jour: 0, exos: [
-      { nom: 'Presse à cuisses', series: 3, reps: '8-12' },
-      { nom: 'Développé incliné haltères', series: 3, reps: '8-12' },
-      { nom: 'Rowing haltère', series: 3, reps: '8-12' },
-      { nom: 'Face pulls', series: 3, reps: '12-15' },
-      { nom: 'Gainage', series: 3, reps: '30-45 s' }
-    ]},
-    { id: 'B', nom: 'Dos et tirages', jour: 2, exos: [
-      { nom: 'Tirage vertical', series: 3, reps: '8-12' },
-      { nom: 'Tirage horizontal', series: 3, reps: '8-12' },
-      { nom: 'Curl haltères', series: 3, reps: '10-12' },
-      { nom: 'Rotations externes', series: 3, reps: '12-15' },
-      { nom: 'Face pulls', series: 3, reps: '12-15' },
-      { nom: 'Gainage', series: 3, reps: '30-45 s' }
-    ]},
-    { id: 'C', nom: 'Full body B', jour: 5, exos: [
-      { nom: 'Soulevé de terre roumain', series: 3, reps: '8-10' },
-      { nom: 'Fentes', series: 3, reps: '8-10 par jambe' },
-      { nom: 'Pompes', series: 3, reps: '8-12' },
-      { nom: 'Élévations latérales', series: 3, reps: '12-15' },
-      { nom: 'Gainage', series: 3, reps: '30-45 s' }
-    ]}
-  ],
+  programme: programmeV4(),
   journal: [],
   mensurations: [],
   decalages: {},   // lundi de la semaine 'AAAA-MM-JJ' -> { id de séance: jour (0 = lundi) }
-  version: 3
+  version: 4
 };
 
 const JOURS_SEMAINE = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
@@ -65,6 +97,13 @@ function migrer(s) {
       }
     });
     s.version = 3;
+  }
+  // Version 4 : programme rééquilibré. Remplacé d'office s'il n'a jamais été modifié,
+  // sinon proposé dans l'onglet Programme.
+  if (s.version < 4) {
+    if (estProgrammeV3(s.programme)) appliquerProgrammeV4(s);
+    else s.propositionV4 = true;
+    s.version = 4;
   }
   s.decalages = s.decalages || {};
   return s;
@@ -220,8 +259,21 @@ function decalerSeance(id, nouveauJour) {
   vueSeances();
 }
 
+function blocPropositionV4() {
+  if (!state.propositionV4) return '';
+  return `
+    <section class="carte proposition">
+      <h3>Programme rééquilibré disponible</h3>
+      <p>Plus de jambes (leg curl, hip thrust, squat gobelet), un développé épaules et des triceps, environ 10 séries par semaine pour chaque muscle. Tu as modifié ton programme, donc rien n’a été changé sans toi. Tes jours et ton historique sont gardés.</p>
+      <div class="grille lieu">
+        <button class="principal" data-prog-v4="oui">Appliquer</button>
+        <button class="secondaire" data-prog-v4="non">Garder le mien</button>
+      </div>
+    </section>`;
+}
+
 function vueSeances() {
-  $('#app').innerHTML = '<h2>Programme</h2>' + blocEtatProgramme() + blocSemaine() + state.programme.map((s, si) => `
+  $('#app').innerHTML = '<h2>Programme</h2>' + blocEtatProgramme() + blocPropositionV4() + blocSemaine() + state.programme.map((s, si) => `
     <section class="carte">
       <h3>${esc(s.nom)}</h3>
       ${s.exos.map((e, ei) => `
@@ -286,7 +338,8 @@ const PAS_CHARGE = {
   'Presse à cuisses': 5,
   'Développé incliné haltères': 2, 'Développé épaules haltères': 2, 'Rowing haltère': 2,
   'Fentes': 2, 'Squat bulgare haltères': 2,
-  'Curl haltères': 1, 'Élévations latérales': 1, 'Face pulls': 1, 'Rotations externes': 1
+  'Curl haltères': 1, 'Élévations latérales': 1, 'Face pulls': 1, 'Rotations externes': 1,
+  'Squat gobelet': 2, 'Leg curl': 2.5, 'Hip thrust': 5, 'Extensions triceps poulie': 2.5, 'Extensions triceps haltère': 1
 };
 const pasCharge = (nom) => PAS_CHARGE[nom] || 2.5;
 const arrondiCharge = (kg) => Math.round(kg * 2) / 2;
@@ -610,6 +663,12 @@ function supprimerMesure(i) {
 /* ---------- À propos : historique des évolutions ---------- */
 
 const EVOLUTIONS = [
+  { version: '1.28', titre: 'Programme rééquilibré', items: [
+    'Environ 10 séries par semaine pour chaque grand groupe musculaire : jambes sur les trois séances (leg curl, hip thrust, squat gobelet en plus), développé épaules et triceps ajoutés.',
+    'La séance B devient « Dos, épaules et fessiers » ; face pulls et rotations externes restent pour la posture des épaules.',
+    'Si tu n’avais jamais modifié ton programme, il est mis à jour tout seul ; sinon, l’onglet Programme te le propose. Jours, décalages et historique sont gardés.',
+    'Conseils et version maison pour les nouveaux exercices.'
+  ]},
   { version: '1.27', titre: 'Charge conseillée', items: [
     'Dans le Journal, chaque exercice affiche la charge à prendre et l’objectif de répétitions, calculés d’après ta dernière séance.',
     'Double progression : quand tu atteins le haut de la fourchette à toutes les séries, la charge monte d’un cran (2,5 kg en général, 2 kg aux haltères, 1 kg pour les petits muscles, 5 kg à la presse).',
@@ -861,6 +920,15 @@ $('#app').addEventListener('click', (e) => {
     return vueSeances();
   }
   if (b.dataset.planJour !== undefined) return decalerSeance(b.dataset.planSeance, Number(b.dataset.planJour));
+  if (b.dataset.progV4 !== undefined) {
+    if (b.dataset.progV4 === 'oui') {
+      if (!confirm('Remplacer ton programme par la version rééquilibrée ? Tes jours et ton historique sont gardés.')) return;
+      appliquerProgrammeV4(state);
+    }
+    delete state.propositionV4;
+    sauver();
+    return vueSeances();
+  }
   if (b.dataset.demo !== undefined) return demo(b.dataset.demo);
   if (b.dataset.edit !== undefined) {
     const [si, ei] = b.dataset.edit.split(':').map(Number);

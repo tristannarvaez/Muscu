@@ -67,7 +67,38 @@ const EXERCICES = {
     'Coudes à environ 45° du corps.',
     'Si c’est trop dur, pose les mains sur un banc ou une surface haute.'
   ]},
+  'Leg curl': { conseils: [
+    'Machine réglée pour que le genou soit dans l’axe de l’articulation.',
+    'Ramène les talons vers les fesses sans décoller les hanches du coussin.',
+    'Redescends lentement, sur deux à trois secondes.'
+  ]},
+  'Hip thrust': { conseils: [
+    'Haut du dos posé sur un banc, barre (avec une mousse) ou haltère sur le pli des hanches.',
+    'Pieds à plat, tibias verticaux en haut du mouvement, menton rentré.',
+    'Monte en serrant les fessiers sans cambrer le bas du dos, pause d’une seconde en haut.'
+  ]},
+  'Squat gobelet': { conseils: [
+    'Haltère tenu verticalement contre la poitrine, pieds un peu plus larges que les épaules.',
+    'Descends entre les talons, buste droit, genoux qui suivent la pointe des pieds.',
+    'Va aussi bas que tu peux en gardant le dos neutre, puis pousse dans tout le pied.'
+  ]},
+  'Extensions triceps poulie': { conseils: [
+    'Corde ou barre à la poulie haute, coudes collés au corps.',
+    'Seuls les avant-bras bougent : tends complètement les bras en bas.',
+    'Remonte lentement jusqu’à ce que les avant-bras dépassent l’horizontale.'
+  ]},
   // Exercices de la version maison
+  'Leg curl glissé': { conseils: [
+    'Allongé sur le dos, talons sur une serviette (sol lisse) ou des patins, bassin levé en pont.',
+    'Ramène les talons vers les fesses en gardant le bassin haut, puis repousse lentement.',
+    'Trop facile ? Une jambe à la fois.'
+  ]},
+  'Extensions triceps haltère': { conseils: [
+    'Assis ou debout, un haltère tenu à deux mains au-dessus de la tête.',
+    'Descends l’haltère derrière la tête en gardant les coudes pointés vers le haut et serrés.',
+    'Tends les bras sans cambrer le dos.'
+  ]},
+
   'Squat bulgare haltères': { conseils: [
     'Pied arrière posé sur une chaise ou un canapé, pied avant assez loin devant.',
     'Descends droit, genou avant dans l’axe du pied, buste légèrement penché.',
@@ -107,7 +138,9 @@ const VERSION_MAISON = {
   'Tirage vertical': 'Tractions',
   'Tirage horizontal': 'Rowing inversé',
   'Face pulls': 'Face pulls élastique',
-  'Rotations externes': 'Rotations externes élastique'
+  'Rotations externes': 'Rotations externes élastique',
+  'Leg curl': 'Leg curl glissé',
+  'Extensions triceps poulie': 'Extensions triceps haltère'
 };
 
 function nomSelonLieu(nom, lieu) {
