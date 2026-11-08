@@ -611,6 +611,8 @@ function carteRepas(cle, titre) {
         <div class="suggestions" data-sugg="${cle}"></div>
         ${blocPlatLibre(cle)}
       </div>
+      ${r.plaisir ? '' : `<button class="secondaire" data-alt="ouvrir" data-vue="nutrition" data-j="${jour}" data-cle="${cle}">↻ Ça ne me tente pas : autres idées</button>`}
+      ${blocAlternatives(jour, cle)}
       <div class="actions-repas">
         ${r.plaisir
           ? '<button class="secondaire danger" data-nut="plaisir-retirer">Retirer le repas plaisir</button>'
@@ -675,6 +677,82 @@ function vueNutrition() {
     </section>`;
 }
 
+/* ---------- Autres idées pour un repas qui ne tente pas ---------- */
+
+// Repas ouvert pour proposer des alternatives : { j, cle, page, vue: 'menus' | 'nutrition' }
+let altOuvert = null;
+const ALT_PAR_PAGE = 3;
+
+// Toutes les alternatives possibles pour ce repas : les autres menus du même moment (matin, midi, soir),
+// sans celui affiché ni ceux déjà prévus ce même moment dans la semaine,
+// classées par apport en protéines le plus proche du repas actuel.
+function alternatives(j, cle) {
+  const actuel = repasDuJour(j, cle);
+  const protActuelle = totaux(actuel.items).p;
+  const dejaPrevus = new Set();
+  for (let k = 0; k < JOURS_PLAN; k++) {
+    if (semaineDe(k) === semaineDe(j)) dejaPrevus.add(repasDuJour(k, cle).nom);
+  }
+  const vus = new Set();
+  return MENUS
+    .map((m, i) => ({ i, plat: m[cle], prot: totaux(m[cle].items).p }))
+    .filter(({ plat }) => {
+      if (plat.nom === actuel.nom || dejaPrevus.has(plat.nom) || vus.has(plat.nom)) return false;
+      vus.add(plat.nom);
+      return true;
+    })
+    .sort((a, b) => Math.abs(a.prot - protActuelle) - Math.abs(b.prot - protActuelle));
+}
+
+function blocAlternatives(j, cle) {
+  if (!altOuvert || altOuvert.j !== j || altOuvert.cle !== cle) return '';
+  const toutes = alternatives(j, cle);
+  if (!toutes.length) return '<p class="vide">Pas d’autre idée cette semaine.</p>';
+  const debut = (altOuvert.page * ALT_PAR_PAGE) % toutes.length;
+  const choix = [...toutes, ...toutes].slice(debut, debut + Math.min(ALT_PAR_PAGE, toutes.length));
+  return `
+    <div class="alternatives">
+      ${choix.map(({ i, plat, prot }) => `
+        <button class="sugg" data-alt="choisir" data-j="${j}" data-cle="${cle}" data-i="${i}">${esc(plat.nom)}
+          <small>${Math.round(prot)} g de protéines</small></button>`).join('')}
+      <div class="actions-repas">
+        <button class="secondaire" data-alt="plus">Autres idées</button>
+        <button class="secondaire" data-alt="fermer">Fermer</button>
+      </div>
+      <p class="vide">Le changement ne vaut que pour ce jour : ce repas reviendra normalement dans les menus.</p>
+    </div>`;
+}
+
+function rafraichirAlt(vue) {
+  if (vue === 'menus') return vueMenusSemaine();
+  return vueNutrition();
+}
+
+document.querySelector('#app').addEventListener('click', (e) => {
+  const b = e.target.closest('[data-alt]');
+  if (!b) return;
+  const action = b.dataset.alt;
+  if (action === 'ouvrir') {
+    const j = Number(b.dataset.j);
+    const cle = b.dataset.cle;
+    const meme = altOuvert && altOuvert.j === j && altOuvert.cle === cle;
+    altOuvert = meme ? null : { j, cle, page: 0, vue: b.dataset.vue };
+    return rafraichirAlt(b.dataset.vue);
+  }
+  if (!altOuvert) return;
+  const vue = altOuvert.vue;
+  if (action === 'plus') { altOuvert.page += 1; return rafraichirAlt(vue); }
+  if (action === 'fermer') { altOuvert = null; return rafraichirAlt(vue); }
+  if (action === 'choisir') {
+    const j = Number(b.dataset.j);
+    const cle = b.dataset.cle;
+    const plat = MENUS[Number(b.dataset.i)][cle];
+    const items = plat.items.map((it) => ({ ...it }));
+    if (appliquer(j, cle, items, plat.nom, true)) altOuvert = null;
+    return rafraichirAlt(vue);
+  }
+});
+
 /* ---------- Vue d'ensemble des menus de la semaine ---------- */
 
 let menuSemaine = null;   // index de la semaine affichée
@@ -694,7 +772,11 @@ function vueMenusSemaine() {
       const r = repasDuJour(j, cle);
       const badge = r.plaisir ? '<span class="pastille plaisir">Plaisir</span>'
         : r.ponctuel ? '<span class="pastille">Ce jour</span>' : '';
-      return `<li><span class="repas-moment">${titre}</span><span class="repas-nom">${esc(r.nom)}${badge}</span></li>`;
+      const ouvert = altOuvert && altOuvert.j === j && altOuvert.cle === cle;
+      const bouton = r.plaisir ? '' : `<button class="autre-idee" data-alt="ouvrir" data-vue="menus" data-j="${j}" data-cle="${cle}"
+        aria-label="Autres idées pour le ${titre.toLowerCase()}" aria-expanded="${ouvert}">${ouvert ? '✕' : '↻'}</button>`;
+      return `<li><span class="repas-moment">${titre}</span><span class="repas-nom">${esc(r.nom)}${badge}</span>${bouton}
+        ${ouvert ? `<div class="alt-ligne">${blocAlternatives(j, cle)}</div>` : ''}</li>`;
     }).join('');
     return `
       <section class="carte jour-menu${j === auj ? ' aujourdhui' : ''}">
@@ -729,6 +811,7 @@ document.querySelector('#app').addEventListener('click', (e) => {
   if (!b) return;
   const action = b.dataset.menu;
   const derniere = semaineDe(JOURS_PLAN - 1);
+  if (action === 'prev' || action === 'next' || action === 'ouvrir' || action === 'retour') altOuvert = null;
   if (action === 'prev') { menuSemaine = Math.max(0, menuSemaine - 1); window.scrollTo(0, 0); return vueMenusSemaine(); }
   if (action === 'next') { menuSemaine = Math.min(derniere, menuSemaine + 1); window.scrollTo(0, 0); return vueMenusSemaine(); }
   if (action === 'ouvrir') { jour = Number(b.dataset.j); window.scrollTo(0, 0); return vueNutrition(); }
@@ -1112,7 +1195,7 @@ document.querySelector('#app').addEventListener('click', (e) => {
   if (action === 'menus-semaine') { menuSemaine = semaineDe(jour); window.scrollTo(0, 0); return vueMenusSemaine(); }
   if (action === 'courses-semaine-menus') { courseSemaine = menuSemaine; window.scrollTo(0, 0); return vueCourses(); }
   if (action === 'courses') { courseSemaine = semaineDe(jour); return vueCourses(); }
-  if (action === 'prev' || action === 'next') platOuvert = null;
+  if (action === 'prev' || action === 'next') { platOuvert = null; altOuvert = null; }
   if (action === 'prev') { jour = Math.max(0, jour - 1); return vueNutrition(); }
   if (action === 'next') { jour = Math.min(JOURS_PLAN - 1, jour + 1); return vueNutrition(); }
 

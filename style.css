@@ -618,6 +618,13 @@ nav.barre button.centre.actif { color: #ffffff; }
 .pastille.plaisir { color: var(--accent-2); border-color: var(--accent-2); }
 .nut-nav button:disabled { opacity: 0.3; cursor: default; }
 
+/* Autres idées de repas */
+.menu-jour li { grid-template-columns: 52px 1fr 36px; align-items: start; }
+.menu-jour .alt-ligne { grid-column: 1 / -1; }
+button.autre-idee { width: 32px; height: 32px; padding: 0; border-radius: 50%; font-size: 1rem; line-height: 1; justify-self: end; }
+.alternatives { margin-top: 8px; display: flex; flex-direction: column; gap: 6px; }
+.alternatives .actions-repas button.secondaire { margin-top: 2px; }
+
 /* Nombre de personnes (courses) */
 .choix-personnes { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: 6px; }
 .choix-personnes button { margin-top: 0; padding: 10px 0; font-size: 0.9rem; }

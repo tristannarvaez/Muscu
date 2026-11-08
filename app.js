@@ -524,6 +524,10 @@ function supprimerMesure(i) {
 /* ---------- À propos : historique des évolutions ---------- */
 
 const EVOLUTIONS = [
+  { version: '1.21', titre: 'Autres idées de repas', items: [
+    'Un repas ne te tente pas ? L’app propose d’autres menus du même moment, proches en protéines, pour ce jour seulement.',
+    'Disponible dans les menus de la semaine (↻) et dans chaque repas de l’onglet Nutrition.'
+  ]},
   { version: '1.20', titre: 'Menus de la semaine', items: [
     'Vue d’ensemble des repas de toute la semaine, avec les protéines de chaque jour.',
     'Un jour s’ouvre d’un geste pour le modifier ; accès direct à la liste de courses de la semaine.'
