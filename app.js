@@ -524,6 +524,11 @@ function supprimerMesure(i) {
 /* ---------- À propos : historique des évolutions ---------- */
 
 const EVOLUTIONS = [
+  { version: '1.23', titre: 'Menus de saison', items: [
+    'Nouveaux menus d’automne-hiver (octobre à mars) : potiron, poireaux, chou, endives, clémentines, plats mijotés comme le pot-au-feu, le hachis parmentier ou le chili.',
+    'L’app choisit automatiquement les menus selon la saison de chaque jour ; ceux de printemps-été reviennent en avril.',
+    'Onze aliments de saison ajoutés, rangés dans la liste de courses.'
+  ]},
   { version: '1.22', titre: 'Collation protéinée', items: [
     'Une collation s’ajoute aux menus (skyr, fromage blanc, cottage cheese, tartine, shaker…) : chaque jour atteint l’objectif de 160 g de protéines.',
     'Elle se modifie, se remplace et entre dans la liste de courses comme les autres repas.'

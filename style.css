@@ -600,6 +600,7 @@ nav.barre button.centre.actif { color: #ffffff; }
 .nut-nav div { flex: 1; }
 .nut-nav strong { display: block; font-size: 1.05rem; font-weight: 800; }
 .nut-nav small { color: var(--discret); text-transform: capitalize; }
+.nut-nav small.saison { display: block; text-transform: none; color: var(--accent); font-size: 0.75rem; margin-top: 2px; }
 .nut-nav button { width: 44px; height: 44px; border-radius: 50%; font-size: 1.4rem; padding: 0; }
 .repas-nom { font-size: 1.1rem; font-weight: 700; line-height: 1.35; }
 .macros { color: var(--discret); font-size: 0.85rem; margin-top: 6px; }

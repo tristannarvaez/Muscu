@@ -170,7 +170,19 @@ const ALIMENTS = [
   ['Chips', 6, 34, 0.5],
   ['Biscuit sec', 7, 20, 25],
   ['Barre de céréales', 6, 10, 25],
-  ['Pizza margherita', 11, 10, 3.5]
+  ['Pizza margherita', 11, 10, 3.5],
+  // Légumes et fruits d'automne-hiver
+  ['Potiron, cuit', 1, 0.1, 2.5],
+  ['Courge butternut, cuite', 1, 0.1, 2.2],
+  ['Panais, cuit', 1.3, 0.3, 4.8],
+  ['Navet, cuit', 0.7, 0.1, 2.8],
+  ['Chou de Bruxelles, cuit', 2.5, 0.5, 1.7],
+  ['Endive', 1, 0.1, 1],
+  ['Mâche', 2, 0.4, 0.5],
+  ['Clémentine', 0.8, 0.2, 9],
+  ['Pamplemousse', 0.6, 0.1, 7],
+  ['Fruits rouges surgelés', 1, 0.3, 6],
+  ['Tomates concassées (conserve)', 1.2, 0.2, 3.5]
 ];
 
 // Plats tout prêts pour « Plat libre » : [nom, protéines, lipides, sucres] en grammes, pour UNE portion.
@@ -244,7 +256,7 @@ const PLATS = [
 // Un repas de base : un nom et des aliments [nom, grammes]
 const plat = (nom, items) => ({ nom, items: items.map(([n, g]) => ({ n, g })) });
 
-// Rotation de 14 jours, répétée sur 3 mois. La collation complète chaque jour pour atteindre REGLES.protJour.
+// Rotation de printemps-été (avril à septembre), 14 jours. La collation complète chaque jour pour atteindre REGLES.protJour.
 const MENUS = [
   { matin: plat('Skyr, avoine, banane', [['Skyr nature', 200], ['Flocons d’avoine, crus', 60], ['Banane', 120]]),
     midi: plat('Poulet, riz, brocoli', [['Poulet, blanc cuit', 180], ['Riz basmati, cuit', 200], ['Brocoli, cuit', 150], ['Huile d’olive', 10]]),
@@ -303,6 +315,67 @@ const MENUS = [
     collation: plat('Fromage blanc, whey et framboises', [['Fromage blanc 0 %', 200], ['Whey isolate (poudre)', 20], ['Framboise', 100]]),
     soir: plat('Poulet, haricots, carottes', [['Poulet, blanc cuit', 180], ['Haricots verts, cuits', 150], ['Carotte crue', 100]]) }
 ];
+
+// Rotation d'automne-hiver (octobre à mars) : légumes et fruits de saison, plats mijotés.
+const MENUS_HIVER = [
+  { matin: plat('Porridge, skyr, poire', [['Flocons d’avoine, crus', 60], ['Skyr nature', 150], ['Poire', 150]]),
+    midi: plat('Poulet, purée de potiron, riz', [['Poulet, blanc cuit', 180], ['Potiron, cuit', 200], ['Riz basmati, cuit', 150], ['Huile d’olive', 5]]),
+    collation: plat('Tartine thon', [['Thon au naturel, égoutté', 160], ['Pain complet', 60]]),
+    soir: plat('Velouté poireaux-carottes, œufs, pain', [['Poireau, cuit', 150], ['Carotte crue', 100], ['Pommes de terre, vapeur', 150], ['Œuf entier', 150], ['Pain complet', 40]]) },
+  { matin: plat('Omelette, pain complet, clémentines', [['Œuf entier', 150], ['Pain complet', 60], ['Clémentine', 140]]),
+    midi: plat('Bœuf haché, lentilles, carottes', [['Bœuf haché 5 %, cuit', 180], ['Lentilles, cuites', 200], ['Carotte crue', 100]]),
+    collation: plat('Fromage blanc et clémentines', [['Fromage blanc 0 %', 300], ['Clémentine', 100]]),
+    soir: plat('Cabillaud, purée de panais, épinards', [['Cabillaud, cuit', 180], ['Panais, cuit', 200], ['Épinards, cuits', 100], ['Huile d’olive', 5]]) },
+  { matin: plat('Fromage blanc, muesli, kiwi', [['Fromage blanc 0 %', 200], ['Muesli sans sucre ajouté', 40], ['Kiwi', 100]]),
+    midi: plat('Pot-au-feu maison', [['Bœuf, filet cuit', 160], ['Carotte crue', 120], ['Navet, cuit', 120], ['Poireau, cuit', 100], ['Pommes de terre, vapeur', 150]]),
+    collation: plat('Fromage blanc, whey et fruits rouges', [['Fromage blanc 0 %', 350], ['Whey isolate (poudre)', 20], ['Fruits rouges surgelés', 100]]),
+    soir: plat('Saumon, butternut rôtie, mâche', [['Saumon, cuit', 150], ['Courge butternut, cuite', 250], ['Mâche', 50]]) },
+  { matin: plat('Skyr, granola, pomme', [['Skyr nature', 200], ['Granola', 30], ['Pomme', 80]]),
+    midi: plat('Dinde, chou-fleur, riz complet', [['Dinde, blanc cuit', 180], ['Chou-fleur, cuit', 200], ['Riz complet, cuit', 150], ['Huile d’olive', 5]]),
+    collation: plat('Skyr, whey et poire', [['Skyr nature', 300], ['Whey isolate (poudre)', 15], ['Poire', 80]]),
+    soir: plat('Endives au jambon, pommes de terre', [['Endive', 300], ['Jambon blanc', 120], ['Emmental', 20], ['Pommes de terre, vapeur', 200]]) },
+  { matin: plat('Porridge, yaourt grec, banane', [['Flocons d’avoine, crus', 50], ['Yaourt grec 0 %', 150], ['Banane', 100]]),
+    midi: plat('Saumon, riz complet, poireaux', [['Saumon, cuit', 150], ['Riz complet, cuit', 150], ['Poireau, cuit', 150]]),
+    collation: plat('Skyr, whey et pomme', [['Skyr nature', 300], ['Whey isolate (poudre)', 10], ['Pomme', 80]]),
+    soir: plat('Chili con carne', [['Bœuf haché 5 %, cuit', 150], ['Haricots rouges, cuits', 150], ['Tomates concassées (conserve)', 150], ['Oignon', 50], ['Riz basmati, cuit', 120]]) },
+  { matin: plat('Yaourt grec, noix, clémentines', [['Yaourt grec 0 %', 200], ['Noix', 20], ['Clémentine', 140]]),
+    midi: plat('Poulet rôti, patate douce, choux de Bruxelles', [['Poulet rôti, sans peau', 180], ['Patate douce, cuite', 200], ['Chou de Bruxelles, cuit', 150]]),
+    collation: plat('Skyr et kiwi', [['Skyr nature', 400], ['Kiwi', 70]]),
+    soir: plat('Curry de lentilles corail et œufs', [['Lentilles, cuites', 200], ['Œuf entier', 100], ['Épinards, cuits', 100], ['Riz basmati, cuit', 100]]) },
+  { matin: plat('Pancakes maison, pomme', [['Flocons d’avoine, crus', 60], ['Œuf entier', 50], ['Skyr nature', 100], ['Pomme', 100]]),
+    midi: plat('Hachis parmentier maison', [['Bœuf haché 5 %, cuit', 160], ['Pommes de terre, vapeur', 250], ['Lait demi-écrémé', 50], ['Emmental', 15]]),
+    collation: plat('Cottage cheese et pain complet', [['Cottage cheese', 300], ['Pain complet', 40]]),
+    soir: plat('Lieu noir, fondue de poireaux, pommes de terre', [['Lieu noir, cuit', 200], ['Poireau, cuit', 200], ['Pommes de terre, vapeur', 150]]) },
+  { matin: plat('Fromage blanc, pain, jambon', [['Fromage blanc 0 %', 200], ['Pain complet', 60], ['Jambon blanc', 40]]),
+    midi: plat('Filet mignon, purée de céleri', [['Porc, filet mignon cuit', 180], ['Céleri-rave, cuit', 200], ['Pommes de terre, vapeur', 100]]),
+    collation: plat('Shaker whey et banane', [['Whey isolate (poudre)', 25], ['Banane', 120]]),
+    soir: plat('Velouté de potiron, poulet, pain', [['Potiron, cuit', 300], ['Poulet, blanc cuit', 150], ['Pain complet', 50]]) },
+  { matin: plat('Skyr, avoine, cacahuètes', [['Skyr nature', 200], ['Flocons d’avoine, crus', 60], ['Cacahuètes', 15]]),
+    midi: plat('Wok de bœuf, nouilles et chou', [['Bœuf, filet cuit', 160], ['Nouilles de riz, cuites', 180], ['Chou, cuit', 150], ['Carotte crue', 80], ['Huile de colza', 10]]),
+    collation: plat('Wrap de dinde et mâche', [['Dinde, blanc cuit', 140], ['Pain complet', 50], ['Mâche', 30]]),
+    soir: plat('Omelette aux champignons, mâche', [['Œuf entier', 150], ['Champignons de Paris', 100], ['Mâche', 50], ['Pain complet', 50]]) },
+  { matin: plat('Œufs brouillés, pain de seigle, orange', [['Œuf entier', 150], ['Pain de seigle', 60], ['Orange', 150]]),
+    midi: plat('Saumon, boulgour, betterave', [['Saumon, cuit', 150], ['Boulgour, cuit', 180], ['Betterave, cuite', 100]]),
+    collation: plat('Cottage cheese et orange', [['Cottage cheese', 250], ['Orange', 150]]),
+    soir: plat('Dinde hachée, pâtes, sauce tomate', [['Dinde hachée 5 %, cuite', 180], ['Pâtes complètes, cuites', 200], ['Tomates concassées (conserve)', 200], ['Oignon', 50]]) },
+  { matin: plat('Yaourt grec, banane, avoine', [['Yaourt grec 0 %', 200], ['Banane', 120], ['Flocons d’avoine, crus', 40]]),
+    midi: plat('Filet mignon, riz complet, carottes', [['Porc, filet mignon cuit', 180], ['Riz complet, cuit', 180], ['Carotte crue', 150]]),
+    collation: plat('Shaker whey et lait', [['Whey isolate (poudre)', 30], ['Lait écrémé', 250]]),
+    soir: plat('Thon, patate douce, épinards', [['Thon au naturel, égoutté', 150], ['Patate douce, cuite', 200], ['Épinards, cuits', 100]]) },
+  { matin: plat('Skyr, fruits rouges, chia', [['Skyr nature', 200], ['Fruits rouges surgelés', 100], ['Graines de chia', 10]]),
+    midi: plat('Poulet, lentilles, carottes', [['Poulet, blanc cuit', 180], ['Lentilles, cuites', 200], ['Carotte crue', 120]]),
+    collation: plat('Tartine jambon blanc', [['Jambon blanc', 120], ['Pain complet', 60]]),
+    soir: plat('Gratin de chou-fleur au jambon', [['Chou-fleur, cuit', 300], ['Jambon blanc', 100], ['Lait demi-écrémé', 100], ['Emmental', 20], ['Pommes de terre, vapeur', 150]]) },
+  { matin: plat('Omelette, pain complet, pamplemousse', [['Œuf entier', 150], ['Pain complet', 60], ['Pamplemousse', 150]]),
+    midi: plat('Bœuf haché, pommes de terre, mâche', [['Bœuf haché 5 %, cuit', 180], ['Pommes de terre, vapeur', 250], ['Mâche', 60]]),
+    collation: plat('Yaourt grec et granola', [['Yaourt grec 0 %', 300], ['Granola', 30]]),
+    soir: plat('Cabillaud, riz, poireaux', [['Cabillaud, cuit', 180], ['Riz basmati, cuit', 180], ['Poireau, cuit', 150]]) },
+  { matin: plat('Fromage blanc, muesli, poire', [['Fromage blanc 0 %', 200], ['Muesli sans sucre ajouté', 40], ['Poire', 120]]),
+    midi: plat('Saumon, pâtes complètes, brocoli', [['Saumon, cuit', 150], ['Pâtes complètes, cuites', 200], ['Brocoli, cuit', 150]]),
+    collation: plat('Yaourt grec et amandes', [['Yaourt grec 0 %', 350], ['Amandes', 15]]),
+    soir: plat('Potée légère au filet mignon', [['Porc, filet mignon cuit', 160], ['Chou, cuit', 200], ['Carotte crue', 100], ['Pommes de terre, vapeur', 150]]) }
+];
+
 
 // Utilitaires
 const norm = (s) => String(s).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
@@ -487,6 +560,25 @@ function plaisirsDeLaSemaine(j) {
   return Object.values(plaisirs).filter((x) => semaineDe(x.j) === semaineDe(j));
 }
 
+// Saison du jour j du plan : automne-hiver d'octobre à mars, printemps-été d'avril à septembre
+function saisonDe(j) {
+  const d = new Date(DEBUT_PLAN);
+  d.setDate(d.getDate() + j);
+  const m = d.getMonth();
+  return m >= 9 || m <= 2 ? 'hiver' : 'ete';
+}
+
+function menusDe(j) {
+  return saisonDe(j) === 'hiver' ? MENUS_HIVER : MENUS;
+}
+
+const libelleSaison = (j) => (saisonDe(j) === 'hiver' ? 'Menus d’automne-hiver' : 'Menus de printemps-été');
+
+// Clé d'une modification répétée tous les 14 jours, propre à chaque saison
+function cleRang(j, cle) {
+  return `${saisonDe(j) === 'hiver' ? 'H' : ''}${j % ROTATION}-${cle}`;
+}
+
 // Repas tel qu'il s'affiche ce jour-là, par priorité : repas plaisir, plat choisi pour ce jour,
 // modification répétée tous les 14 jours, ou menu de base
 function repasDuJour(j, cle) {
@@ -494,9 +586,9 @@ function repasDuJour(j, cle) {
   if (pl && pl.cle === cle) return { nom: pl.nom, items: pl.items, plaisir: true, modifie: false };
   const jm = joursModifs[`${jourISO(j)}-${cle}`];
   if (jm) return { nom: jm.nom, items: jm.items, plaisir: false, modifie: true, ponctuel: true };
-  const k = `${j % ROTATION}-${cle}`;
+  const k = cleRang(j, cle);
   if (repasModifs[k]) return { nom: repasModifs[k].nom, items: repasModifs[k].items, plaisir: false, modifie: true };
-  const base = MENUS[j % ROTATION][cle];
+  const base = menusDe(j)[j % ROTATION][cle];
   return { nom: base.nom, items: base.items, plaisir: false, modifie: false };
 }
 
@@ -531,7 +623,7 @@ function appliquer(j, cle, items, nom, jourSeul = false) {
   } else if (jourSeul || joursModifs[kJour]) {
     joursModifs[kJour] = { nom: nom || repasDuJour(j, cle).nom, items };
   } else {
-    repasModifs[`${j % ROTATION}-${cle}`] = { nom: nom || MENUS[j % ROTATION][cle].nom, items };
+    repasModifs[cleRang(j, cle)] = { nom: nom || menusDe(j)[j % ROTATION][cle].nom, items };
   }
   sauverRepas();
   return true;
@@ -670,7 +762,7 @@ function vueNutrition() {
     <section class="carte">
       <div class="nut-nav">
         <button data-nut="prev" aria-label="Jour précédent">‹</button>
-        <div><strong>Jour ${jour + 1} / ${JOURS_PLAN}</strong><small>${esc(libelleJour(jour))}</small></div>
+        <div><strong>Jour ${jour + 1} / ${JOURS_PLAN}</strong><small>${esc(libelleJour(jour))}</small><small class="saison">${esc(libelleSaison(jour))}</small></div>
         <button data-nut="next" aria-label="Jour suivant">›</button>
       </div>
       ${jourAujourdhui() < 0 ? `<p class="graphe-legende">Le programme commence ${esc(dateLongue(DEBUT_PLAN))}. Tu peux déjà consulter les menus.</p>` : ''}
@@ -687,7 +779,7 @@ function vueNutrition() {
     <section class="carte">
       <h3>Règles</h3>
       <p class="vide">Au-delà de ${REGLES.grasAlerte} g de lipides ou ${REGLES.sucreAlerte} g de sucres dans un repas, une confirmation est demandée. Au-delà de ${REGLES.grasRefus} g, le repas est refusé. Friture, fast-food, frites et pâtisserie sont refusés, sauf en repas plaisir.</p>
-      <p class="vide">Ajouter, retirer ou peser un aliment s’applique à ce jour et à tous les jours de même rang, donc tous les 14 jours. Un plat choisi dans « Plat libre » et un repas plaisir ne concernent que ce jour.</p>
+      <p class="vide">Ajouter, retirer ou peser un aliment s’applique à ce jour et à tous les jours de même rang de la même saison, donc tous les 14 jours. Un plat choisi dans « Plat libre » et un repas plaisir ne concernent que ce jour.</p>
     </section>`;
 }
 
@@ -708,7 +800,7 @@ function alternatives(j, cle) {
     if (semaineDe(k) === semaineDe(j)) dejaPrevus.add(repasDuJour(k, cle).nom);
   }
   const vus = new Set();
-  return MENUS
+  return menusDe(j)
     .map((m, i) => ({ i, plat: m[cle], prot: totaux(m[cle].items).p }))
     .filter(({ plat }) => {
       if (plat.nom === actuel.nom || dejaPrevus.has(plat.nom) || vus.has(plat.nom)) return false;
@@ -760,7 +852,7 @@ document.querySelector('#app').addEventListener('click', (e) => {
   if (action === 'choisir') {
     const j = Number(b.dataset.j);
     const cle = b.dataset.cle;
-    const plat = MENUS[Number(b.dataset.i)][cle];
+    const plat = menusDe(j)[Number(b.dataset.i)][cle];
     const items = plat.items.map((it) => ({ ...it }));
     if (appliquer(j, cle, items, plat.nom, true)) altOuvert = null;
     return rafraichirAlt(vue);
@@ -811,7 +903,7 @@ function vueMenusSemaine() {
         <div><strong>Semaine du</strong><small>${esc(libelleJour(debutSemaine(s)))}</small></div>
         <button data-menu="next" aria-label="Semaine suivante" ${s >= derniere ? 'disabled' : ''}>›</button>
       </div>
-      <p class="graphe-legende">Objectif : ${REGLES.protJour} g de protéines par jour, en vert quand il est atteint.</p>
+      <p class="graphe-legende">${esc(libelleSaison(jours[0] ?? 0))} · objectif ${REGLES.protJour} g de protéines par jour, en vert quand il est atteint.</p>
     </section>
     ${cartes}
     <section class="carte">
@@ -915,6 +1007,11 @@ const ACHATS = {
   'Aubergine, cuite': poids('Aubergine', 1.3),
   'Chou, cuit': poids('Chou', 1.3),
   'Céleri-rave, cuit': poids('Céleri-rave', 1.3),
+  'Potiron, cuit': poids('Potiron (avec peau)', 1.4),
+  'Courge butternut, cuite': poids('Courge butternut (avec peau)', 1.3),
+  'Panais, cuit': poids('Panais', 1.2),
+  'Navet, cuit': poids('Navets', 1.2),
+  'Chou de Bruxelles, cuit': poids('Choux de Bruxelles', 1.1),
   // Vendus à la pièce
   'Œuf entier': piece('Œufs', 50),
   'Œuf de caille': piece('Œufs de caille', 10),
@@ -930,6 +1027,9 @@ const ACHATS = {
   'Ananas': piece('Ananas', 900),
   'Melon': piece('Melons', 800),
   'Figue fraîche': piece('Figues fraîches', 50),
+  'Clémentine': piece('Clémentines', 70),
+  'Pamplemousse': piece('Pamplemousses', 300),
+  'Endive': piece('Endives', 120),
   'Tomate': piece('Tomates', 120),
   'Poivron rouge': piece('Poivrons rouges', 150),
   'Concombre': piece('Concombres', 300),
@@ -994,8 +1094,8 @@ function listeCourses(s) {
 
 // Rayons de la liste de courses, dans l'ordre d'un parcours en magasin
 const RAYONS = [
-  ['Fruits', ['Banane', 'Pomme', 'Myrtilles', 'Avocat', 'Orange', 'Kiwi', 'Fraise', 'Framboise', 'Raisin', 'Poire', 'Pêche', 'Mangue', 'Ananas', 'Pastèque', 'Melon', 'Cerise', 'Abricot', 'Figue fraîche']],
-  ['Légumes', ['Brocoli, cuit', 'Épinards, cuits', 'Tomate', 'Carotte crue', 'Courgette, cuite', 'Poivron rouge', 'Haricots verts, cuits', 'Concombre', 'Laitue', 'Champignons de Paris', 'Oignon', 'Chou-fleur, cuit', 'Asperges, cuites', 'Poireau, cuit', 'Aubergine, cuite', 'Chou, cuit', 'Betterave, cuite', 'Céleri-rave, cuit', 'Pommes de terre, vapeur', 'Patate douce, cuite']],
+  ['Fruits', ['Banane', 'Pomme', 'Myrtilles', 'Avocat', 'Orange', 'Kiwi', 'Fraise', 'Framboise', 'Raisin', 'Poire', 'Pêche', 'Mangue', 'Ananas', 'Pastèque', 'Melon', 'Cerise', 'Abricot', 'Figue fraîche', 'Clémentine', 'Pamplemousse', 'Fruits rouges surgelés']],
+  ['Légumes', ['Brocoli, cuit', 'Épinards, cuits', 'Tomate', 'Carotte crue', 'Courgette, cuite', 'Poivron rouge', 'Haricots verts, cuits', 'Concombre', 'Laitue', 'Champignons de Paris', 'Oignon', 'Chou-fleur, cuit', 'Asperges, cuites', 'Poireau, cuit', 'Aubergine, cuite', 'Chou, cuit', 'Betterave, cuite', 'Céleri-rave, cuit', 'Pommes de terre, vapeur', 'Patate douce, cuite', 'Potiron, cuit', 'Courge butternut, cuite', 'Panais, cuit', 'Navet, cuit', 'Chou de Bruxelles, cuit', 'Endive', 'Mâche', 'Tomates concassées (conserve)']],
   ['Viandes et charcuterie', ['Poulet, blanc cuit', 'Poulet, cuisse sans peau, cuite', 'Poulet rôti, sans peau', 'Dinde, blanc cuit', 'Dinde hachée 5 %, cuite', 'Bœuf haché 5 %, cuit', 'Bœuf haché 15 %, cuit', 'Bœuf, filet cuit', 'Veau, escalope cuite', 'Porc, filet mignon cuit', 'Agneau, gigot cuit', 'Lapin, cuit', 'Canard, magret cuit', 'Jambon blanc', 'Jambon cru (sec)', 'Saucisson sec']],
   ['Poissons et fruits de mer', ['Saumon, cuit', 'Saumon fumé', 'Thon au naturel, égoutté', 'Cabillaud, cuit', 'Crevettes, cuites', 'Maquereau, cuit', 'Sardines à l’huile, égouttées', 'Truite, cuite', 'Lieu noir, cuit', 'Merlu, cuit', 'Dorade, cuite', 'Sole, cuite', 'Espadon, cuit', 'Hareng fumé', 'Moules, cuites', 'Calamar, cuit']],
   ['Œufs et produits laitiers', ['Œuf entier', 'Blanc d’œuf', 'Œuf de caille', 'Skyr nature', 'Fromage blanc 0 %', 'Fromage blanc 3 %', 'Yaourt grec 0 %', 'Yaourt nature entier', 'Cottage cheese', 'Kéfir nature', 'Lait demi-écrémé', 'Lait écrémé', 'Lait entier', 'Mozzarella', 'Feta', 'Emmental', 'Comté', 'Parmesan', 'Ricotta', 'Beurre']],
@@ -1263,7 +1363,7 @@ document.querySelector('#app').addEventListener('click', (e) => {
     // D'abord le plat choisi pour ce jour, s'il y en a un ; sinon la modification tous les 14 jours
     const kJour = `${jourISO(jour)}-${cle}`;
     if (joursModifs[kJour]) delete joursModifs[kJour];
-    else delete repasModifs[`${jour % ROTATION}-${cle}`];
+    else delete repasModifs[cleRang(jour, cle)];
     sauverRepas();
     return vueNutrition();
   }
