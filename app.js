@@ -406,7 +406,13 @@ function demo(nom) {
   $('#demo-titre').textContent = nom;
   $('#demo-anim').innerHTML = ficheExercice(nom);
   $('#demo-video').href = lienVideo(nom);
-  $('#demo').showModal();
+  const fiche = $('#demo');
+  fiche.style.transition = 'none';
+  fiche.style.transform = '';
+  fiche.style.opacity = '';
+  fiche.showModal();
+  // Toujours en haut de la fiche (le focus automatique la faisait défiler jusqu'au bouton vidéo)
+  fiche.scrollTop = 0;
   $('#demo-anim').scrollTop = 0;
   demarrerAnimationExo(nom);
 }
@@ -761,6 +767,10 @@ function supprimerMesure(i) {
 /* ---------- À propos : historique des évolutions ---------- */
 
 const EVOLUTIONS = [
+  { version: '1.39', titre: 'Fermer la fiche d’un geste', items: [
+    'La fiche d’un exercice se ferme en glissant vers le bas, vers la gauche ou vers la droite. Un appui à côté de la fiche la ferme aussi.',
+    'La fiche s’ouvre toujours en haut, sur l’animation.'
+  ] },
   { version: '1.38', titre: 'Nouveau design', items: [
     'Nouvelle identité : bleu marine d’équipe, bleu cobalt pour les actions et orange « effort » pour les muscles travaillés.',
     'Nouvelle police (Archivo) : grands titres étroits en italique, chiffres façon tableau d’affichage (séries, apports, durées).',
@@ -1124,6 +1134,75 @@ $('#app').addEventListener('change', (e) => {
 });
 
 $('#demo-fermer').addEventListener('click', () => $('#demo').close());
+
+/* ---------- Fiche d'exercice : glisser pour fermer ---------- */
+// Vers le bas (quand la fiche est en haut), vers la gauche ou vers la droite.
+// Un appui à côté de la fiche la ferme aussi.
+(() => {
+  const fiche = $('#demo');
+  let g = null;   // { x, y, haut, verrou, dx, dy }
+
+  const placer = (tx, ty, transition) => {
+    fiche.style.transition = transition;
+    fiche.style.transform = tx || ty ? `translate3d(${tx}px, ${ty}px, 0)` : '';
+    fiche.style.opacity = String(1 - Math.min((Math.abs(tx) + Math.abs(ty)) / 600, 0.5));
+  };
+
+  fiche.addEventListener('touchstart', (e) => {
+    if (e.touches.length > 1) { g = null; return; }
+    const t = e.touches[0];
+    g = { x: t.clientX, y: t.clientY, haut: fiche.scrollTop <= 0, verrou: null, dx: 0, dy: 0 };
+  }, { passive: true });
+
+  fiche.addEventListener('touchmove', (e) => {
+    if (!g) return;
+    const t = e.touches[0];
+    const dx = t.clientX - g.x;
+    const dy = t.clientY - g.y;
+    if (g.verrou === null) {
+      if (Math.abs(dx) < 8 && Math.abs(dy) < 8) return;
+      if (Math.abs(dx) > Math.abs(dy) * 1.2) g.verrou = 'h';
+      else if (dy > 0 && g.haut) g.verrou = 'v';
+      else { g = null; return; }   // défilement normal de la fiche
+    }
+    e.preventDefault();
+    g.dx = g.verrou === 'h' ? dx : 0;
+    g.dy = g.verrou === 'v' ? Math.max(0, dy) : 0;
+    placer(g.dx, g.dy, 'none');
+  }, { passive: false });
+
+  const relacher = () => {
+    if (!g || !g.verrou) { g = null; return; }
+    const { dx, dy } = g;
+    g = null;
+    if (Math.abs(dx) > 80 || dy > 100) {
+      // La fiche part dans le sens du geste, puis se ferme
+      const tx = dx ? Math.sign(dx) * window.innerWidth : 0;
+      const ty = dy ? window.innerHeight : 0;
+      placer(tx, ty, 'transform .22s ease-in, opacity .22s ease-in');
+      setTimeout(() => fiche.close(), 210);
+    } else {
+      placer(0, 0, 'transform .3s cubic-bezier(.2,.9,.25,1.1), opacity .3s ease-out');
+    }
+  };
+  fiche.addEventListener('touchend', relacher, { passive: true });
+  fiche.addEventListener('touchcancel', relacher, { passive: true });
+
+  // Appui sur le fond assombri, à côté de la fiche
+  fiche.addEventListener('click', (e) => {
+    if (e.target !== fiche) return;
+    const r = fiche.getBoundingClientRect();
+    const dedans = e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom;
+    if (!dedans) fiche.close();
+  });
+
+  // Prête à se rouvrir normalement
+  fiche.addEventListener('close', () => {
+    fiche.style.transition = 'none';
+    fiche.style.transform = '';
+    fiche.style.opacity = '';
+  });
+})();
 
 /* ---------- Glisser pour changer d'onglet ---------- */
 

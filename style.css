@@ -941,3 +941,6 @@ button.lien-maison {
 .guide-minuteur li { margin-bottom: 6px; }
 .champ-raccourci { display: block; margin: 10px 0 4px; }
 .champ-raccourci input { margin-top: 6px; }
+
+/* Poignée : la fiche se ferme en glissant */
+#demo::before { content: ''; display: block; width: 40px; height: 4px; margin: -6px auto 10px; border-radius: 2px; background: var(--discret); opacity: 0.45; }
