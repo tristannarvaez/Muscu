@@ -761,6 +761,10 @@ function supprimerMesure(i) {
 /* ---------- À propos : historique des évolutions ---------- */
 
 const EVOLUTIONS = [
+  { version: '1.35', titre: 'Minuteurs iPhone', items: [
+    'Bouton « ⏰ Minuteur » sur chaque cuisson du planning du batch et des recettes : il lance le vrai minuteur de l’iPhone avec la bonne durée, qui sonne même écran verrouillé.',
+    'Il passe par un raccourci « Minuteur Cadence » à créer une fois dans l’app Raccourcis : le guide pas à pas est dans l’onglet Cuisine, carte « Avant de commencer ».'
+  ]},
   { version: '1.34', titre: 'Fiches d’exercice animées', items: [
     'Le bouton ▶ ouvre une fiche avec un mannequin animé qui fait le geste ; les muscles travaillés s’allument pendant le mouvement.',
     'Une carte du corps de face et de dos montre les muscles principaux (rose vif) et secondaires (rose pâle).',

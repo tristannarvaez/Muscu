@@ -539,7 +539,7 @@ function actionsPlanning(plan) {
   plan.evts.forEach((e) => {
     const qte = e.premier && e.tache ? `Pour ${e.tache.portions} portion${e.tache.portions > 1 ? 's' : ''} : ${ingredients(e.tache)}` : '';
     if (e.id === 'four') {
-      actions.push({ id: e.id, t: e.debut, ordre: 0, type: 'lance', r: 'four', tag: '♨️ Lance · Four', titre: 'Four', txt: 'Allume le four à 200 °C (chaleur tournante si tu l’as) : il sera chaud dans 10 à 15 min.' });
+      actions.push({ id: e.id, t: e.debut, ordre: 0, type: 'lance', r: 'four', tag: '♨️ Lance · Four', titre: 'Four', txt: 'Allume le four à 200 °C (chaleur tournante si tu l’as) : il sera chaud dans 10 à 15 min.', pied: boutonMinuteur(12, 'le préchauffage') });
       return;
     }
     if (e.r === 'toi') {
@@ -552,7 +552,7 @@ function actionsPlanning(plan) {
     actions.push({ id: e.id, t: e.debut, ordre: 2, type: 'lance', r: e.r, tag: `${ICONE_APPAREIL[e.r]} Lance · ${nom} · ${d} min`, titre: e.titre, qte, txt: e.txt,
       pied: `⏰ Prêt à <strong>${heureDe(e.fin)}</strong>${e.m ? ' · reste à côté pour remuer'
         : /ajoute|retourne|remue|mélange à mi|à mi-cuisson/i.test(e.txt) ? ' · passe à la suite, mais reviens pour les ajouts indiqués'
-        : ' · ça cuit tout seul, passe à la suite'}` });
+        : ' · ça cuit tout seul, passe à la suite'}${boutonMinuteur(d, e.titre)}` });
     actions.push({ id: `${e.id}~fin`, t: e.fin, ordre: -1, type: 'alarme', r: e.r, tag: `⏰ C’est prêt · ${nom}`, titre: e.titre,
       txt: `${FIN_CUISSON[e.r]} ${suite ? 'L’étape suivante de ce plat vient juste après.' : 'Étale ou laisse tiédir à découvert avant la mise en boîte.'}` });
   });
@@ -663,8 +663,38 @@ function gesteHTML(e) {
   const app = e.r && e.r !== 'toi' ? ` · ${APPAREILS[e.r].nom.toLowerCase()}` : '';
   const duree = e.min ? `<span class="geste-duree">⏱ ${fmtMin(e.min)}${app}</span>` : '';
   const note = (t) => (t ? `<span class="geste-note">${esc(t)}</span>` : '');
-  const alt = e.alt ? `<div class="geste-alt"><strong>Ou bien</strong> ${esc(e.alt.txt)} <span class="geste-duree">⏱ ${fmtMin(e.alt.min)}</span>${note(e.alt.note)}</div>` : '';
-  return `<li><span>${esc(e.txt)}</span> ${duree}${note(e.note)}${alt}</li>`;
+  const cuisson = (x) => x.min >= 3 && x.r && x.r !== 'toi';
+  const alt = e.alt ? `<div class="geste-alt"><strong>Ou bien</strong> ${esc(e.alt.txt)} <span class="geste-duree">⏱ ${fmtMin(e.alt.min)}</span>${note(e.alt.note)}${cuisson(e.alt) ? boutonMinuteur(e.alt.min) : ''}</div>` : '';
+  return `<li><span>${esc(e.txt)}</span> ${duree}${note(e.note)}${cuisson(e) ? boutonMinuteur(e.min) : ''}${alt}</li>`;
+}
+
+/* ---------- Minuteur de l'iPhone, via l'app Raccourcis ---------- */
+
+// Une appli web ne peut pas régler l'Horloge elle-même : elle lance le raccourci
+// « Minuteur Cadence » en lui passant la durée en minutes.
+const NOM_RACCOURCI = 'Minuteur Cadence';
+const lienMinuteur = (min) => `shortcuts://run-shortcut?name=${encodeURIComponent(NOM_RACCOURCI)}&input=text&text=${Math.max(1, Math.round(min))}`;
+
+function boutonMinuteur(min, quoi = '') {
+  return `<a class="bouton-minuteur" href="${lienMinuteur(min)}" aria-label="Lancer un minuteur de ${Math.round(min)} min sur l’iPhone${quoi ? ` pour ${esc(quoi)}` : ''}">⏰ Minuteur ${fmtMin(Math.round(min))}</a>`;
+}
+
+function guideMinuteur() {
+  return `
+    <details class="guide-minuteur">
+      <summary>⏰ Minuteurs sur ton iPhone : à régler une fois</summary>
+      <p>Les boutons <strong>⏰ Minuteur</strong> lancent le vrai minuteur de l’iPhone (il sonne même écran verrouillé). Il faut d’abord créer ce raccourci, une seule fois :</p>
+      <ol>
+        <li>Ouvre l’app <strong>Raccourcis</strong>, touche <strong>+</strong> en haut à droite.</li>
+        <li>Touche le nom en haut et appelle le raccourci exactement <strong>${NOM_RACCOURCI}</strong>.</li>
+        <li>Cherche l’action <strong>Obtenir les nombres de l’entrée</strong> (« Get Numbers from Input » si ton iPhone est en anglais) et ajoute-la : elle doit afficher « Entrée du raccourci ».</li>
+        <li>Cherche l’action <strong>Démarrer le minuteur</strong> (app Horloge) et ajoute-la en dessous.</li>
+        <li>Dans cette action, touche la durée, choisis la variable <strong>Nombres</strong> et l’unité <strong>minutes</strong>.</li>
+        <li>Touche <strong>OK</strong>. C’est prêt.</li>
+      </ol>
+      <p>La première fois, l’iPhone te demande d’autoriser Cadence à lancer le raccourci : réponds <strong>Toujours autoriser</strong>. Le raccourci s’ouvre une seconde puis tu peux revenir dans Cadence.</p>
+      ${boutonMinuteur(1)} <span class="vide">← pour tester avec 1 minute</span>
+    </details>`;
 }
 
 function blocRecetteHTML(b) {
@@ -862,6 +892,7 @@ function vueCuisine() {
         <li>Sors tous les ingrédients de la liste de courses, une planche, un bon couteau, un économe et deux plaques de four.</li>
         <li>Lave et range au fur et à mesure : c’est ce qui fait gagner le plus de temps.</li>
       </ul>
+      ${guideMinuteur()}
     </section>
 
     <section class="carte">

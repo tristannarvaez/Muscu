@@ -837,3 +837,13 @@ button.lien-maison {
 :root[data-theme="clair"] .carte-corps .silhouette, :root[data-theme="clair"] .carte-corps .tete-carte { fill: #e3e7ef; }
 :root[data-theme="clair"] .carte-corps .zone { fill: #c9cfdb; }
 :root[data-theme="clair"] .muscles-ligne { color: #e0246b; }
+
+/* Minuteur de l'iPhone (via Raccourcis) */
+.bouton-minuteur { display: inline-flex; align-items: center; gap: 4px; margin: 6px 6px 0 0; padding: 5px 10px; border-radius: 999px; font-size: 0.78rem; font-weight: 700; text-decoration: none; color: #0a0f00; background: var(--accent); white-space: nowrap; }
+.bouton-minuteur:active { transform: scale(0.96); }
+.etape-pied .bouton-minuteur { display: flex; width: fit-content; }
+.guide-minuteur { margin-top: 12px; padding: 10px 12px; border: 1px dashed var(--bord); border-radius: 12px; font-size: 0.86rem; line-height: 1.45; }
+.guide-minuteur summary { font-weight: 700; cursor: pointer; }
+.guide-minuteur ol { padding-left: 20px; margin: 8px 0; }
+.guide-minuteur li { margin-bottom: 6px; }
+:root[data-theme="clair"] .bouton-minuteur { color: #ffffff; }
