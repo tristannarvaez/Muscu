@@ -539,6 +539,7 @@ function vueJournal() {
         <button class="${lieuChoisi === 'salle' ? 'principal' : 'secondaire'}" data-lieu="salle">Salle</button>
         <button class="${lieuChoisi === 'maison' ? 'principal' : 'secondaire'}" data-lieu="maison">Maison</button>
       </div>
+      <a class="bouton-musique" href="https://music.amazon.fr/home" target="_blank" rel="noopener">🎧 Ouvrir Amazon Music</a>
       ${legere ? '<p class="bandeau-legere">🌿 <strong>Semaine légère</strong> : une série de moins, charges −10&nbsp;%. Ces séances ne freinent pas ta progression.</p>' : ''}
       <p class="vide">La charge en gris est celle conseillée : si tu la gardes, tape seulement tes répétitions.</p>
       ${lieuChoisi === 'maison' ? '<p class="vide">Version maison : haltères, barre de traction et élastiques. Sans charge, laisse « kg » vide et note tes répétitions.</p>' : ''}
@@ -760,6 +761,9 @@ function supprimerMesure(i) {
 /* ---------- À propos : historique des évolutions ---------- */
 
 const EVOLUTIONS = [
+  { version: '1.30', titre: 'Musique', items: [
+    'Bouton « Ouvrir Amazon Music » dans le Journal : il lance l’appli Amazon Music (ou le lecteur web si elle n’est pas installée). Lance ta playlist avant la séance, puis reviens dans Cadence.'
+  ]},
   { version: '1.29', titre: 'Semaine légère', items: [
     'Toutes les 6 semaines, une semaine plus facile pour récupérer : une série de moins par exercice, charges −10 %, 3 répétitions gardées en réserve.',
     'L’onglet Programme indique la prochaine semaine légère ; tu peux la faire plus tôt (fatigue, douleurs) ou la reporter d’une semaine.',
