@@ -603,6 +603,23 @@ nav.barre button.centre.actif { color: #ffffff; }
 .nut-nav button { width: 44px; height: 44px; border-radius: 50%; font-size: 1.4rem; padding: 0; }
 .repas-nom { font-size: 1.1rem; font-weight: 700; line-height: 1.35; }
 .macros { color: var(--discret); font-size: 0.85rem; margin-top: 6px; }
+/* Version maison */
+.grille.lieu { margin-top: 4px; }
+.grille.lieu button { margin-top: 0; padding: 10px; }
+button.lien-maison {
+  display: block;
+  margin-top: 4px;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--accent);
+  font-size: 0.8rem;
+  text-align: left;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+:root[data-theme="clair"] button.lien-maison { background: none; }
+
 /* Planning de la semaine */
 .plan-ligne { padding: 10px 0; border-top: 1px solid var(--bord); }
 .plan-ligne:first-of-type { border-top: none; }

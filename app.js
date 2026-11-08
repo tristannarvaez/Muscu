@@ -228,6 +228,7 @@ function vueSeances() {
           <div>
             <strong>${esc(e.nom)}</strong>
             <small>${e.series} × ${esc(e.reps)}</small>
+            ${VERSION_MAISON[e.nom] ? `<button class="lien-maison" data-demo="${esc(VERSION_MAISON[e.nom])}">Maison : ${esc(VERSION_MAISON[e.nom])}</button>` : ''}
           </div>
           <div class="actions">
             <button data-demo="${esc(e.nom)}" aria-label="Démonstration">▶</button>
@@ -289,6 +290,12 @@ function dernierResultat(nom) {
   return 'Pas encore de donnée';
 }
 
+// Lieu de la séance, mémorisé sur l'appareil : 'salle' ou 'maison'
+let lieuChoisi = (() => {
+  try { return localStorage.getItem('musculation-lieu') === 'maison' ? 'maison' : 'salle'; } catch (e) { return 'salle'; }
+})();
+let dateJournal = null;   // date choisie, gardée quand on change de séance ou de lieu
+
 function vueJournal() {
   const seance = state.programme.find((s) => s.id === seanceChoisie) || seanceDuJour() || state.programme[0];
   seanceChoisie = seance.id;
@@ -299,11 +306,17 @@ function vueJournal() {
     <h2>Journal</h2>
     <section class="carte">
       <div class="grille">
-        <label>Date<input type="date" id="j-date" value="${today()}"></label>
+        <label>Date<input type="date" id="j-date" value="${dateJournal || today()}"></label>
         <label>Séance<select id="j-seance">${options}</select></label>
       </div>
+      <div class="grille lieu">
+        <button class="${lieuChoisi === 'salle' ? 'principal' : 'secondaire'}" data-lieu="salle">Salle</button>
+        <button class="${lieuChoisi === 'maison' ? 'principal' : 'secondaire'}" data-lieu="maison">Maison</button>
+      </div>
+      ${lieuChoisi === 'maison' ? '<p class="vide">Version maison : haltères, barre de traction et élastiques. Sans charge, laisse « kg » vide et note tes répétitions.</p>' : ''}
       <div id="j-exos">
-        ${seance.exos.map((e, ei) => {
+        ${seance.exos.map((e0, ei) => {
+          const e = { ...e0, nom: nomSelonLieu(e0.nom, lieuChoisi) };
           let lignes = '';
           for (let i = 0; i < e.series; i++) {
             lignes += `
@@ -316,6 +329,7 @@ function vueJournal() {
           return `
             <div class="exo">
               <div class="exo-titre"><strong>${esc(e.nom)}</strong><small>${esc(dernierResultat(e.nom))}</small></div>
+              ${e.nom !== e0.nom ? `<button class="lien-maison" data-demo="${esc(e.nom)}">Comment faire ?</button>` : ''}
               ${lignes}
             </div>`;
         }).join('')}
@@ -336,15 +350,16 @@ function enregistrerSeance() {
       const reps = num(document.querySelector(`[data-ex="${ei}"][data-s="${i}"][data-f="reps"]`).value);
       if (charge !== null || reps !== null) sets.push({ charge, reps });
     }
-    return { nom: e.nom, sets };
+    return { nom: nomSelonLieu(e.nom, lieuChoisi), sets };
   }).filter((e) => e.sets.length);
 
   if (!exos.length) {
     alert('Rien à enregistrer : renseigne au moins une série.');
     return;
   }
-  state.journal.push({ date, seance: seance.id, exos });
+  state.journal.push({ date, seance: seance.id, lieu: lieuChoisi, exos });
   sauver();
+  dateJournal = null;
   vueJournal();
 }
 
@@ -358,7 +373,7 @@ function historiqueJournal() {
       const seance = state.programme.find((s) => s.id === j.seance);
       return `
         <div class="histo">
-          <div><strong>${j.date}</strong><br><small>${esc(seance ? seance.nom : '')}</small></div>
+          <div><strong>${j.date}</strong><br><small>${esc(seance ? seance.nom : '')}${j.lieu === 'maison' ? ' · maison' : ''}</small></div>
           <button data-supp="${i}" class="danger" aria-label="Supprimer">✕</button>
         </div>`;
     }).join('');
@@ -509,6 +524,11 @@ function supprimerMesure(i) {
 /* ---------- À propos : historique des évolutions ---------- */
 
 const EVOLUTIONS = [
+  { version: '1.18', titre: 'Séances à la maison', items: [
+    'Dans le journal, choix Salle ou Maison : les exercices de machine sont remplacés par une version haltères, traction ou élastique.',
+    'Le programme indique la version maison de chaque exercice, avec ses points clés.',
+    'L’historique précise les séances faites à la maison.'
+  ]},
   { version: '1.17', titre: 'Mises à jour plus rapides', items: [
     'Les nouvelles versions s’affichent dès l’ouverture de l’app, sans attendre.'
   ]},
@@ -688,6 +708,14 @@ document.querySelectorAll('[data-tab]').forEach((b) =>
 $('#app').addEventListener('click', (e) => {
   const b = e.target.closest('button');
   if (!b) return;
+  if (b.dataset.lieu !== undefined) {
+    if (b.dataset.lieu === lieuChoisi) return;
+    const saisi = [...document.querySelectorAll('#j-exos input')].some((i) => i.value.trim());
+    if (saisi && !confirm('Changer de lieu efface les séries déjà saisies. Continuer ?')) return;
+    lieuChoisi = b.dataset.lieu;
+    try { localStorage.setItem('musculation-lieu', lieuChoisi); } catch (err) { /* non bloquant */ }
+    return vueJournal();
+  }
   if (b.dataset.planDecaler !== undefined) {
     decalageOuvert = decalageOuvert === b.dataset.planDecaler ? null : b.dataset.planDecaler;
     return vueSeances();
@@ -720,6 +748,7 @@ $('#app').addEventListener('click', (e) => {
 });
 
 $('#app').addEventListener('change', (e) => {
+  if (e.target.id === 'j-date') dateJournal = e.target.value || null;
   if (e.target.id === 'j-seance') {
     seanceChoisie = e.target.value;
     vueJournal();

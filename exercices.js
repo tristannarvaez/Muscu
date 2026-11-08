@@ -67,12 +67,52 @@ const EXERCICES = {
     'Coudes à environ 45° du corps.',
     'Si c’est trop dur, pose les mains sur un banc ou une surface haute.'
   ]},
+  // Exercices de la version maison
+  'Squat bulgare haltères': { conseils: [
+    'Pied arrière posé sur une chaise ou un canapé, pied avant assez loin devant.',
+    'Descends droit, genou avant dans l’axe du pied, buste légèrement penché.',
+    'Toutes les séries d’une jambe, puis l’autre. Si c’est trop facile, ralentis la descente sur 3 secondes.'
+  ]},
+  'Tractions': { conseils: [
+    'Barre de porte bien fixée, prise un peu plus large que les épaules.',
+    'Abaisse les omoplates avant de plier les bras, monte le menton au-dessus de la barre.',
+    'Pas encore de traction complète ? Saute en haut et redescends le plus lentement possible, ou utilise un élastique d’assistance.'
+  ]},
+  'Rowing inversé': { conseils: [
+    'Allongé sous une table très solide (ou une barre basse), mains sur le bord.',
+    'Corps gainé et droit, tire la poitrine vers la table en serrant les omoplates.',
+    'Plus les pieds sont loin devant, plus c’est dur. Pieds surélevés pour progresser.'
+  ]},
+  'Face pulls élastique': { conseils: [
+    'Élastique accroché à hauteur de visage (porte fermée, ancrage de porte).',
+    'Tire vers le visage en écartant les mains, coudes hauts.',
+    'Marque une pause d’une seconde en fin de mouvement.'
+  ]},
+  'Rotations externes élastique': { conseils: [
+    'Élastique léger accroché à hauteur du coude, coude collé au corps et plié à 90°.',
+    'Tourne l’avant-bras vers l’extérieur sans bouger le coude.',
+    'Mouvement lent et contrôlé, sans à-coups.'
+  ]},
   'Gainage': { conseils: [
     'Coudes sous les épaules, corps aligné.',
     'Contracte abdos et fessiers.',
     'Respire normalement, ne laisse pas le bassin tomber.'
   ]}
 };
+
+// Remplacements pour s'entraîner à la maison (haltères, barre de traction, élastiques).
+// Un exercice absent de cette liste se fait tel quel à la maison.
+const VERSION_MAISON = {
+  'Presse à cuisses': 'Squat bulgare haltères',
+  'Tirage vertical': 'Tractions',
+  'Tirage horizontal': 'Rowing inversé',
+  'Face pulls': 'Face pulls élastique',
+  'Rotations externes': 'Rotations externes élastique'
+};
+
+function nomSelonLieu(nom, lieu) {
+  return lieu === 'maison' ? (VERSION_MAISON[nom] || nom) : nom;
+}
 
 function conseilsHTML(nom) {
   const ex = EXERCICES[nom] || { conseils: ['Pas encore de conseils pour cet exercice. La vidéo ci-dessous te montre la technique.'] };
