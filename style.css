@@ -849,3 +849,23 @@ button.lien-maison {
 :root[data-theme="clair"] .bouton-minuteur { color: #ffffff; }
 .champ-raccourci { display: block; margin: 10px 0 4px; }
 .champ-raccourci input { margin-top: 6px; }
+
+/* Mannequin en volume (remplace les bonshommes en bâtons) */
+.scene .corps { fill: #dde2eb; stroke: rgba(6, 8, 14, 0.5); stroke-width: 0.7; }
+.scene .corps-loin { fill: #7d8598; stroke: rgba(6, 8, 14, 0.55); stroke-width: 0.7; }
+.scene .muscle-p { fill: #ff3d7f; stroke: rgba(110, 0, 38, 0.55); stroke-width: 0.5; filter: drop-shadow(0 0 2px rgba(255, 61, 127, 0.55)); }
+.scene .muscle-s { fill: #ffa3c2; stroke: rgba(110, 0, 38, 0.35); stroke-width: 0.5; }
+.scene .cheveux, .scene .chaussure { fill: #2b3040; stroke: rgba(0, 0, 0, 0.4); stroke-width: 0.6; }
+:root[data-theme="clair"] .scene .corps { fill: #c2c9d6; stroke: rgba(30, 36, 50, 0.55); }
+:root[data-theme="clair"] .scene .corps-loin { fill: #e3e7ee; stroke: rgba(30, 36, 50, 0.4); }
+:root[data-theme="clair"] .scene .cheveux, :root[data-theme="clair"] .scene .chaussure { fill: #3a4254; }
+
+/* Carte du corps : muscles bien visibles, cibles en couleur (y compris en thème clair) */
+.carte-corps .silhouette, .carte-corps .tete-carte { fill: #121620; }
+.carte-corps .zone { fill: #4d566b; stroke: #121620; stroke-width: 0.8; }
+.carte-corps .zone.zone-p { fill: #ff3d7f; filter: drop-shadow(0 0 2px rgba(255, 61, 127, 0.75)); opacity: 1; }
+.carte-corps .zone.zone-s { fill: #ffa3c2; opacity: 1; }
+:root[data-theme="clair"] .carte-corps .silhouette, :root[data-theme="clair"] .carte-corps .tete-carte { fill: #dfe3ea; }
+:root[data-theme="clair"] .carte-corps .zone { fill: #aab2c3; stroke: #f4f6fa; }
+:root[data-theme="clair"] .carte-corps .zone.zone-p { fill: #e0246b; }
+:root[data-theme="clair"] .carte-corps .zone.zone-s { fill: #f59ab9; }

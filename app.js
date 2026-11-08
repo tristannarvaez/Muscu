@@ -761,6 +761,11 @@ function supprimerMesure(i) {
 /* ---------- À propos : historique des évolutions ---------- */
 
 const EVOLUTIONS = [
+  { version: '1.37', titre: 'Mannequins en volume', items: [
+    'Les animations montrent un mannequin en volume (buste, cuisses, mollets, bras galbés) au lieu d’un bonhomme en bâtons.',
+    'Les muscles travaillés sont dessinés à leur place sur le corps : pectoraux devant, dorsaux derrière, quadriceps à l’avant de la cuisse, ischios à l’arrière…',
+    'Carte du corps corrigée : chaque muscle est visible et les muscles ciblés ressortent en rose, y compris en thème clair (ils n’apparaissaient pas).'
+  ]},
   { version: '1.36', titre: 'Minuteur : nom du raccourci réglable', items: [
     'Si l’iPhone répond « raccourci introuvable », tape dans le guide (onglet Cuisine) le nom exact de ton raccourci : tous les boutons ⏰ Minuteur l’utilisent aussitôt.',
     'Guide remis dans l’ordre de l’app Raccourcis et simplifié : une seule action, « Démarrer le minuteur » réglée sur « Entrée du raccourci ».'

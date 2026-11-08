@@ -4,30 +4,30 @@
 
 /* ---------- Muscles ---------- */
 
-// seg : partie du mannequin qui s'allume ; cote : +1 devant, -1 derrière, 0 au milieu
+// seg : partie du mannequin où se trouve le muscle ; cote : +1 devant, -1 derrière, 0 des deux côtés ;
+// t : de où à où le long de cette partie (0 = articulation du haut, 1 = celle du bas)
 const MUSCLES = {
-  pectoraux: { nom: 'Pectoraux', seg: 'buste', cote: 1 },
-  abdos: { nom: 'Abdominaux', seg: 'buste', cote: 1 },
-  obliques: { nom: 'Obliques', seg: 'buste', cote: 0 },
-  dorsaux: { nom: 'Dorsaux', seg: 'buste', cote: -1 },
-  trapezes: { nom: 'Trapèzes', seg: 'buste', cote: -1 },
-  lombaires: { nom: 'Lombaires', seg: 'buste', cote: -1 },
-  deltoides: { nom: 'Épaules', seg: 'epaule', cote: 0 },
-  'deltoides-post': { nom: 'Arrière d’épaule', seg: 'epaule', cote: 0 },
-  coiffe: { nom: 'Coiffe des rotateurs', seg: 'epaule', cote: 0 },
-  biceps: { nom: 'Biceps', seg: 'bras', cote: 1 },
-  triceps: { nom: 'Triceps', seg: 'bras', cote: -1 },
-  'avant-bras': { nom: 'Avant-bras', seg: 'avbras', cote: 0 },
-  quadriceps: { nom: 'Quadriceps', seg: 'cuisse', cote: 1 },
-  ischios: { nom: 'Ischio-jambiers', seg: 'cuisse', cote: -1 },
-  fessiers: { nom: 'Fessiers', seg: 'hanche', cote: 0 },
-  mollets: { nom: 'Mollets', seg: 'tibia', cote: -1 }
+  pectoraux: { nom: 'Pectoraux', seg: 'buste', cote: 1, t: [0.6, 0.97] },
+  abdos: { nom: 'Abdominaux', seg: 'buste', cote: 1, t: [0.1, 0.58] },
+  obliques: { nom: 'Obliques', seg: 'buste', cote: 0, t: [0.14, 0.5] },
+  dorsaux: { nom: 'Dorsaux', seg: 'buste', cote: -1, t: [0.4, 0.86] },
+  trapezes: { nom: 'Trapèzes', seg: 'buste', cote: -1, t: [0.8, 1.1] },
+  lombaires: { nom: 'Lombaires', seg: 'buste', cote: -1, t: [0.08, 0.42] },
+  fessiers: { nom: 'Fessiers', seg: 'buste', cote: -1, t: [-0.22, 0.14] },
+  coiffe: { nom: 'Coiffe des rotateurs', seg: 'buste', cote: -1, t: [0.74, 0.94] },
+  deltoides: { nom: 'Épaules', seg: 'bras', cote: 0, t: [-0.14, 0.34] },
+  'deltoides-post': { nom: 'Arrière d’épaule', seg: 'bras', cote: -1, t: [-0.14, 0.34] },
+  biceps: { nom: 'Biceps', seg: 'bras', cote: 1, t: [0.3, 0.92] },
+  triceps: { nom: 'Triceps', seg: 'bras', cote: -1, t: [0.22, 0.9] },
+  'avant-bras': { nom: 'Avant-bras', seg: 'avbras', cote: 0, t: [0.04, 0.68] },
+  quadriceps: { nom: 'Quadriceps', seg: 'cuisse', cote: 1, t: [0.06, 0.94] },
+  ischios: { nom: 'Ischio-jambiers', seg: 'cuisse', cote: -1, t: [0.12, 0.92] },
+  mollets: { nom: 'Mollets', seg: 'tibia', cote: -1, t: [0.06, 0.64] }
 };
 
 /* ---------- Mannequin ---------- */
 
 const LONG = { buste: 40, cou: 13, bras: 24, avbras: 22, cuisse: 30, tibia: 30, pied: 9 };
-const EP = { buste: 15, bras: 8, avbras: 7, cuisse: 11, tibia: 9, pied: 5 };   // épaisseurs
 const SOL = 150;
 
 const rad = (a) => (a * Math.PI) / 180;
@@ -85,48 +85,140 @@ function squelette(p) {
   return { face, hanche, epaule, tete, bras, jambes, inverse: p.inverse ? -1 : 1 };
 }
 
-// Un segment du mannequin, avec les muscles qui s'y trouvent allumés
-function segment(a, b, ep, cls, muscles, avant) {
-  let s = `<line class="${cls}" x1="${a[0].toFixed(1)}" y1="${a[1].toFixed(1)}" x2="${b[0].toFixed(1)}" y2="${b[1].toFixed(1)}" stroke-width="${ep}"/>`;
-  muscles.forEach(({ cote, niveau }) => {
-    const dec = cote && avant ? plus([0, 0], avant, cote * ep * 0.24) : [0, 0];
-    const largeur = cote ? ep * 0.5 : ep * 0.62;
-    s += `<line class="m-${niveau}" x1="${(a[0] + dec[0]).toFixed(1)}" y1="${(a[1] + dec[1]).toFixed(1)}" x2="${(b[0] + dec[0]).toFixed(1)}" y2="${(b[1] + dec[1]).toFixed(1)}" stroke-width="${largeur}"/>`;
-  });
-  return s;
+// Silhouette en volume : chaque partie du corps est une forme lissée dont la largeur varie
+// le long de l'os (av : côté devant, ar : côté dos), comme un mannequin d'anatomie.
+const PROFILS = {
+  buste: { t: [-0.24, 1.1],
+    av: [[-0.24, 4], [-0.08, 7], [0.12, 7], [0.4, 6.4], [0.62, 8.2], [0.84, 8.8], [1, 6.4], [1.1, 3.5]],
+    ar: [[-0.24, 4], [-0.12, 9.2], [0.04, 8.6], [0.26, 6.2], [0.5, 7.2], [0.74, 8.6], [0.94, 7.6], [1.1, 3.8]] },
+  busteFace: { t: [-0.22, 1.08],
+    av: [[-0.22, 8], [-0.05, 11.2], [0.16, 10.4], [0.42, 9.2], [0.72, 11.6], [0.92, 12.6], [1.08, 7]],
+    ar: [[-0.22, 8], [-0.05, 11.2], [0.16, 10.4], [0.42, 9.2], [0.72, 11.6], [0.92, 12.6], [1.08, 7]] },
+  bras: { t: [-0.16, 1.05],
+    av: [[-0.16, 3], [0, 5.3], [0.28, 5], [0.58, 4.9], [0.88, 3.6], [1.05, 3]],
+    ar: [[-0.16, 3.2], [0, 5.7], [0.32, 5.4], [0.62, 4.6], [0.9, 3.5], [1.05, 3]] },
+  avbras: { t: [-0.08, 1.06],
+    av: [[-0.08, 3.2], [0.22, 4.1], [0.6, 3.2], [1, 2.4], [1.06, 2.1]],
+    ar: [[-0.08, 3.2], [0.22, 3.8], [0.6, 3], [1, 2.3], [1.06, 2.1]] },
+  cuisse: { t: [-0.1, 1.08],
+    av: [[-0.1, 5], [0.06, 6.7], [0.42, 7.7], [0.76, 6.2], [0.96, 4.8], [1.08, 4.2]],
+    ar: [[-0.1, 6], [0.06, 7.2], [0.4, 6.6], [0.8, 5], [1, 4.5], [1.08, 4]] },
+  tibia: { t: [-0.05, 1.06],
+    av: [[-0.05, 4], [0.2, 3.8], [0.7, 2.8], [1, 2.4], [1.06, 2.3]],
+    ar: [[-0.05, 4.2], [0.28, 6.1], [0.56, 4.2], [0.86, 2.8], [1.06, 2.5]] },
+  pied: { t: [-0.38, 1.05], av: [[-0.38, 2.6], [0, 3.4], [0.7, 2.6], [1.05, 1.4]], ar: [[-0.38, 2.4], [0, 2.6], [1.05, 1.2]] },
+  cou: { t: [0, 0.75], av: [[0, 3.4], [0.75, 3]], ar: [[0, 3.8], [0.75, 3]] }
+};
+
+function largeur(pts, t) {
+  if (t <= pts[0][0]) return pts[0][1];
+  for (let i = 1; i < pts.length; i++) {
+    if (t <= pts[i][0]) {
+      const [t0, w0] = pts[i - 1], [t1, w1] = pts[i];
+      return w0 + ((w1 - w0) * (t - t0)) / (t1 - t0);
+    }
+  }
+  return pts[pts.length - 1][1];
+}
+
+const fx = (p) => `${p[0].toFixed(1)} ${p[1].toFixed(1)}`;
+
+// Courbe fermée et lisse passant par tous les points (Catmull-Rom)
+function lisse(pts) {
+  const n = pts.length;
+  let d = `M${fx(pts[0])}`;
+  for (let i = 0; i < n; i++) {
+    const p0 = pts[(i - 1 + n) % n], p1 = pts[i], p2 = pts[(i + 1) % n], p3 = pts[(i + 2) % n];
+    const c1 = [p1[0] + (p2[0] - p0[0]) / 6, p1[1] + (p2[1] - p0[1]) / 6];
+    const c2 = [p2[0] - (p3[0] - p1[0]) / 6, p2[1] - (p3[1] - p1[1]) / 6];
+    d += `C${fx(c1)} ${fx(c2)} ${fx(p2)}`;
+  }
+  return `${d}Z`;
+}
+
+// Repère d'une partie du corps : point à la fraction t de l'os, et direction « devant »
+function repere(a, b, devant) {
+  const L = [b[0] - a[0], b[1] - a[1]];
+  return { P: (t) => [a[0] + L[0] * t, a[1] + L[1] * t], n: devant };
+}
+
+function formePartie(a, b, devant, prof, pas = 12) {
+  const { P, n } = repere(a, b, devant);
+  const [t0, t1] = prof.t;
+  const av = [], ar = [];
+  for (let i = 0; i <= pas; i++) {
+    const t = t0 + ((t1 - t0) * i) / pas;
+    av.push(plus(P(t), n, largeur(prof.av, t)));
+    ar.push(plus(P(t), n, -largeur(prof.ar, t)));
+  }
+  return lisse([...av, plus(P(t1 + 0.03), [0, 0]), ...ar.reverse(), plus(P(t0 - 0.03), [0, 0])]);
+}
+
+// Un muscle : forme en fuseau posée sur la partie du corps, du bon côté
+function formeMuscle(a, b, devant, prof, m, face) {
+  const { P, n } = repere(a, b, devant);
+  const [ta, tb] = m.t;
+  const cote = face ? 0 : m.cote;
+  const pas = 10;
+  const ext = [], int = [];
+  for (let i = 0; i <= pas; i++) {
+    const t = ta + ((tb - ta) * i) / pas;
+    const s = Math.pow(Math.sin(Math.PI * (i / pas)), 0.55);
+    const wa = largeur(prof.av, t), wr = largeur(prof.ar, t);
+    if (cote === 1) { ext.push(plus(P(t), n, wa * (0.1 + 0.82 * s))); int.push(plus(P(t), n, wa * 0.1)); }
+    else if (cote === -1) { ext.push(plus(P(t), n, -wr * (0.1 + 0.82 * s))); int.push(plus(P(t), n, -wr * 0.1)); }
+    else {
+      const k = face && m.cote !== 0 ? 0.6 : 0.86;
+      ext.push(plus(P(t), n, wa * k * s)); int.push(plus(P(t), n, -wr * k * s));
+    }
+  }
+  return lisse([...ext, ...int.reverse()]);
 }
 
 function dessinMannequin(S, allumes) {
-  const sur = (seg) => allumes.filter((m) => m.seg === seg);
-  const avantMembre = (a, b) => (S.face ? null : dirA(angleDe([b[0] - a[0], b[1] - a[1]]) - 90).map((x) => x * S.inverse));
-  const avantBuste = S.face ? null : dirA(angleDe([S.epaule[0] - S.hanche[0], S.epaule[1] - S.hanche[1]]) + 90).map((x) => x * S.inverse);
+  const face = S.face;
+  const devantMembre = (a, b) => dirA(angleDe([b[0] - a[0], b[1] - a[1]]) - 90).map((x) => x * S.inverse);
+  const devantBuste = dirA(angleDe([S.epaule[0] - S.hanche[0], S.epaule[1] - S.hanche[1]]) + 90).map((x) => x * S.inverse);
+  const musclesSur = (seg) => allumes.filter((m) => m.seg === seg);
 
-  const jambe = (j, cls, avecMuscles) => {
-    const m = (seg) => (avecMuscles ? sur(seg) : []);
-    return segment(j.hanche, j.genou, EP.cuisse, cls, m('cuisse'), avantMembre(j.hanche, j.genou))
-      + segment(j.genou, j.cheville, EP.tibia, cls, m('tibia'), avantMembre(j.genou, j.cheville))
-      + segment(j.cheville, j.orteil, EP.pied, cls, [], null);
+  // Une partie : sa forme, puis ses muscles (seulement du côté proche, ou des deux côtés de face)
+  const partie = (a, b, devant, cleProfil, seg, cls, avecMuscles) => {
+    const prof = PROFILS[cleProfil];
+    let s = `<path class="${cls}" d="${formePartie(a, b, devant, prof)}"/>`;
+    if (avecMuscles && seg) {
+      musclesSur(seg).forEach((m) => {
+        s += `<path class="muscle-${m.niveau}" d="${formeMuscle(a, b, devant, prof, m, face)}"/>`;
+      });
+    }
+    return s;
   };
-  const bras = (b, cls, avecMuscles) => {
-    const m = (seg) => (avecMuscles ? sur(seg) : []);
-    return segment(b.epaule, b.coude, EP.bras, cls, m('bras'), avantMembre(b.epaule, b.coude))
-      + segment(b.coude, b.main, EP.avbras, cls, m('avbras'), avantMembre(b.coude, b.main))
-      + `<circle class="${cls}-f" cx="${b.main[0].toFixed(1)}" cy="${b.main[1].toFixed(1)}" r="3.6"/>`;
-  };
-  const rond = (c, r, seg) => sur(seg).map(({ niveau }) =>
-    `<circle class="m-${niveau}-f" cx="${c[0].toFixed(1)}" cy="${c[1].toFixed(1)}" r="${r}"/>`).join('');
+  const articulation = (c, r, cls) => `<circle class="${cls}" cx="${c[0].toFixed(1)}" cy="${c[1].toFixed(1)}" r="${r}"/>`;
 
-  // Vue de face : les deux côtés au premier plan ; de profil : le côté loin plus sombre, derrière
-  const clsLoin = S.face ? 'seg' : 'seg-loin';
-  let s = jambe(S.jambes[1], clsLoin, S.face) + bras(S.bras[1], clsLoin, S.face);
-  s += segment(S.hanche, S.epaule, S.face ? 22 : EP.buste, 'seg', sur('buste'), avantBuste);
-  s += rond(S.hanche, S.face ? 0 : 7, 'hanche');
-  if (S.face) S.jambes.forEach((j) => { s += rond(j.hanche, 6.5, 'hanche'); });
-  s += `<line class="seg" x1="${S.epaule[0].toFixed(1)}" y1="${S.epaule[1].toFixed(1)}" x2="${S.tete[0].toFixed(1)}" y2="${S.tete[1].toFixed(1)}" stroke-width="6"/>`;
-  s += `<circle class="seg-f" cx="${S.tete[0].toFixed(1)}" cy="${S.tete[1].toFixed(1)}" r="8.5"/>`;
-  s += jambe(S.jambes[0], 'seg', true) + bras(S.bras[0], 'seg', true);
-  s += S.face ? S.bras.map((b) => rond(b.epaule, 5.5, 'epaule')).join('') : rond(S.epaule, 6, 'epaule');
-  return s;
+  const jambe = (j, cls, m) =>
+    partie(j.hanche, j.genou, devantMembre(j.hanche, j.genou), 'cuisse', 'cuisse', cls, m)
+    + partie(j.genou, j.cheville, devantMembre(j.genou, j.cheville), 'tibia', 'tibia', cls, m)
+    + `<path class="chaussure" d="${formePartie(j.cheville, j.orteil, devantMembre(j.cheville, j.orteil), PROFILS.pied)}"/>`;
+  const bras = (b, cls, m) =>
+    partie(b.coude, b.main, devantMembre(b.coude, b.main), 'avbras', 'avbras', cls, m)
+    + articulation(b.main, 3.3, `${cls} main`)
+    + partie(b.epaule, b.coude, devantMembre(b.epaule, b.coude), 'bras', 'bras', cls, m);
+
+  // De profil : côté loin (plus sombre) d'abord ; de face : les jambes, puis le buste, puis les bras
+  let s = face ? jambe(S.jambes[0], 'corps', true) + jambe(S.jambes[1], 'corps', true)
+    : jambe(S.jambes[1], 'corps-loin', false) + bras(S.bras[1], 'corps-loin', false);
+
+  // Cou et tête (cheveux en croissant derrière le visage)
+  const axeTete = dirA(angleDe([S.tete[0] - S.epaule[0], S.tete[1] - S.epaule[1]]));
+  const rot = angleDe(axeTete);
+  s += `<path class="corps" d="${formePartie(S.epaule, S.tete, devantBuste, PROFILS.cou)}"/>`;
+  const cheveux = face ? plus(S.tete, axeTete, 1.4) : plus(plus(S.tete, axeTete, 1), devantBuste, -1.6);
+  s += `<ellipse class="cheveux" cx="${cheveux[0].toFixed(1)}" cy="${cheveux[1].toFixed(1)}" rx="7.4" ry="8.6" transform="rotate(${rot.toFixed(1)} ${cheveux[0].toFixed(1)} ${cheveux[1].toFixed(1)})"/>`;
+  const visage = face ? plus(S.tete, axeTete, -0.6) : plus(S.tete, devantBuste, 0.6);
+  s += `<ellipse class="corps" cx="${visage[0].toFixed(1)}" cy="${visage[1].toFixed(1)}" rx="${face ? 6.9 : 7}" ry="8.1" transform="rotate(${rot.toFixed(1)} ${visage[0].toFixed(1)} ${visage[1].toFixed(1)})"/>`;
+
+  s += partie(S.hanche, S.epaule, devantBuste, face ? 'busteFace' : 'buste', 'buste', 'corps', true);
+  if (face) return s + bras(S.bras[0], 'corps', true) + bras(S.bras[1], 'corps', true);
+  return s + jambe(S.jambes[0], 'corps', true) + bras(S.bras[0], 'corps', true);
 }
 
 /* ---------- Accessoires ---------- */
@@ -375,9 +467,10 @@ function phaseMouvement(t) {
 function dessinerScene(svg, a, k) {
   const pose = melange(a.debut, a.fin, k);
   const S = squelette(pose);
+  // Secondaires d'abord : un muscle principal passe par-dessus
   const allumes = [
-    ...a.muscles.p.map((m) => ({ ...MUSCLES[m], niveau: 'p' })),
-    ...a.muscles.s.map((m) => ({ ...MUSCLES[m], niveau: 's' }))
+    ...a.muscles.s.map((m) => ({ ...MUSCLES[m], niveau: 's' })),
+    ...a.muscles.p.map((m) => ({ ...MUSCLES[m], niveau: 'p' }))
   ];
   svg.innerHTML = `<line class="sol" x1="8" y1="${SOL}" x2="192" y2="${SOL}"/>`
     + accessoires(S, a.props, false) + dessinMannequin(S, allumes) + accessoires(S, a.props, true);
