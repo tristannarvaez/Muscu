@@ -759,6 +759,10 @@ function supprimerMesure(i) {
 /* ---------- À propos : historique des évolutions ---------- */
 
 const EVOLUTIONS = [
+  { version: '1.32', titre: 'Glissement corrigé', items: [
+    'Glisser entre les pages suit de nouveau l’ordre de la barre du bas : Programme, Journal, Progrès, Nutrition, Cuisine, Mesures.',
+    'Le geste ne part plus depuis la barre du bas ni depuis les Réglages.'
+  ]},
   { version: '1.31', titre: 'Recettes plus claires', items: [
     'Chaque recette se lit en deux temps : « À l’avance » (batch) puis « Le jour du repas » (cuisson minute, réchauffage, service).',
     'Un bloc par préparation, avec ses quantités, des gestes numérotés et la durée de chacun.',
@@ -1091,7 +1095,9 @@ $('#demo-fermer').addEventListener('click', () => $('#demo').close());
 
 /* ---------- Glisser pour changer d'onglet ---------- */
 
-const ORDRE_ONGLETS = ['seances', 'progression', 'journal', 'nutrition', 'cuisine', 'mensurations', 'reglages'];
+// Même ordre que la barre du bas, lu dans la page pour ne jamais se décaler.
+// Les Réglages (roue dentée) restent hors du glissement.
+const ORDRE_ONGLETS = [...document.querySelectorAll('nav.barre [data-tab]')].map((b) => b.dataset.tab);
 let ongletCourant = 'seances';
 let debutX = null, debutY = null;
 
@@ -1139,8 +1145,8 @@ function reglerContenu(transform, opacite, transition) {
 
 ZONE.addEventListener('touchstart', (e) => {
   if (animation) return;
-  // Pas de glisse depuis un champ de saisie : on ne veut pas gêner la saisie
-  if (e.target.closest('input, select, textarea, dialog')) { geste = null; return; }
+  // Pas de glisse depuis un champ de saisie ni depuis la barre du bas, ni hors des onglets (Réglages)
+  if (e.touches.length > 1 || indexCourant() < 0 || e.target.closest('input, select, textarea, dialog, nav')) { geste = null; return; }
   const t = e.touches[0];
   geste = { x: t.clientX, y: t.clientY, dx: 0, verrou: null };
   CONTENU.style.transition = 'none';
@@ -1160,7 +1166,7 @@ ZONE.addEventListener('touchmove', (e) => {
   if (geste.verrou !== 'h') return;
   e.preventDefault();
 
-  // Résistance aux extrémités : pas d'onglet au-delà de Programme et Réglages
+  // Résistance aux extrémités : pas d'onglet avant Programme ni après Mesures
   const i = indexCourant();
   const bord = (dx < 0 && i === ORDRE_ONGLETS.length - 1) || (dx > 0 && i === 0);
   const facteur = bord ? 0.25 : 0.9;
