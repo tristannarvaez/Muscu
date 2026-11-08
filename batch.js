@@ -700,8 +700,8 @@ function guideMinuteur() {
       <p>Les boutons <strong>⏰ Minuteur</strong> lancent le vrai minuteur de l’iPhone (il sonne même écran verrouillé), grâce à un raccourci à créer une seule fois :</p>
       <ol>
         <li>Ouvre l’app <strong>Raccourcis</strong>, onglet <strong>Raccourcis</strong>, et touche <strong>+</strong> en haut à droite.</li>
-        <li>Ajoute l’action <strong>Obtenir les nombres de l’entrée</strong> (« Get Numbers from Input » en anglais). Elle doit afficher « Entrée du raccourci ».</li>
-        <li>Ajoute en dessous l’action <strong>Démarrer le minuteur</strong> (app Horloge). Touche sa durée, choisis la variable <strong>Nombres</strong> et l’unité <strong>minutes</strong>.</li>
+        <li>Dans la recherche en bas, tape <strong>minuteur</strong> et ajoute l’action <strong>Démarrer le minuteur</strong> (app Horloge). C’est la seule action nécessaire.</li>
+        <li>Touche la durée (« 30 ») : au-dessus du clavier, touche <strong>Entrée du raccourci</strong>. L’action doit afficher « Démarrer le minuteur pendant <em>Entrée du raccourci</em> minutes ». Laisse l’unité sur <strong>minutes</strong>.</li>
         <li>Nomme le raccourci : touche son nom tout en haut (« Nouveau raccourci ») puis <strong>Renommer</strong>, et tape <strong>${esc(nom)}</strong>. Touche <strong>OK</strong>.</li>
       </ol>
       <label class="champ-raccourci">Nom exact de ton raccourci
