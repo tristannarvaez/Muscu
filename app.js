@@ -524,6 +524,10 @@ function supprimerMesure(i) {
 /* ---------- À propos : historique des évolutions ---------- */
 
 const EVOLUTIONS = [
+  { version: '1.20', titre: 'Menus de la semaine', items: [
+    'Vue d’ensemble des repas de toute la semaine, avec les protéines de chaque jour.',
+    'Un jour s’ouvre d’un geste pour le modifier ; accès direct à la liste de courses de la semaine.'
+  ]},
   { version: '1.19', titre: 'Courses pour plusieurs personnes', items: [
     'Liste de courses calculée pour 1 à 4 personnes, à l’écran et dans l’envoi vers Notes.'
   ]},

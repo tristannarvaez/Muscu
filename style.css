@@ -603,6 +603,21 @@ nav.barre button.centre.actif { color: #ffffff; }
 .nut-nav button { width: 44px; height: 44px; border-radius: 50%; font-size: 1.4rem; padding: 0; }
 .repas-nom { font-size: 1.1rem; font-weight: 700; line-height: 1.35; }
 .macros { color: var(--discret); font-size: 0.85rem; margin-top: 6px; }
+/* Menus de la semaine */
+.jour-menu.aujourdhui { border-color: var(--accent); }
+.jour-menu-entete { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+.jour-menu-entete strong { display: block; text-transform: capitalize; }
+.jour-menu-entete small { color: var(--discret); }
+.prot-jour { flex-shrink: 0; font-size: 0.8rem; font-weight: 700; color: var(--discret); }
+.prot-jour.ok { color: var(--accent); }
+.menu-jour { list-style: none; margin: 10px 0 0; padding: 0; }
+.menu-jour li { display: grid; grid-template-columns: 52px 1fr; gap: 8px; padding: 7px 0; border-top: 1px solid var(--bord); font-size: 0.92rem; }
+.menu-jour li:first-child { border-top: none; }
+.repas-moment { color: var(--discret); font-size: 0.8rem; font-weight: 700; padding-top: 1px; }
+.pastille { display: inline-block; margin-left: 6px; padding: 1px 7px; border-radius: 999px; font-size: 0.7rem; font-weight: 700; color: var(--accent); border: 1px solid var(--accent); vertical-align: 1px; }
+.pastille.plaisir { color: var(--accent-2); border-color: var(--accent-2); }
+.nut-nav button:disabled { opacity: 0.3; cursor: default; }
+
 /* Nombre de personnes (courses) */
 .choix-personnes { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: 6px; }
 .choix-personnes button { margin-top: 0; padding: 10px 0; font-size: 0.9rem; }

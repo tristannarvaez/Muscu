@@ -662,7 +662,10 @@ function vueNutrition() {
         ${manque ? 'Il manque une collation protéinée (skyr, yaourt grec) pour atteindre l’objectif.' : 'Objectif atteint.'}</p>
       <p class="graphe-legende">Repas plaisir cette semaine : <strong>${plaisirsDeLaSemaine(jour).length}</strong> / 1</p>
     </section>
-    <section class="carte"><button class="principal" data-nut="courses">Liste de courses de la semaine</button></section>
+    <section class="carte">
+      <button class="principal" data-nut="menus-semaine">Menus de la semaine</button>
+      <button class="secondaire" data-nut="courses">Liste de courses de la semaine</button>
+    </section>
     ${blocApports()}
     ${REPAS.map(([cle, titre]) => carteRepas(cle, titre)).join('')}
     <section class="carte">
@@ -671,6 +674,66 @@ function vueNutrition() {
       <p class="vide">Ajouter, retirer ou peser un aliment s’applique à ce jour et à tous les jours de même rang, donc tous les 14 jours. Un plat choisi dans « Plat libre » et un repas plaisir ne concernent que ce jour.</p>
     </section>`;
 }
+
+/* ---------- Vue d'ensemble des menus de la semaine ---------- */
+
+let menuSemaine = null;   // index de la semaine affichée
+
+function vueMenusSemaine() {
+  if (menuSemaine === null) menuSemaine = semaineDe(jour === null ? 0 : jour);
+  const s = menuSemaine;
+  const derniere = semaineDe(JOURS_PLAN - 1);
+  const auj = jourAujourdhui();
+  const jours = [];
+  for (let j = 0; j < JOURS_PLAN; j++) if (semaineDe(j) === s) jours.push(j);
+
+  const cartes = jours.map((j) => {
+    const prot = REPAS.reduce((t, [cle]) => t + totaux(repasDuJour(j, cle).items).p, 0);
+    const ok = prot >= REGLES.protJour;
+    const lignes = REPAS.map(([cle, titre]) => {
+      const r = repasDuJour(j, cle);
+      const badge = r.plaisir ? '<span class="pastille plaisir">Plaisir</span>'
+        : r.ponctuel ? '<span class="pastille">Ce jour</span>' : '';
+      return `<li><span class="repas-moment">${titre}</span><span class="repas-nom">${esc(r.nom)}${badge}</span></li>`;
+    }).join('');
+    return `
+      <section class="carte jour-menu${j === auj ? ' aujourdhui' : ''}">
+        <div class="jour-menu-entete">
+          <div><strong>${esc(libelleJour(j))}</strong><small>Jour ${j + 1}${j === auj ? ' · aujourd’hui' : ''}</small></div>
+          <span class="prot-jour${ok ? ' ok' : ''}">${Math.round(prot)} g prot.</span>
+        </div>
+        <ul class="menu-jour">${lignes}</ul>
+        <button class="secondaire" data-menu="ouvrir" data-j="${j}">Voir et modifier ce jour</button>
+      </section>`;
+  }).join('');
+
+  document.querySelector('#app').innerHTML = `
+    <h2>Menus</h2>
+    <section class="carte">
+      <div class="nut-nav">
+        <button data-menu="prev" aria-label="Semaine précédente" ${s <= 0 ? 'disabled' : ''}>‹</button>
+        <div><strong>Semaine du</strong><small>${esc(libelleJour(debutSemaine(s)))}</small></div>
+        <button data-menu="next" aria-label="Semaine suivante" ${s >= derniere ? 'disabled' : ''}>›</button>
+      </div>
+      <p class="graphe-legende">Objectif : ${REGLES.protJour} g de protéines par jour, en vert quand il est atteint.</p>
+    </section>
+    ${cartes}
+    <section class="carte">
+      <button class="principal" data-nut="courses-semaine-menus">Liste de courses de cette semaine</button>
+      <button class="secondaire" data-menu="retour">← Retour à la nutrition</button>
+    </section>`;
+}
+
+document.querySelector('#app').addEventListener('click', (e) => {
+  const b = e.target.closest('[data-menu]');
+  if (!b) return;
+  const action = b.dataset.menu;
+  const derniere = semaineDe(JOURS_PLAN - 1);
+  if (action === 'prev') { menuSemaine = Math.max(0, menuSemaine - 1); window.scrollTo(0, 0); return vueMenusSemaine(); }
+  if (action === 'next') { menuSemaine = Math.min(derniere, menuSemaine + 1); window.scrollTo(0, 0); return vueMenusSemaine(); }
+  if (action === 'ouvrir') { jour = Number(b.dataset.j); window.scrollTo(0, 0); return vueNutrition(); }
+  if (action === 'retour') { window.scrollTo(0, 0); return vueNutrition(); }
+});
 
 /* ---------- Liste de courses de la semaine ---------- */
 
@@ -1046,6 +1109,8 @@ document.querySelector('#app').addEventListener('click', (e) => {
     return aller(ongletCourant);
   }
 
+  if (action === 'menus-semaine') { menuSemaine = semaineDe(jour); window.scrollTo(0, 0); return vueMenusSemaine(); }
+  if (action === 'courses-semaine-menus') { courseSemaine = menuSemaine; window.scrollTo(0, 0); return vueCourses(); }
   if (action === 'courses') { courseSemaine = semaineDe(jour); return vueCourses(); }
   if (action === 'prev' || action === 'next') platOuvert = null;
   if (action === 'prev') { jour = Math.max(0, jour - 1); return vueNutrition(); }
