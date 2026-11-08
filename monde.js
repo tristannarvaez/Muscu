@@ -2,6 +2,7 @@
 // Chargé après batch.js : chaque plat est ajouté à RECETTES et à la bibliothèque de l'onglet Cuisine.
 
 const REGIONS = [
+  ['europe', 'France et Europe'],
   ['asie', 'Asie'],
   ['orient', 'Inde et Moyen-Orient'],
   ['med', 'Méditerranée'],
@@ -272,7 +273,102 @@ const MONDE = [
           T([7, 4], 'Hauts de cuisse sans peau, carottes en bâtonnets, courgettes en tronçons, oignon émincé.'),
           P(45, 'Cocotte : poulet doré 5 min, oignon, gingembre, curcuma, cumin, cannelle, 1 citron confit en quartiers. Carottes et 200 ml d’eau, 25 min couvert, puis courgettes et pois chiches 15 min.')] },
       extras: ['gingembre', 'curcuma', 'cumin', 'cannelle', 'citron confit', 'olives (facultatif)'],
-      service: 'Réchauffe avec la semoule.' } }
+      service: 'Réchauffe avec la semoule.' } },
+  /* ---------- France et Europe (ajoutés en v1.40, pensés pour le batch) ---------- */
+  { nom: 'Poulet basquaise, riz', pays: 'Pays basque', region: 'europe',
+    items: [['Poulet, cuisse sans peau, cuite', 170], ['Poivron rouge', 120], ['Tomates concassées (conserve)', 100], ['Oignon', 50], ['Riz basmati, cuit', 150]],
+    recette: {
+      unite: { nom: 'Poulet basquaise', consomme: ['Poulet, cuisse sans peau, cuite', 'Poivron rouge', 'Tomates concassées (conserve)', 'Oignon'], cons: 4, rech: RECH_MO, etapes: [
+        T([6, 4], 'Poivrons en lanières, oignon émincé, 2 gousses d’ail hachées. Hauts de cuisse sans peau en morceaux.'),
+        P(40, 'Cocotte : dore le poulet 5 min, ajoute oignon et poivrons 5 min, puis l’ail, les tomates, 1 c. à c. de piment d’Espelette et du thym. 30 min à couvert, feu doux.')] },
+      extras: ['ail', 'piment d’Espelette', 'thym'],
+      service: 'Réchauffe la basquaise et le riz ensemble.' } },
+  { nom: 'Blanquette de dinde, riz', pays: 'France', region: 'europe',
+    items: [['Dinde, blanc cuit', 170], ['Champignons de Paris', 100], ['Carotte crue', 80], ['Lait demi-écrémé', 80], ['Riz basmati, cuit', 150]],
+    recette: {
+      unite: { nom: 'Blanquette de dinde', consomme: ['Dinde, blanc cuit', 'Champignons de Paris', 'Carotte crue', 'Lait demi-écrémé'], cons: 4, rech: 'Micro-ondes 2 min en remuant à mi-temps.', etapes: [
+        T([6, 4], 'Dinde en cubes, carottes en rondelles, champignons en quartiers, 1 oignon émincé.'),
+        P(35, 'Cocotte : dinde 3 min sans colorer, oignon, carottes, 1 cube de bouillon et de l’eau à hauteur, 20 min. Champignons 8 min. Délaye 1 c. à s. de maïzena dans le lait, verse et laisse épaissir 3 min.', { m: true })] },
+      extras: ['oignon', 'bouillon de volaille', 'maïzena', 'citron', 'persil'],
+      service: 'Réchauffe avec le riz, un trait de citron et du persil.' } },
+  { nom: 'Bœuf bourguignon léger, pommes de terre', pays: 'Bourgogne', region: 'europe',
+    items: [['Bœuf, filet cuit', 160], ['Carotte crue', 100], ['Champignons de Paris', 80], ['Oignon', 50], ['Pommes de terre, vapeur', 200]],
+    recette: {
+      unite: { nom: 'Bœuf bourguignon', consomme: ['Bœuf, filet cuit', 'Carotte crue', 'Champignons de Paris', 'Oignon'], cons: 4, rech: 'Micro-ondes 2 min 30, ou casserole 5 min.', etapes: [
+        T([8, 4], 'Bœuf à braiser (paleron, joue) en gros cubes, carottes en rondelles, oignon émincé, champignons en quartiers.'),
+        P(90, 'Cocotte : saisis le bœuf 5 min, oignon et carottes, 1 c. à s. de farine, puis 25 cl de vin rouge et de l’eau à hauteur, thym et laurier. 1 h 15 à couvert à feu doux, champignons les 15 dernières minutes.')] },
+      extras: ['vin rouge (25 cl, facultatif)', 'farine', 'thym', 'laurier', 'ail'],
+      service: 'Réchauffe le bourguignon, les pommes de terre à côté.' } },
+  { nom: 'Ratatouille au poulet, quinoa', pays: 'Provence', region: 'europe',
+    items: [['Poulet, blanc cuit', 170], ['Courgette, cuite', 120], ['Aubergine, cuite', 100], ['Poivron rouge', 80], ['Tomate', 80], ['Quinoa, cuit', 140], ['Huile d’olive', 5]],
+    recette: {
+      unite: { nom: 'Ratatouille au four', consomme: ['Courgette, cuite', 'Aubergine, cuite', 'Poivron rouge', 'Tomate', 'Huile d’olive'], cons: 5, rech: RECH_MO, etapes: [
+        T([8, 5], 'Courgettes, aubergines, poivrons et tomates en dés de 2 cm, 1 oignon, 2 gousses d’ail.'),
+        F(45, 'Grande plaque, l’huile, herbes de Provence, sel : 45 min à 200 °C en remuant à mi-cuisson.')] },
+      extras: ['oignon', 'ail', 'herbes de Provence'],
+      service: 'Réchauffe ratatouille, poulet et quinoa ensemble.' } },
+  { nom: 'Goulash de bœuf, pommes de terre', pays: 'Hongrie', region: 'europe',
+    items: [['Bœuf, filet cuit', 160], ['Poivron rouge', 100], ['Tomates concassées (conserve)', 100], ['Oignon', 60], ['Pommes de terre, vapeur', 200]],
+    recette: {
+      unite: { nom: 'Goulash', consomme: ['Bœuf, filet cuit', 'Poivron rouge', 'Tomates concassées (conserve)', 'Oignon'], cons: 4, rech: 'Micro-ondes 2 min 30.', etapes: [
+        T([7, 4], 'Bœuf à braiser en cubes, oignons émincés, poivrons en lanières.'),
+        P(75, 'Cocotte : oignons 5 min, le bœuf 5 min, 2 c. à s. de paprika doux et 1 de cumin, les tomates et de l’eau à hauteur. 1 h à couvert, poivrons les 20 dernières minutes.')] },
+      extras: ['paprika doux', 'cumin', 'ail', 'crème légère (facultatif)'],
+      service: 'Réchauffe le goulash avec les pommes de terre.' } },
+  { nom: 'Lapin à la moutarde, haricots verts', pays: 'France', region: 'europe',
+    items: [['Lapin, cuit', 180], ['Haricots verts, cuits', 150], ['Pommes de terre, vapeur', 150], ['Oignon', 40]],
+    recette: {
+      unite: { nom: 'Lapin à la moutarde', consomme: ['Lapin, cuit', 'Oignon'], cons: 3, rech: RECH_MO, etapes: [
+        T([5, 3], 'Badigeonne les morceaux de lapin de moutarde forte (2 c. à s.), émince l’oignon.'),
+        F(50, 'Plat à four : lapin, oignon, thym, 15 cl d’eau ou de bouillon. 50 min à 200 °C en arrosant à mi-cuisson.')] },
+      extras: ['moutarde forte', 'thym', 'bouillon'],
+      service: 'Réchauffe le lapin avec sa sauce, haricots verts et pommes de terre à côté.' } },
+
+  /* ---------- Autres nouveautés v1.40 ---------- */
+  { nom: 'Poulet coco-curry, patate douce', pays: 'Inde', region: 'orient',
+    items: [['Poulet, blanc cuit', 170], ['Lait de coco léger', 80], ['Épinards, cuits', 80], ['Patate douce, cuite', 200]],
+    recette: {
+      unite: { nom: 'Poulet coco-curry', consomme: ['Poulet, blanc cuit', 'Lait de coco léger', 'Épinards, cuits'], cons: 4, rech: RECH_MO, etapes: [
+        T([4, 4], 'Poulet en cubes, 1 oignon émincé, 1 gousse d’ail et 1 c. à c. de gingembre râpés.'),
+        P(20, 'Sauteuse : oignon 3 min, poulet 5 min, 2 c. à c. de curry et l’ail-gingembre 1 min, le lait de coco 8 min, les épinards 2 min.', { m: true })] },
+      extras: ['oignon', 'ail', 'gingembre', 'curry'],
+      service: 'Réchauffe le curry, la patate douce à côté.' } },
+  { nom: 'Curry de pois chiches et butternut', pays: 'Inde', region: 'orient', v: true,
+    items: [['Pois chiches, cuits', 200], ['Courge butternut, cuite', 150], ['Lait de coco léger', 60], ['Épinards, cuits', 60], ['Riz basmati, cuit', 130], ['Yaourt grec 0 %', 150]],
+    recette: {
+      unite: { nom: 'Curry pois chiches-butternut', consomme: ['Pois chiches, cuits', 'Courge butternut, cuite', 'Lait de coco léger', 'Épinards, cuits'], cons: 4, rech: RECH_MO, etapes: [
+        T([6, 5], 'Butternut épluchée en cubes de 2 cm, 1 oignon, ail et gingembre râpés, pois chiches rincés.'),
+        P(30, 'Cocotte : oignon 3 min, 2 c. à c. de curry, la butternut et le lait de coco avec 10 cl d’eau, 20 min. Pois chiches et épinards 5 min.')] },
+      extras: ['oignon', 'ail', 'gingembre', 'curry', 'coriandre'],
+      service: 'Réchauffe avec le riz, le yaourt grec à côté comme une raïta.' } },
+  { nom: 'Porc au caramel, riz et haricots verts', pays: 'Vietnam', region: 'asie',
+    items: [['Porc, filet mignon cuit', 170], ['Sauce soja', 15], ['Miel', 8], ['Riz basmati, cuit', 160], ['Haricots verts, cuits', 150]],
+    recette: {
+      unite: { nom: 'Porc au caramel', consomme: ['Porc, filet mignon cuit', 'Sauce soja', 'Miel'], cons: 4, rech: 'Micro-ondes 1 min 30 couvert.', etapes: [
+        T([4, 4], 'Filet mignon en lamelles, 1 oignon émincé, 2 gousses d’ail.'),
+        P(15, 'Poêle chaude : le miel caramélise 1 min, le porc 5 min, oignon et ail, la sauce soja et 5 cl d’eau. Laisse réduire 5 min jusqu’à ce que ce soit laqué.', { m: true })] },
+      extras: ['oignon', 'ail', 'poivre', 'oignon nouveau'],
+      service: 'Réchauffe le porc et le riz, les haricots verts à côté.' } },
+  { nom: 'Poulet jerk, riz et haricots rouges', pays: 'Jamaïque', region: 'ameriques',
+    items: [['Poulet, cuisse sans peau, cuite', 170], ['Riz basmati, cuit', 150], ['Haricots rouges, cuits', 80], ['Poivron rouge', 80]],
+    recette: {
+      unite: { nom: 'Poulet jerk au four', consomme: ['Poulet, cuisse sans peau, cuite', 'Poivron rouge'], cons: 4, rech: RECH_MO, etapes: [
+        T([5, 3], 'Marinade : jus d’1 citron vert, 1 c. à s. de sauce soja, piment de la Jamaïque (ou quatre-épices), thym, ail, piment. Enrobe les hauts de cuisse, poivrons en lanières.'),
+        F(35, 'Plaque de four : poulet et poivrons, 35 min à 200 °C.')] },
+      extras: ['citron vert', 'quatre-épices', 'thym', 'ail', 'piment'],
+      service: 'Réchauffe le poulet, le riz mélangé aux haricots rouges.' } },
+  { nom: 'Saumon à la provençale, boulgour', pays: 'Provence', region: 'med',
+    items: [['Saumon, cuit', 150], ['Boulgour, cuit', 160], ['Courgette, cuite', 150], ['Tomate', 60]],
+    recette: { extras: ['herbes de Provence', 'citron', 'olives (facultatif)'],
+      service: 'Réchauffe saumon, boulgour et courgettes, la tomate fraîche en dés dessus avec un trait de citron.' } },
+  { nom: 'Poulet cacciatore, pâtes complètes', pays: 'Italie', region: 'med',
+    items: [['Poulet, cuisse sans peau, cuite', 170], ['Tomates concassées (conserve)', 120], ['Poivron rouge', 60], ['Champignons de Paris', 60], ['Pâtes complètes, cuites', 160]],
+    recette: {
+      unite: { nom: 'Poulet cacciatore', consomme: ['Poulet, cuisse sans peau, cuite', 'Tomates concassées (conserve)', 'Poivron rouge', 'Champignons de Paris'], cons: 4, rech: RECH_MO, etapes: [
+        T([6, 4], 'Hauts de cuisse en morceaux, poivron en lanières, champignons en quartiers, 1 oignon et 2 gousses d’ail.'),
+        P(35, 'Cocotte : dore le poulet 5 min, oignon, poivron et champignons 5 min, l’ail, les tomates, romarin et origan. 25 min à couvert.')] },
+      extras: ['oignon', 'ail', 'romarin', 'origan', 'olives noires (facultatif)'],
+      service: 'Réchauffe le cacciatore et les pâtes ensemble.' } }
 ];
 
 // Nouveaux ingrédients utilisés par ces recettes

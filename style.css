@@ -944,3 +944,37 @@ button.lien-maison {
 
 /* Poignée : la fiche se ferme en glissant */
 #demo::before { content: ''; display: block; width: 40px; height: 4px; margin: -6px auto 10px; border-radius: 2px; background: var(--discret); opacity: 0.45; }
+
+/* ---------- Choisir un batch ---------- */
+.batch-actuel.choisi, .batch-propose.choisi { border-color: var(--accent); box-shadow: inset 4px 0 0 var(--accent), var(--ombre); }
+.retour-batch { margin: 0 0 12px; }
+.segments {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+  padding: 4px;
+  margin-bottom: 14px;
+  background: var(--surface-2);
+  border: 1px solid var(--ligne);
+  border-radius: 12px;
+}
+.segments button { border: none; background: none; padding: 9px 4px; border-radius: 9px; font-size: 0.9rem; font-weight: 700; color: var(--discret); }
+.segments button.actif { background: var(--accent); color: var(--sur-accent); }
+.plats-batch { list-style: none; margin: 4px 0 0; padding: 0; }
+.plats-batch li { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 0; border-top: 1px solid var(--ligne); font-weight: 650; }
+.plats-batch li:first-child { border-top: none; }
+.plats-batch small { display: block; color: var(--discret); font-size: 0.8rem; font-weight: 500; }
+.plats-batch em { flex: none; font-style: italic; font-weight: 850; font-stretch: 72%; font-size: 1.15rem; color: var(--accent); }
+.batch-chiffres { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 12px; text-align: center; }
+.batch-chiffres div { background: var(--surface-2); border-radius: 12px; padding: 9px 4px 8px; }
+.batch-chiffres strong { display: block; font-size: 1.3rem; line-height: 1.05; font-weight: 850; font-style: italic; font-stretch: 70%; font-variant-numeric: tabular-nums; }
+.batch-chiffres small { display: block; margin-top: 2px; color: var(--discret); font-size: 0.74rem; font-weight: 600; line-height: 1.25; }
+.liste-choix-plats { display: flex; flex-direction: column; margin-top: 10px; }
+.choix-plat { display: flex; align-items: flex-start; gap: 12px; margin: 0; padding: 10px 2px; border-top: 1px solid var(--ligne); color: var(--texte); font-size: 0.95rem; font-weight: 500; cursor: pointer; }
+.choix-plat:first-child { border-top: none; }
+.choix-plat input { width: 22px !important; height: 22px !important; flex: none; margin: 1px 0 0; padding: 0; accent-color: var(--accent); }
+.choix-plat strong { display: block; font-weight: 700; }
+.choix-plat small { display: block; margin-top: 2px; color: var(--discret); font-size: 0.8rem; }
+.choix-plat.pris strong { color: var(--accent); }
+.choix-plat.bloque { opacity: 0.45; }
+button:disabled { opacity: 0.4; cursor: default; }

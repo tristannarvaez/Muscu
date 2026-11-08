@@ -380,7 +380,7 @@ const RECETTES = {
 const BATCH_KEY = 'musculation-batch-v1';
 let batch = (() => {
   const b = chargerRepas(BATCH_KEY);
-  return { coches: b.coches || {}, heure: b.heure || '10:00' };
+  return { coches: b.coches || {}, heure: b.heure || '10:00', choix: b.choix || {} };
 })();
 let cuisineSemaine = null;
 let rechercheRecette = '';
@@ -399,7 +399,8 @@ const rangSemaine = (j) => ((j + (DEBUT_PLAN.getDay() + 6) % 7) % 7) + 1;
 const repasMinute = (rang, cle) => (cle === 'midi' || cle === 'soir') && (rang >= 6 || (rang === 5 && cle === 'soir'));
 
 // Ce que demande chaque repas de la semaine : tâches du batch, boîtes, gestes du jour même
-function analyseSemaine(s) {
+// source : d'où viennent les repas (les menus, ou un batch qu'on simule avant de le choisir)
+function analyseSemaine(s, source = repasDuJour) {
   const taches = {};
   const jours = [];
   const ajouterTache = (id, base) => {
@@ -410,7 +411,7 @@ function analyseSemaine(s) {
   for (const j of joursSemaine(s)) {
     const rang = rangSemaine(j);
     const repas = REPAS.map(([cle, titre]) => {
-      const r = repasDuJour(j, cle);
+      const r = source(j, cle);
       const express = repasMinute(rang, cle);
       const out = { cle, titre, nom: r.nom, items: r.items, boite: [], jourJ: [], hors: false, minute: express };
       if (r.plaisir || r.items.some((it) => it.libre)) {
@@ -889,6 +890,8 @@ function vueCuisine() {
       </div>
       <p class="graphe-legende">Quantités pour ${esc(libellePersonnes(personnes))}${appareils.length ? ` · ${esc(appareils.join(', '))}` : ''}. Du lundi au vendredi midi.</p>
     </section>
+
+    ${blocBatchActuel(s)}
 
     <section class="carte">
       <h3>Réglages du batch</h3>

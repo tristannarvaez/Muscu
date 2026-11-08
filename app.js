@@ -767,6 +767,12 @@ function supprimerMesure(i) {
 /* ---------- À propos : historique des évolutions ---------- */
 
 const EVOLUTIONS = [
+  { version: '1.40', titre: 'Choisir ou créer son batch', items: [
+    'Onglet Cuisine : « Choisir ou créer un batch ». 12 batchs tout prêts (classique français, express, Asie, Orient, Méditerranée, Tex-Mex, Afrique, grands mijotés, tout au four, végétarien, sec et léger, tour du monde), avec la durée de cuisine et les protéines par repas.',
+    'Créer : choisis 2 à 4 plats, ils sont répartis en alternance du lundi midi au vendredi midi. Enregistre-les dans « Mes batchs » pour les reprendre une autre semaine.',
+    'Le planning minuté, les boîtes, la liste de courses et les apports suivent le batch choisi. « Revenir aux menus prévus » remet la semaine comme avant.',
+    '12 nouveaux plats prévus pour le batch, dont une famille « France et Europe » : poulet basquaise, blanquette de dinde, bourguignon léger, ratatouille au poulet, goulash, lapin à la moutarde, poulet coco-curry, curry pois chiches-butternut, porc au caramel, poulet jerk, saumon à la provençale, poulet cacciatore.'
+  ] },
   { version: '1.39', titre: 'Fermer la fiche d’un geste', items: [
     'La fiche d’un exercice se ferme en glissant vers le bas, vers la gauche ou vers la droite. Un appui à côté de la fiche la ferme aussi.',
     'La fiche s’ouvre toujours en haut, sur l’animation.'
