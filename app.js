@@ -538,9 +538,7 @@ function vueJournal() {
       <div class="grille lieu">
         <button class="${lieuChoisi === 'salle' ? 'principal' : 'secondaire'}" data-lieu="salle">Salle</button>
         <button class="${lieuChoisi === 'maison' ? 'principal' : 'secondaire'}" data-lieu="maison">Maison</button>
-      </div>
-      <a class="bouton-musique" href="https://music.amazon.fr/home" target="_blank" rel="noopener">🎧 Ouvrir Amazon Music</a>
-      ${legere ? '<p class="bandeau-legere">🌿 <strong>Semaine légère</strong> : une série de moins, charges −10&nbsp;%. Ces séances ne freinent pas ta progression.</p>' : ''}
+      </div>      ${legere ? '<p class="bandeau-legere">🌿 <strong>Semaine légère</strong> : une série de moins, charges −10&nbsp;%. Ces séances ne freinent pas ta progression.</p>' : ''}
       <p class="vide">La charge en gris est celle conseillée : si tu la gardes, tape seulement tes répétitions.</p>
       ${lieuChoisi === 'maison' ? '<p class="vide">Version maison : haltères, barre de traction et élastiques. Sans charge, laisse « kg » vide et note tes répétitions.</p>' : ''}
       <div id="j-exos">
@@ -761,6 +759,14 @@ function supprimerMesure(i) {
 /* ---------- À propos : historique des évolutions ---------- */
 
 const EVOLUTIONS = [
+  { version: '1.31', titre: 'Recettes plus claires', items: [
+    'Chaque recette se lit en deux temps : « À l’avance » (batch) puis « Le jour du repas » (cuisson minute, réchauffage, service).',
+    'Un bloc par préparation, avec ses quantités, des gestes numérotés et la durée de chacun.',
+    'Le plus long est en premier, avec un conseil pour savoir par quoi commencer. L’autre méthode (casserole au lieu du cuiseur, etc.) est sur sa propre ligne.',
+    'Riz, quinoa, boulgour : la quantité d’eau est donnée en ml pour ta portion.',
+    'Nouvelle barre de navigation : six onglets égaux, icônes redessinées, l’entraînement à gauche (Programme, Journal, Progrès) et l’alimentation à droite.',
+    'Le bouton Amazon Music est retiré du Journal.'
+  ]},
   { version: '1.30', titre: 'Musique', items: [
     'Bouton « Ouvrir Amazon Music » dans le Journal : il lance l’appli Amazon Music (ou le lecteur web si elle n’est pas installée). Lance ta playlist avant la séance, puis reviens dans Cadence.'
   ]},

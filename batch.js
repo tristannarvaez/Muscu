@@ -542,55 +542,121 @@ function ingredientsHTML(items, n) {
   }).join('');
 }
 
-// Étapes complètes d'un plat : plat cuisiné, puis chaque aliment, puis le service
-function etapesRecette(nom, items) {
+// Étapes d'un plat, rangées en blocs : ce qui se prépare à l'avance (le plus long d'abord),
+// puis ce qui se fait le jour du repas. Chaque bloc porte ses quantités et la durée de chaque geste.
+const DENSITE_GRAINS = 0.85;   // g par ml de riz, quinoa, boulgour crus (pour traduire « 1 volume »)
+
+const majuscule = (t) => t.charAt(0).toUpperCase() + t.slice(1);
+
+function sectionsRecette(nom, items, n) {
   const rec = RECETTES[nom] || {};
-  if (rec.jourJ) return { etapes: [rec.service], cons: 0, rech: '' };
-  const etapes = [];
+  const parNom = (nm) => items.find((it) => it.n === nm && !it.libre);
+  const kgDe = (its) => its.reduce((s, it) => s + it.g * n, 0) / 1000;
+  const ingr = (its) => its.map((it) => {
+    const a = quantiteAchat(it.n, it.g * n);
+    return `${a.label} : ${a.quantite}`;
+  });
+  // « 1 volume de riz pour 1,5 volume d'eau » → quantité d'eau pour la portion
+  const eau = (txt, its) => {
+    const m = /1 volume(?: de [^ ]+)? pour ([\d,]+) volumes? d[’']eau/.exec(txt);
+    const it = its[0];
+    if (!m || !it || !ACHATS[it.n] || ACHATS[it.n].piece) return '';
+    const cru = Math.ceil(it.g * n * ACHATS[it.n].f / 10 - 1e-9) * 10;
+    const ml = Math.round(cru / DENSITE_GRAINS * parseFloat(m[1].replace(',', '.')) / 10) * 10;
+    return `Pour ${cru} g cru : environ ${ml} ml d’eau.`;
+  };
+  const geste = (e, its, kg) => ({
+    txt: e.txt, min: minutesEtape(e, kg), r: e.r, note: eau(e.txt, its),
+    alt: e.alt ? { txt: e.alt.txt, min: minutesEtape(e.alt, kg), r: e.alt.r, note: eau(e.alt.txt, its) } : null
+  });
+  const bloc = (titre, its, etapes, extra = {}) => {
+    const kg = kgDe(its);
+    const g = etapes.map((e) => geste(e, its, kg));
+    return { titre, ingr: ingr(its), etapes: g, duree: g.reduce((s, e) => s + e.min, 0), ...extra };
+  };
+
+  const avance = [];
+  const jour = [];
   let cons = 99;
   const rechs = [];
+  if (rec.jourJ) {
+    jour.push({ titre: nom, ingr: [], etapes: [{ txt: rec.service }] });
+    return { avance, jour, cons: 0, rechs };
+  }
   const consomme = rec.unite ? rec.unite.consomme : [];
-  const texteEtape = (e) => (e.alt ? `${e.txt} <em>Sinon : ${esc(e.alt.txt)}</em>` : e.txt);
-  if (rec.unite && items.some((it) => consomme.includes(it.n))) {
-    rec.unite.etapes.forEach((e) => etapes.push(texteEtape(e)));
+  const itsUnite = consomme.map(parNom).filter(Boolean);
+  if (rec.unite && itsUnite.length) {
+    avance.push(bloc(rec.unite.nom, itsUnite, rec.unite.etapes));
     cons = Math.min(cons, rec.unite.cons);
-    rechs.push(`${rec.unite.nom} : ${rec.unite.rech}`);
+    rechs.push([rec.unite.nom, rec.unite.rech]);
   }
   const vus = new Set();
+  const crus = [];
   items.forEach((it) => {
     if (consomme.includes(it.n) || it.libre) return;
     const cle = (rec.remplace && rec.remplace[it.n]) || it.n;
     const c = COMPOSANTS[cle];
-    if (!c || vus.has(cle)) return;
+    if (!c) { crus.push(it); return; }
+    if (vus.has(cle)) return;
     vus.add(cle);
     if (c.frais || c.aucun) {
-      if (c.jourJ) etapes.push(`<strong>Le jour même</strong> · ${c.jourJ}`);
+      // « Saumon : air fryer… » → le titre porte déjà le nom
+      if (c.jourJ) jour.push({ titre: c.nom, ingr: ingr([it]), etapes: [{ txt: majuscule(c.jourJ.replace(/^[^:]{1,25} : /, '')) }] });
       return;
     }
-    etapes.push(`<strong>${esc(c.nom)}</strong> · ${c.etapes.map(texteEtape).join(' ')}`);
+    avance.push(bloc(c.nom, [it], c.etapes));
     cons = Math.min(cons, c.cons);
-    rechs.push(`${c.nom} : ${c.rech}`);
+    rechs.push([c.nom, c.rech]);
   });
-  const crus = items.filter((it) => !it.libre && !consomme.includes(it.n) && !COMPOSANTS[(rec.remplace && rec.remplace[it.n]) || it.n]);
-  if (rec.service) etapes.push(`<strong>Au moment de manger</strong> · ${rec.service}`);
-  else if (etapes.length) etapes.push(`<strong>Au moment de manger</strong> · Réchauffe ce qui est cuit${crus.length ? `, ajoute ${crus.map((it) => libelleItem(it.n).toLowerCase()).join(', ')}` : ''}.`);
-  else etapes.push(`Rien à cuire : ${items.map((it) => `${libelleItem(it.n).toLowerCase()} (${it.g} g)`).join(', ')}, dans un bol ou une assiette.`);
-  return { etapes, cons: cons === 99 ? 0 : cons, rech: rechs.join('<br>') };
+  avance.sort((a, b) => b.duree - a.duree);
+
+  let service;
+  if (rec.service) service = majuscule(rec.service.replace(/^Le jour même, /, ''));
+  else if (avance.length || jour.length) service = `Réchauffe ce qui est cuit${crus.length ? `, ajoute ${crus.map((it) => libelleItem(it.n).toLowerCase()).join(', ')}` : ''} et sers.`;
+  else service = 'Rien à cuire : réunis tout dans un bol ou une assiette.';
+  if (rechs.length) jour.push({ titre: 'Réchauffer', ingr: [], etapes: rechs.map(([n2, r]) => ({ txt: `${n2} : ${r}` })) });
+  jour.push({ titre: 'Pour servir', ingr: crus.length && !avance.length && !jour.length ? ingr(crus) : [], etapes: [{ txt: service }], service: true });
+  return { avance, jour, cons: cons === 99 ? 0 : cons, rechs };
+}
+
+const fmtMin = (m) => (m >= 60 ? `${Math.floor(m / 60)} h${m % 60 ? ` ${String(m % 60).padStart(2, '0')}` : ''}` : `${m} min`);
+
+function gesteHTML(e) {
+  const app = e.r && e.r !== 'toi' ? ` · ${APPAREILS[e.r].nom.toLowerCase()}` : '';
+  const duree = e.min ? `<span class="geste-duree">⏱ ${fmtMin(e.min)}${app}</span>` : '';
+  const note = (t) => (t ? `<span class="geste-note">${esc(t)}</span>` : '');
+  const alt = e.alt ? `<div class="geste-alt"><strong>Ou bien</strong> ${esc(e.alt.txt)} <span class="geste-duree">⏱ ${fmtMin(e.alt.min)}</span>${note(e.alt.note)}</div>` : '';
+  return `<li><span>${esc(e.txt)}</span> ${duree}${note(e.note)}${alt}</li>`;
+}
+
+function blocRecetteHTML(b) {
+  return `
+    <div class="bloc-recette${b.service ? ' service' : ''}">
+      <div class="bloc-titre"><strong>${esc(b.titre)}</strong>${b.duree ? `<small>${fmtMin(b.duree)}</small>` : ''}</div>
+      ${b.ingr.length ? `<p class="bloc-ingr">${b.ingr.map(esc).join(' · ')}</p>` : ''}
+      <ol class="gestes">${b.etapes.map(gesteHTML).join('')}</ol>
+    </div>`;
 }
 
 function carteRecette(nom, items, cleDefaut = 'soir') {
   const rec = RECETTES[nom] || {};
-  const { etapes, cons, rech } = etapesRecette(nom, items);
+  const { avance, jour, cons } = sectionsRecette(nom, items, personnes);
   const t = totaux(items);
+  const dureeJour = jour.reduce((s, b) => s + b.etapes.reduce((x, e) => x + (e.min || 0), 0), 0);
+  const ordre = avance.length > 1
+    ? `<p class="recette-astuce">👉 Commence par <strong>${esc(avance[0].titre.toLowerCase())}</strong>, c’est le plus long. Pendant la cuisson, attaque le reste dans l’ordre.</p>` : '';
   return `
     <p class="recette-apports">Par portion : <strong>${Math.round(t.p)} g</strong> de protéines · ${Math.round(t.l)} g de lipides · ${Math.round(t.s)} g de sucres</p>
     <h4>Ingrédients · ${esc(libellePersonnes(personnes))}</h4>
     <ul class="ingredients">${ingredientsHTML(items, personnes)}</ul>
     ${rec.extras ? `<p class="recette-extras">Avec aussi : ${esc(rec.extras.join(', '))}, sel, poivre.</p>` : ''}
-    <h4>Préparation</h4>
-    <ol class="etapes-recette">${etapes.map((e) => `<li>${e}</li>`).join('')}</ol>
+    ${avance.length ? `
+      <h4 class="etape-recette-titre">1 · À l’avance <small>(batch, se garde ${cons} jours)</small></h4>
+      ${ordre}
+      ${avance.map(blocRecetteHTML).join('')}` : ''}
+    <h4 class="etape-recette-titre">${avance.length ? '2 · ' : ''}Le jour du repas${dureeJour ? ` <small>(environ ${fmtMin(dureeJour)})</small>` : ''}</h4>
+    ${jour.map(blocRecetteHTML).join('')}
     ${cons ? `<p class="recette-conservation"><strong>Conservation :</strong> ${cons} jours au frigo, dans une boîte fermée.</p>` : ''}
-    ${rech ? `<p class="recette-conservation"><strong>Réchauffage :</strong><br>${rech}</p>` : ''}
     ${formAjoutMenu(cleDefaut)}`;
 }
 

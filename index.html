@@ -37,32 +37,30 @@
 
   <main id="app"></main>
 
-  <nav class="barre">
+  <nav class="barre" aria-label="Navigation">
     <button data-tab="seances" class="actif">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 7v10M18 7v10M3 9v6M21 9v6M6 12h12"/></svg>
-      <span>Programme</span>
+      <span class="icone"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="7" width="3" height="10" rx="1"/><rect x="16" y="7" width="3" height="10" rx="1"/><path d="M2.5 10v4M21.5 10v4M8 12h8"/></svg></span>
+      <span class="libelle">Programme</span>
+    </button>
+    <button data-tab="journal">
+      <span class="icone"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="4" width="14" height="17" rx="2.5"/><path d="M9 3.5h6M9 11l2 2 4-4M9 17h6"/></svg></span>
+      <span class="libelle">Journal</span>
     </button>
     <button data-tab="progression">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19V5M4 19h16M8 15l4-4 3 3 5-6"/></svg>
-      <span>Progression</span>
-    </button>
-    <button data-tab="journal" class="centre">
-      <span class="rond">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16v4zM14 6l4 4"/></svg>
-      </span>
-      <span>Journal</span>
+      <span class="icone"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 17l5-5 4 4 8-8"/><path d="M15 8h5v5"/></svg></span>
+      <span class="libelle">Progrès</span>
     </button>
     <button data-tab="nutrition">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 19C5 10 10 5 19 5c0 9-5 14-14 14zM5 19l8-8"/></svg>
-      <span>Nutrition</span>
+      <span class="icone"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 19C5 10 10 5 19 5c0 9-5 14-14 14z"/><path d="M5 19l8-8"/></svg></span>
+      <span class="libelle">Nutrition</span>
     </button>
     <button data-tab="cuisine">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11h16v3a6 6 0 0 1-6 6h-4a6 6 0 0 1-6-6v-3zM2 11h2M20 11h2M9 4c0 1.5 1 1.5 1 3M13 4c0 1.5 1 1.5 1 3"/></svg>
-      <span>Cuisine</span>
+      <span class="icone"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10h16v5a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5v-5z"/><path d="M2 10h20M9.5 3.5c0 1.2 1 1.3 1 2.5M13.5 3.5c0 1.2 1 1.3 1 2.5"/></svg></span>
+      <span class="libelle">Cuisine</span>
     </button>
     <button data-tab="mensurations">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 12l4-3"/></svg>
-      <span>Mesures</span>
+      <span class="icone"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="8" width="18" height="8" rx="2"/><path d="M7 8v3M11 8v4M15 8v3"/></svg></span>
+      <span class="libelle">Mesures</span>
     </button>
   </nav>
 
