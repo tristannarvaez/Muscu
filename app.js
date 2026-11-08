@@ -761,6 +761,13 @@ function supprimerMesure(i) {
 /* ---------- À propos : historique des évolutions ---------- */
 
 const EVOLUTIONS = [
+  { version: '1.38', titre: 'Nouveau design', items: [
+    'Nouvelle identité : bleu marine d’équipe, bleu cobalt pour les actions et orange « effort » pour les muscles travaillés.',
+    'Nouvelle police (Archivo) : grands titres étroits en italique, chiffres façon tableau d’affichage (séries, apports, durées).',
+    'Barre du bas ancrée en marine, avec une bande cobalt sur l’onglet actif.',
+    'Le jour même ressort en bleu plein dans les menus de la semaine, et la séance du jour est surlignée dans le planning.',
+    'Nouveau logo et nouvelle icône. Sur iPhone, supprime puis rajoute l’app à l’écran d’accueil pour voir la nouvelle icône.'
+  ] },
   { version: '1.37', titre: 'Mannequins en volume', items: [
     'Les animations montrent un mannequin en volume (buste, cuisses, mollets, bras galbés) au lieu d’un bonhomme en bâtons.',
     'Les muscles travaillés sont dessinés à leur place sur le corps : pectoraux devant, dorsaux derrière, quadriceps à l’avant de la cuisse, ischios à l’arrière…',
@@ -1135,7 +1142,7 @@ function themeActuel() {
 function appliquerTheme(t) {
   document.documentElement.dataset.theme = t;
   const meta = document.querySelector('meta[name="theme-color"]');
-  if (meta) meta.content = t === 'clair' ? '#f3f5f9' : '#0f1115';
+  if (meta) meta.content = t === 'clair' ? '#e9ecf0' : '#0b1322';
 }
 
 function blocTheme() {

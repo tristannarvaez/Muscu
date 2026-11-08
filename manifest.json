@@ -5,11 +5,11 @@
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#0f1115",
-  "theme_color": "#0f1115",
+  "background_color": "#0b1322",
+  "theme_color": "#0b1322",
   "icons": [
     { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
     { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" },
-    { "src": "icon-cadence-v4.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+    { "src": "icon-cadence-v5.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
   ]
 }
