@@ -380,7 +380,7 @@ const RECETTES = {
 const BATCH_KEY = 'musculation-batch-v1';
 let batch = (() => {
   const b = chargerRepas(BATCH_KEY);
-  return { coches: b.coches || {}, heure: b.heure || '10:00', finSemaine: b.finSemaine === 'express' ? 'express' : 'dimanche' };
+  return { coches: b.coches || {}, heure: b.heure || '10:00' };
 })();
 let cuisineSemaine = null;
 let rechercheRecette = '';
@@ -395,6 +395,9 @@ const libelleItem = (n) => (COMPOSANTS[n] && COMPOSANTS[n].nom) || n;
 // Rang du jour dans sa semaine : 1 = lundi … 7 = dimanche, soit le nombre de jours après le batch
 const rangSemaine = (j) => ((j + (DEBUT_PLAN.getDay() + 6) % 7) % 7) + 1;
 
+// Vendredi soir et week-end : cuisine minute, rien ne vient du batch
+const repasMinute = (rang, cle) => (cle === 'midi' || cle === 'soir') && (rang >= 6 || (rang === 5 && cle === 'soir'));
+
 // Ce que demande chaque repas de la semaine : tâches du batch, boîtes, gestes du jour même
 function analyseSemaine(s) {
   const taches = {};
@@ -407,10 +410,10 @@ function analyseSemaine(s) {
   for (let j = 0; j < JOURS_PLAN; j++) {
     if (semaineDe(j) !== s) continue;
     const rang = rangSemaine(j);
-    const express = batch.finSemaine === 'express';
     const repas = REPAS.map(([cle, titre]) => {
       const r = repasDuJour(j, cle);
-      const out = { cle, titre, nom: r.nom, items: r.items, boite: [], jourJ: [], retard: false, hors: false };
+      const express = repasMinute(rang, cle);
+      const out = { cle, titre, nom: r.nom, items: r.items, boite: [], jourJ: [], hors: false, minute: express };
       if (r.plaisir || r.items.some((it) => it.libre)) {
         out.hors = true;
         return out;
@@ -421,12 +424,14 @@ function analyseSemaine(s) {
         return out;
       }
       const consomme = rec.unite ? rec.unite.consomme : [];
+      // Boîte du midi en semaine : ce qui ne vient pas du batch se cuit la veille au soir
+      const veille = cle === 'midi' && !express ? 'La veille au soir · ' : '';
       // Plat cuisiné en une fois
       if (rec.unite && r.items.some((it) => consomme.includes(it.n))) {
         const u = rec.unite;
         const g = r.items.filter((it) => consomme.includes(it.n)).reduce((t, it) => t + it.g, 0);
-        if (express && rang > u.cons) {
-          out.jourJ.push(`${u.nom} : à cuisiner aujourd’hui (recette ci-dessous).`);
+        if (express || rang > u.cons) {
+          out.jourJ.push(`${veille}${u.nom} : à cuisiner ${veille ? 'pour la boîte' : 'aujourd’hui'}, voir la recette.`);
         } else {
           const t = ajouterTache(`u:${u.nom}`, { titre: u.nom, cat: 'Plats complets', cons: u.cons, etapes: u.etapes, rech: u.rech });
           r.items.filter((it) => consomme.includes(it.n)).forEach((it) => { t.items[it.n] = (t.items[it.n] || 0) + it.g; });
@@ -434,7 +439,6 @@ function analyseSemaine(s) {
           t.portions += 1;
           t.jours.add(j);
           out.boite.push({ label: u.nom, g });
-          if (rang > u.cons) out.retard = true;
         }
       }
       r.items.forEach((it) => {
@@ -447,12 +451,13 @@ function analyseSemaine(s) {
           return;
         }
         if (c.frais) {
-          out.jourJ.push(c.jourJ);
+          // Boîte du midi en semaine : à cuire la veille au soir
+          out.jourJ.push(`${veille}${c.jourJ}`);
           return;
         }
-        if (express && rang > c.cons) {
+        if (express || rang > c.cons) {
           const cuisson = c.etapes.find((e) => e.r !== 'toi') || c.etapes[0];
-          out.jourJ.push(`${c.nom} : ${cuisson.txt}`);
+          out.jourJ.push(`${veille}${c.nom} : ${cuisson.txt}`);
           return;
         }
         const t = ajouterTache(`c:${cle2}`, { titre: c.nom, cat: c.cat, cons: c.cons, etapes: c.etapes, rech: c.rech, src: c.src || cle2 });
@@ -461,7 +466,6 @@ function analyseSemaine(s) {
         t.items[c.src || cle2] = (t.items[c.src || cle2] || 0) + it.g;
         t.jours.add(j);
         out.boite.push({ label: c.nom, g: it.g });
-        if (rang > c.cons) out.retard = true;
       });
       if (out.boite.some((b) => !b.cru) && rec.service) out.jourJ.push(rec.service);
       return out;
@@ -645,8 +649,7 @@ function vueCuisine() {
       if (r.hors) return `<li class="hors"><span class="repas-moment">${r.titre}</span><span>${esc(r.nom)} <small>hors batch</small></span></li>`;
       const cuit = r.boite.filter((b) => !b.cru);
       const contenu = r.boite.map((b) => `${esc(b.label)} ${b.g} g`).join(' · ');
-      const alerte = r.retard && batch.finSemaine === 'dimanche'
-        ? `<small class="alerte-fraicheur">⚠ Cuit depuis ${rang} jours : réchauffe bien à cœur, ou passe en « cuisson le jour même ».</small>` : '';
+      const alerte = r.minute ? '<small class="minute">Cuisine minute</small>' : '';
       return `<li><span class="repas-moment">${r.titre}</span><span><strong>${esc(r.nom)}</strong>
         ${contenu ? `<small>${cuit.length ? '📦 ' : ''}${contenu}${personnes > 1 && cuit.length ? ` (×${personnes})` : ''}</small>` : ''}
         ${r.jourJ.map((x) => `<small class="jourj">🔥 ${esc(x)}</small>`).join('')}${alerte}</span></li>`;
@@ -676,7 +679,7 @@ function vueCuisine() {
         <div><strong>${dureeTexte(plan.actif)}</strong><small>mains occupées</small></div>
         <div><strong>${taches.length}</strong><small>préparations</small></div>
       </div>
-      <p class="graphe-legende">Quantités pour ${esc(libellePersonnes(personnes))}${appareils.length ? ` · ${esc(appareils.join(', '))}` : ''}. Poissons, omelettes et steaks hachés se cuisent le jour même.</p>
+      <p class="graphe-legende">Quantités pour ${esc(libellePersonnes(personnes))}${appareils.length ? ` · ${esc(appareils.join(', '))}` : ''}. Du lundi au vendredi midi.</p>
     </section>
 
     <section class="carte">
@@ -686,14 +689,7 @@ function vueCuisine() {
       </label>
       <p class="petit-titre">Nombre de personnes</p>
       <div class="choix-personnes">${[1, 2, 3, 4].map((n) => `<button data-cuisine="personnes" data-n="${n}" class="${n === personnes ? 'principal' : 'secondaire'}">${n}</button>`).join('')}</div>
-      <p class="petit-titre">Fin de semaine</p>
-      <div class="grille lieu">
-        <button data-cuisine="fin" data-mode="dimanche" class="${batch.finSemaine === 'dimanche' ? 'principal' : 'secondaire'}">Tout le dimanche</button>
-        <button data-cuisine="fin" data-mode="express" class="${batch.finSemaine === 'express' ? 'principal' : 'secondaire'}">Cuisson le jour même</button>
-      </div>
-      <p class="graphe-legende">${batch.finSemaine === 'dimanche'
-        ? 'Tout est cuit le dimanche. Ce qui dépasse sa durée de conservation est signalé par ⚠ dans les boîtes.'
-        : 'Ce qui ne se garde pas jusqu’à son jour est retiré du batch et se cuit le jour même, en 10 à 30 min.'}</p>
+      <p class="graphe-legende">Le batch couvre du lundi au vendredi midi. Le vendredi soir et le week-end, les menus sont prévus pour une cuisine minute : poisson, œufs, steak, 15 à 30 min.</p>
     </section>
 
     ${taches.length ? `
@@ -721,7 +717,7 @@ function vueCuisine() {
     <section class="carte"><p>Rien à cuisiner à l’avance cette semaine : tout se prépare le jour même.</p></section>`}
 
     <h3 class="titre-section">Boîtes de la semaine</h3>
-    <p class="graphe-legende">📦 ce qui sort du frigo, par personne · 🔥 à faire le jour même.</p>
+    <p class="graphe-legende">📦 ce qui sort du frigo, par personne · 🔥 à faire le jour même (ou la veille au soir pour une boîte du midi).</p>
     ${boites}
 
     <section class="carte">
@@ -784,7 +780,6 @@ document.querySelector('#app').addEventListener('click', (e) => {
   if (action === 'prev') { cuisineSemaine = Math.max(0, cuisineSemaine - 1); window.scrollTo(0, 0); return vueCuisine(); }
   if (action === 'next') { cuisineSemaine = Math.min(derniere, cuisineSemaine + 1); window.scrollTo(0, 0); return vueCuisine(); }
   if (action === 'personnes') { definirPersonnes(b.dataset.n); return vueCuisine(); }
-  if (action === 'fin') { batch.finSemaine = b.dataset.mode; sauverBatch(); return vueCuisine(); }
   if (action === 'decocher') {
     if (!confirm('Décocher toutes les étapes de ce batch ?')) return;
     delete batch.coches[cuisineSemaine];

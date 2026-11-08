@@ -256,124 +256,155 @@ const PLATS = [
 // Un repas de base : un nom et des aliments [nom, grammes]
 const plat = (nom, items) => ({ nom, items: items.map(([n, g]) => ({ n, g })) });
 
-// Rotation de printemps-été (avril à septembre), 14 jours. La collation complète chaque jour pour atteindre REGLES.protJour.
+// Rotation de printemps-été (avril à septembre), 14 jours commençant un lundi. La collation complète chaque jour
+// pour atteindre REGLES.protJour. Du lundi au vendredi midi : plats qui se préparent au batch du dimanche.
+// Vendredi soir et week-end : plats rapides (poisson, œufs, steak) cuisinés le jour même.
 const MENUS = [
-  { matin: plat('Skyr, avoine, banane', [['Skyr nature', 200], ['Flocons d’avoine, crus', 60], ['Banane', 120]]),
-    midi: plat('Poulet, riz, brocoli', [['Poulet, blanc cuit', 180], ['Riz basmati, cuit', 200], ['Brocoli, cuit', 150], ['Huile d’olive', 10]]),
-    collation: plat('Tartine jambon blanc', [['Jambon blanc', 100], ['Pain complet', 60]]),
+  { // Lundi
+    matin: plat('Omelette, pain complet, tomates', [['Œuf entier', 150], ['Pain complet', 60], ['Tomate', 100]]),
+    midi: plat('Dinde, quinoa, courgettes, épinards', [['Dinde, blanc cuit', 180], ['Quinoa, cuit', 150], ['Courgette, cuite', 150], ['Épinards, cuits', 80]]),
+    collation: plat('Cottage cheese et pain complet', [['Cottage cheese', 250], ['Pain complet', 40]]),
+    soir: plat('Saumon, riz complet, épinards', [['Saumon, cuit', 150], ['Riz complet, cuit', 200], ['Épinards, cuits', 150], ['Huile d’olive', 5]]) },
+  { // Mardi
+    matin: plat('Skyr, granola, pomme', [['Skyr nature', 200], ['Granola', 40], ['Pomme', 150]]),
+    midi: plat('Poulet, lentilles, carottes', [['Poulet, blanc cuit', 180], ['Lentilles, cuites', 200], ['Carotte crue', 120]]),
+    collation: plat('Shaker whey et banane', [['Whey isolate (poudre)', 25], ['Banane', 120]]),
     soir: plat('Saumon, patate douce, haricots', [['Saumon, cuit', 150], ['Patate douce, cuite', 200], ['Haricots verts, cuits', 150], ['Huile d’olive', 5]]) },
-  { matin: plat('Omelette, pain complet, tomates', [['Œuf entier', 150], ['Pain complet', 60], ['Tomate', 100]]),
+  { // Mercredi
+    matin: plat('Pancakes maison, compote', [['Flocons d’avoine, crus', 60], ['Œuf entier', 50], ['Skyr nature', 100], ['Pomme', 100]]),
     midi: plat('Thon, pâtes complètes, poivrons', [['Thon au naturel, égoutté', 120], ['Pâtes complètes, cuites', 200], ['Poivron rouge', 100], ['Huile d’olive', 10]]),
-    collation: plat('Yaourt grec et amandes', [['Yaourt grec 0 %', 300], ['Amandes', 15]]),
-    soir: plat('Dinde, quinoa, courgettes, épinards', [['Dinde, blanc cuit', 180], ['Quinoa, cuit', 150], ['Courgette, cuite', 150], ['Épinards, cuits', 80]]) },
-  { matin: plat('Fromage blanc, muesli, fraises', [['Fromage blanc 0 %', 200], ['Muesli sans sucre ajouté', 40], ['Fraise', 100]]),
-    midi: plat('Bœuf haché, lentilles, carottes', [['Bœuf haché 5 %, cuit', 180], ['Lentilles, cuites', 200], ['Carotte crue', 100]]),
+    collation: plat('Fromage blanc, whey et framboises', [['Fromage blanc 0 %', 200], ['Whey isolate (poudre)', 20], ['Framboise', 100]]),
+    soir: plat('Dinde hachée, pâtes, sauce tomate', [['Dinde hachée 5 %, cuite', 180], ['Pâtes complètes, cuites', 200], ['Tomate', 200], ['Oignon', 50]]) },
+  { // Jeudi
+    matin: plat('Omelette, pain complet, avocat', [['Œuf entier', 150], ['Pain complet', 60], ['Avocat', 80]]),
+    midi: plat('Poulet tandoori, riz, raïta', [['Poulet, blanc cuit', 200], ['Riz basmati, cuit', 200], ['Yaourt grec 0 %', 100], ['Concombre', 100]]),
     collation: plat('Cottage cheese et ananas', [['Cottage cheese', 250], ['Ananas', 120]]),
+    soir: plat('Lentilles corail, œufs, légumes', [['Lentilles, cuites', 200], ['Œuf entier', 100], ['Courgette, cuite', 150], ['Carotte crue', 100]]) },
+  { // Vendredi
+    matin: plat('Yaourt grec, noix, kiwi', [['Yaourt grec 0 %', 200], ['Noix', 20], ['Kiwi', 120]]),
+    midi: plat('Bœuf haché, pommes de terre, salade', [['Bœuf haché 5 %, cuit', 180], ['Pommes de terre, vapeur', 250], ['Laitue', 80]]),
+    collation: plat('Tartine thon', [['Thon au naturel, égoutté', 140], ['Pain complet', 60]]),
+    soir: plat('Saumon, boulgour, concombre', [['Saumon, cuit', 150], ['Boulgour, cuit', 200], ['Concombre', 120]]) },
+  { // Samedi
+    matin: plat('Yaourt grec, banane, avoine', [['Yaourt grec 0 %', 200], ['Banane', 120], ['Flocons d’avoine, crus', 40]]),
+    midi: plat('Crevettes, nouilles de riz, légumes', [['Crevettes, cuites', 180], ['Nouilles de riz, cuites', 180], ['Poivron rouge', 100], ['Champignons de Paris', 100]]),
+    collation: plat('Yaourt grec et amandes', [['Yaourt grec 0 %', 300], ['Amandes', 15]]),
     soir: plat('Cabillaud, semoule, ratatouille', [['Cabillaud, cuit', 180], ['Semoule complète, cuite', 180], ['Courgette, cuite', 100], ['Aubergine, cuite', 100]]) },
-  { matin: plat('Skyr, granola, pomme', [['Skyr nature', 200], ['Granola', 40], ['Pomme', 150]]),
-    midi: plat('Poulet, pommes de terre, salade', [['Poulet, blanc cuit', 180], ['Pommes de terre, vapeur', 250], ['Laitue', 80], ['Huile de colza', 10]]),
+  { // Dimanche
+    matin: plat('Skyr, avoine, cacahuètes', [['Skyr nature', 200], ['Flocons d’avoine, crus', 60], ['Cacahuètes', 15]]),
+    midi: plat('Bœuf haché, lentilles, carottes', [['Bœuf haché 5 %, cuit', 180], ['Lentilles, cuites', 200], ['Carotte crue', 100]]),
+    collation: plat('Skyr et myrtilles', [['Skyr nature', 300], ['Myrtilles', 100]]),
+    soir: plat('Omelette aux champignons, salade', [['Œuf entier', 150], ['Champignons de Paris', 100], ['Laitue', 80], ['Pain complet', 60]]) },
+  { // Lundi
+    matin: plat('Fromage blanc, pain, jambon', [['Fromage blanc 0 %', 200], ['Pain complet', 60], ['Jambon blanc', 40]]),
+    midi: plat('Poulet, haricots, carottes', [['Poulet, blanc cuit', 180], ['Haricots verts, cuits', 150], ['Carotte crue', 100]]),
     collation: plat('Wrap de dinde et concombre', [['Dinde, blanc cuit', 140], ['Pain complet', 50], ['Concombre', 100]]),
     soir: plat('Œufs brouillés, pain, avocat', [['Œuf entier', 150], ['Pain complet', 60], ['Avocat', 80], ['Tomate', 80]]) },
-  { matin: plat('Porridge, yaourt grec, myrtilles', [['Flocons d’avoine, crus', 50], ['Yaourt grec 0 %', 150], ['Myrtilles', 100]]),
-    midi: plat('Saumon, riz complet, épinards', [['Saumon, cuit', 150], ['Riz complet, cuit', 200], ['Épinards, cuits', 150], ['Huile d’olive', 5]]),
-    collation: plat('Skyr et fraises', [['Skyr nature', 350], ['Fraise', 150]]),
-    soir: plat('Steak haché, purée de patate douce', [['Bœuf haché 5 %, cuit', 180], ['Patate douce, cuite', 250], ['Haricots verts, cuits', 150]]) },
-  { matin: plat('Yaourt grec, noix, kiwi', [['Yaourt grec 0 %', 200], ['Noix', 20], ['Kiwi', 120]]),
-    midi: plat('Poulet tandoori, riz, raïta', [['Poulet, blanc cuit', 200], ['Riz basmati, cuit', 200], ['Yaourt grec 0 %', 100], ['Concombre', 100]]),
-    collation: plat('Shaker whey et lait', [['Whey isolate (poudre)', 25], ['Lait écrémé', 250]]),
-    soir: plat('Lentilles corail, œufs, légumes', [['Lentilles, cuites', 200], ['Œuf entier', 100], ['Courgette, cuite', 150], ['Carotte crue', 100]]) },
-  { matin: plat('Pancakes maison, compote', [['Flocons d’avoine, crus', 60], ['Œuf entier', 50], ['Skyr nature', 100], ['Pomme', 100]]),
-    midi: plat('Pizza maison, jambon, légumes', [['Pizza margherita', 250], ['Jambon blanc', 60], ['Poivron rouge', 100]]),
-    collation: plat('Tartine thon', [['Thon au naturel, égoutté', 140], ['Pain complet', 60]]),
-    soir: plat('Poisson blanc, pommes de terre', [['Cabillaud, cuit', 200], ['Pommes de terre, vapeur', 250], ['Haricots verts, cuits', 150]]) },
-  { matin: plat('Fromage blanc, pain, jambon', [['Fromage blanc 0 %', 200], ['Pain complet', 60], ['Jambon blanc', 40]]),
-    midi: plat('Lieu noir, quinoa, brocolis', [['Lieu noir, cuit', 200], ['Quinoa, cuit', 150], ['Brocoli, cuit', 150], ['Huile d’olive', 5]]),
-    collation: plat('Fromage blanc et pomme', [['Fromage blanc 0 %', 200], ['Pomme', 150]]),
-    soir: plat('Poulet rôti, haricots blancs, tomates', [['Poulet rôti, sans peau', 180], ['Haricots blancs, cuits', 200], ['Tomate', 150]]) },
-  { matin: plat('Skyr, avoine, cacahuètes', [['Skyr nature', 200], ['Flocons d’avoine, crus', 60], ['Cacahuètes', 15]]),
+  { // Mardi
+    matin: plat('Skyr, myrtilles, chia', [['Skyr nature', 200], ['Myrtilles', 100], ['Graines de chia', 10]]),
     midi: plat('Bœuf sauté, nouilles de riz', [['Bœuf, filet cuit', 180], ['Nouilles de riz, cuites', 200], ['Poivron rouge', 120], ['Huile de colza', 10]]),
-    collation: plat('Skyr et kiwi', [['Skyr nature', 350], ['Kiwi', 100]]),
-    soir: plat('Omelette aux champignons, salade', [['Œuf entier', 150], ['Champignons de Paris', 100], ['Laitue', 80], ['Pain complet', 60]]) },
-  { matin: plat('Œufs brouillés, tomates, pain de seigle', [['Œuf entier', 150], ['Tomate', 100], ['Pain de seigle', 60]]),
-    midi: plat('Saumon, boulgour, concombre', [['Saumon, cuit', 150], ['Boulgour, cuit', 200], ['Concombre', 120]]),
-    collation: plat('Yaourt grec et granola', [['Yaourt grec 0 %', 300], ['Granola', 30]]),
-    soir: plat('Dinde hachée, pâtes, sauce tomate', [['Dinde hachée 5 %, cuite', 180], ['Pâtes complètes, cuites', 200], ['Tomate', 200], ['Oignon', 50]]) },
-  { matin: plat('Yaourt grec, banane, avoine', [['Yaourt grec 0 %', 200], ['Banane', 120], ['Flocons d’avoine, crus', 40]]),
+    collation: plat('Tartine jambon blanc', [['Jambon blanc', 100], ['Pain complet', 60]]),
+    soir: plat('Poulet, pommes de terre, salade', [['Poulet, blanc cuit', 180], ['Pommes de terre, vapeur', 250], ['Laitue', 80], ['Huile de colza', 10]]) },
+  { // Mercredi
+    matin: plat('Fromage blanc, muesli, fraises', [['Fromage blanc 0 %', 200], ['Muesli sans sucre ajouté', 40], ['Fraise', 100]]),
+    midi: plat('Thon, patate douce, épinards', [['Thon au naturel, égoutté', 150], ['Patate douce, cuite', 200], ['Épinards, cuits', 100]]),
+    collation: plat('Shaker whey et lait', [['Whey isolate (poudre)', 25], ['Lait écrémé', 250]]),
+    soir: plat('Poulet rôti, haricots blancs, tomates', [['Poulet rôti, sans peau', 180], ['Haricots blancs, cuits', 200], ['Tomate', 150]]) },
+  { // Jeudi
+    matin: plat('Porridge, yaourt grec, myrtilles', [['Flocons d’avoine, crus', 50], ['Yaourt grec 0 %', 150], ['Myrtilles', 100]]),
     midi: plat('Filet mignon, riz complet, haricots', [['Porc, filet mignon cuit', 180], ['Riz complet, cuit', 200], ['Haricots verts, cuits', 150]]),
-    collation: plat('Cottage cheese et pain complet', [['Cottage cheese', 250], ['Pain complet', 40]]),
-    soir: plat('Thon, patate douce, épinards', [['Thon au naturel, égoutté', 150], ['Patate douce, cuite', 200], ['Épinards, cuits', 100]]) },
-  { matin: plat('Skyr, myrtilles, chia', [['Skyr nature', 200], ['Myrtilles', 100], ['Graines de chia', 10]]),
-    midi: plat('Poulet, lentilles, carottes', [['Poulet, blanc cuit', 180], ['Lentilles, cuites', 200], ['Carotte crue', 120]]),
-    collation: plat('Shaker whey et banane', [['Whey isolate (poudre)', 25], ['Banane', 120]]),
-    soir: plat('Crevettes, nouilles de riz, légumes', [['Crevettes, cuites', 180], ['Nouilles de riz, cuites', 180], ['Poivron rouge', 100], ['Champignons de Paris', 100]]) },
-  { matin: plat('Omelette, pain complet, avocat', [['Œuf entier', 150], ['Pain complet', 60], ['Avocat', 80]]),
-    midi: plat('Bœuf haché, pommes de terre, salade', [['Bœuf haché 5 %, cuit', 180], ['Pommes de terre, vapeur', 250], ['Laitue', 80]]),
-    collation: plat('Skyr et myrtilles', [['Skyr nature', 300], ['Myrtilles', 100]]),
-    soir: plat('Cabillaud, riz, courgettes', [['Cabillaud, cuit', 180], ['Riz basmati, cuit', 200], ['Courgette, cuite', 150]]) },
-  { matin: plat('Fromage blanc, muesli, pomme', [['Fromage blanc 0 %', 200], ['Muesli sans sucre ajouté', 40], ['Pomme', 150]]),
+    collation: plat('Fromage blanc et pomme', [['Fromage blanc 0 %', 200], ['Pomme', 150]]),
+    soir: plat('Poulet, riz, brocoli', [['Poulet, blanc cuit', 180], ['Riz basmati, cuit', 200], ['Brocoli, cuit', 150], ['Huile d’olive', 10]]) },
+  { // Vendredi
+    matin: plat('Œufs brouillés, tomates, pain de seigle', [['Œuf entier', 150], ['Tomate', 100], ['Pain de seigle', 60]]),
+    midi: plat('Cabillaud, riz, courgettes', [['Cabillaud, cuit', 180], ['Riz basmati, cuit', 200], ['Courgette, cuite', 150]]),
+    collation: plat('Yaourt grec et granola', [['Yaourt grec 0 %', 300], ['Granola', 30]]),
+    soir: plat('Lieu noir, quinoa, brocolis', [['Lieu noir, cuit', 200], ['Quinoa, cuit', 150], ['Brocoli, cuit', 150], ['Huile d’olive', 5]]) },
+  { // Samedi
+    matin: plat('Skyr, avoine, banane', [['Skyr nature', 200], ['Flocons d’avoine, crus', 60], ['Banane', 120]]),
+    midi: plat('Poisson blanc, pommes de terre', [['Cabillaud, cuit', 200], ['Pommes de terre, vapeur', 250], ['Haricots verts, cuits', 150]]),
+    collation: plat('Skyr et kiwi', [['Skyr nature', 350], ['Kiwi', 100]]),
+    soir: plat('Pizza maison, jambon, légumes', [['Pizza margherita', 250], ['Jambon blanc', 60], ['Poivron rouge', 100]]) },
+  { // Dimanche
+    matin: plat('Fromage blanc, muesli, pomme', [['Fromage blanc 0 %', 200], ['Muesli sans sucre ajouté', 40], ['Pomme', 150]]),
     midi: plat('Saumon, pâtes complètes, haricots', [['Saumon, cuit', 150], ['Pâtes complètes, cuites', 200], ['Haricots verts, cuits', 100]]),
-    collation: plat('Fromage blanc, whey et framboises', [['Fromage blanc 0 %', 200], ['Whey isolate (poudre)', 20], ['Framboise', 100]]),
-    soir: plat('Poulet, haricots, carottes', [['Poulet, blanc cuit', 180], ['Haricots verts, cuits', 150], ['Carotte crue', 100]]) }
+    collation: plat('Skyr et fraises', [['Skyr nature', 350], ['Fraise', 150]]),
+    soir: plat('Steak haché, purée de patate douce', [['Bœuf haché 5 %, cuit', 180], ['Patate douce, cuite', 250], ['Haricots verts, cuits', 150]]) }
 ];
 
-// Rotation d'automne-hiver (octobre à mars) : légumes et fruits de saison, plats mijotés.
+// Rotation d'automne-hiver (octobre à mars) : légumes et fruits de saison, plats mijotés en semaine,
+// plats rapides le vendredi soir et le week-end. Même organisation que MENUS.
 const MENUS_HIVER = [
-  { matin: plat('Porridge, skyr, poire', [['Flocons d’avoine, crus', 60], ['Skyr nature', 150], ['Poire', 150]]),
-    midi: plat('Poulet, purée de potiron, riz', [['Poulet, blanc cuit', 180], ['Potiron, cuit', 200], ['Riz basmati, cuit', 150], ['Huile d’olive', 5]]),
-    collation: plat('Tartine thon', [['Thon au naturel, égoutté', 160], ['Pain complet', 60]]),
-    soir: plat('Velouté poireaux-carottes, œufs, pain', [['Poireau, cuit', 150], ['Carotte crue', 100], ['Pommes de terre, vapeur', 150], ['Œuf entier', 150], ['Pain complet', 40]]) },
-  { matin: plat('Omelette, pain complet, clémentines', [['Œuf entier', 150], ['Pain complet', 60], ['Clémentine', 140]]),
-    midi: plat('Bœuf haché, lentilles, carottes', [['Bœuf haché 5 %, cuit', 180], ['Lentilles, cuites', 200], ['Carotte crue', 100]]),
-    collation: plat('Fromage blanc et clémentines', [['Fromage blanc 0 %', 300], ['Clémentine', 100]]),
-    soir: plat('Cabillaud, purée de panais, épinards', [['Cabillaud, cuit', 180], ['Panais, cuit', 200], ['Épinards, cuits', 100], ['Huile d’olive', 5]]) },
-  { matin: plat('Fromage blanc, muesli, kiwi', [['Fromage blanc 0 %', 200], ['Muesli sans sucre ajouté', 40], ['Kiwi', 100]]),
-    midi: plat('Pot-au-feu maison', [['Bœuf, filet cuit', 160], ['Carotte crue', 120], ['Navet, cuit', 120], ['Poireau, cuit', 100], ['Pommes de terre, vapeur', 150]]),
-    collation: plat('Fromage blanc, whey et fruits rouges', [['Fromage blanc 0 %', 350], ['Whey isolate (poudre)', 20], ['Fruits rouges surgelés', 100]]),
-    soir: plat('Saumon, butternut rôtie, mâche', [['Saumon, cuit', 150], ['Courge butternut, cuite', 250], ['Mâche', 50]]) },
-  { matin: plat('Skyr, granola, pomme', [['Skyr nature', 200], ['Granola', 30], ['Pomme', 80]]),
-    midi: plat('Dinde, chou-fleur, riz complet', [['Dinde, blanc cuit', 180], ['Chou-fleur, cuit', 200], ['Riz complet, cuit', 150], ['Huile d’olive', 5]]),
-    collation: plat('Skyr, whey et poire', [['Skyr nature', 300], ['Whey isolate (poudre)', 15], ['Poire', 80]]),
-    soir: plat('Endives au jambon, pommes de terre', [['Endive', 300], ['Jambon blanc', 120], ['Emmental', 20], ['Pommes de terre, vapeur', 200]]) },
-  { matin: plat('Porridge, yaourt grec, banane', [['Flocons d’avoine, crus', 50], ['Yaourt grec 0 %', 150], ['Banane', 100]]),
-    midi: plat('Saumon, riz complet, poireaux', [['Saumon, cuit', 150], ['Riz complet, cuit', 150], ['Poireau, cuit', 150]]),
-    collation: plat('Skyr, whey et pomme', [['Skyr nature', 300], ['Whey isolate (poudre)', 10], ['Pomme', 80]]),
-    soir: plat('Chili con carne', [['Bœuf haché 5 %, cuit', 150], ['Haricots rouges, cuits', 150], ['Tomates concassées (conserve)', 150], ['Oignon', 50], ['Riz basmati, cuit', 120]]) },
-  { matin: plat('Yaourt grec, noix, clémentines', [['Yaourt grec 0 %', 200], ['Noix', 20], ['Clémentine', 140]]),
-    midi: plat('Poulet rôti, patate douce, choux de Bruxelles', [['Poulet rôti, sans peau', 180], ['Patate douce, cuite', 200], ['Chou de Bruxelles, cuit', 150]]),
-    collation: plat('Skyr et kiwi', [['Skyr nature', 400], ['Kiwi', 70]]),
-    soir: plat('Curry de lentilles corail et œufs', [['Lentilles, cuites', 200], ['Œuf entier', 100], ['Épinards, cuits', 100], ['Riz basmati, cuit', 100]]) },
-  { matin: plat('Pancakes maison, pomme', [['Flocons d’avoine, crus', 60], ['Œuf entier', 50], ['Skyr nature', 100], ['Pomme', 100]]),
-    midi: plat('Hachis parmentier maison', [['Bœuf haché 5 %, cuit', 160], ['Pommes de terre, vapeur', 250], ['Lait demi-écrémé', 50], ['Emmental', 15]]),
-    collation: plat('Cottage cheese et pain complet', [['Cottage cheese', 300], ['Pain complet', 40]]),
-    soir: plat('Lieu noir, fondue de poireaux, pommes de terre', [['Lieu noir, cuit', 200], ['Poireau, cuit', 200], ['Pommes de terre, vapeur', 150]]) },
-  { matin: plat('Fromage blanc, pain, jambon', [['Fromage blanc 0 %', 200], ['Pain complet', 60], ['Jambon blanc', 40]]),
-    midi: plat('Filet mignon, purée de céleri', [['Porc, filet mignon cuit', 180], ['Céleri-rave, cuit', 200], ['Pommes de terre, vapeur', 100]]),
-    collation: plat('Shaker whey et banane', [['Whey isolate (poudre)', 25], ['Banane', 120]]),
-    soir: plat('Velouté de potiron, poulet, pain', [['Potiron, cuit', 300], ['Poulet, blanc cuit', 150], ['Pain complet', 50]]) },
-  { matin: plat('Skyr, avoine, cacahuètes', [['Skyr nature', 200], ['Flocons d’avoine, crus', 60], ['Cacahuètes', 15]]),
-    midi: plat('Wok de bœuf, nouilles et chou', [['Bœuf, filet cuit', 160], ['Nouilles de riz, cuites', 180], ['Chou, cuit', 150], ['Carotte crue', 80], ['Huile de colza', 10]]),
-    collation: plat('Wrap de dinde et mâche', [['Dinde, blanc cuit', 140], ['Pain complet', 50], ['Mâche', 30]]),
-    soir: plat('Omelette aux champignons, mâche', [['Œuf entier', 150], ['Champignons de Paris', 100], ['Mâche', 50], ['Pain complet', 50]]) },
-  { matin: plat('Œufs brouillés, pain de seigle, orange', [['Œuf entier', 150], ['Pain de seigle', 60], ['Orange', 150]]),
-    midi: plat('Saumon, boulgour, betterave', [['Saumon, cuit', 150], ['Boulgour, cuit', 180], ['Betterave, cuite', 100]]),
-    collation: plat('Cottage cheese et orange', [['Cottage cheese', 250], ['Orange', 150]]),
-    soir: plat('Dinde hachée, pâtes, sauce tomate', [['Dinde hachée 5 %, cuite', 180], ['Pâtes complètes, cuites', 200], ['Tomates concassées (conserve)', 200], ['Oignon', 50]]) },
-  { matin: plat('Yaourt grec, banane, avoine', [['Yaourt grec 0 %', 200], ['Banane', 120], ['Flocons d’avoine, crus', 40]]),
-    midi: plat('Filet mignon, riz complet, carottes', [['Porc, filet mignon cuit', 180], ['Riz complet, cuit', 180], ['Carotte crue', 150]]),
-    collation: plat('Shaker whey et lait', [['Whey isolate (poudre)', 30], ['Lait écrémé', 250]]),
-    soir: plat('Thon, patate douce, épinards', [['Thon au naturel, égoutté', 150], ['Patate douce, cuite', 200], ['Épinards, cuits', 100]]) },
-  { matin: plat('Skyr, fruits rouges, chia', [['Skyr nature', 200], ['Fruits rouges surgelés', 100], ['Graines de chia', 10]]),
-    midi: plat('Poulet, lentilles, carottes', [['Poulet, blanc cuit', 180], ['Lentilles, cuites', 200], ['Carotte crue', 120]]),
-    collation: plat('Tartine jambon blanc', [['Jambon blanc', 120], ['Pain complet', 60]]),
-    soir: plat('Gratin de chou-fleur au jambon', [['Chou-fleur, cuit', 300], ['Jambon blanc', 100], ['Lait demi-écrémé', 100], ['Emmental', 20], ['Pommes de terre, vapeur', 150]]) },
-  { matin: plat('Omelette, pain complet, pamplemousse', [['Œuf entier', 150], ['Pain complet', 60], ['Pamplemousse', 150]]),
-    midi: plat('Bœuf haché, pommes de terre, mâche', [['Bœuf haché 5 %, cuit', 180], ['Pommes de terre, vapeur', 250], ['Mâche', 60]]),
+  { // Lundi
+    matin: plat('Omelette, pain complet, pamplemousse', [['Œuf entier', 150], ['Pain complet', 60], ['Pamplemousse', 150]]),
+    midi: plat('Chili con carne', [['Bœuf haché 5 %, cuit', 150], ['Haricots rouges, cuits', 150], ['Tomates concassées (conserve)', 150], ['Oignon', 50], ['Riz basmati, cuit', 120]]),
     collation: plat('Yaourt grec et granola', [['Yaourt grec 0 %', 300], ['Granola', 30]]),
-    soir: plat('Cabillaud, riz, poireaux', [['Cabillaud, cuit', 180], ['Riz basmati, cuit', 180], ['Poireau, cuit', 150]]) },
-  { matin: plat('Fromage blanc, muesli, poire', [['Fromage blanc 0 %', 200], ['Muesli sans sucre ajouté', 40], ['Poire', 120]]),
-    midi: plat('Saumon, pâtes complètes, brocoli', [['Saumon, cuit', 150], ['Pâtes complètes, cuites', 200], ['Brocoli, cuit', 150]]),
+    soir: plat('Thon, patate douce, épinards', [['Thon au naturel, égoutté', 150], ['Patate douce, cuite', 200], ['Épinards, cuits', 100]]) },
+  { // Mardi
+    matin: plat('Pancakes maison, pomme', [['Flocons d’avoine, crus', 60], ['Œuf entier', 50], ['Skyr nature', 100], ['Pomme', 100]]),
+    midi: plat('Gratin de chou-fleur au jambon', [['Chou-fleur, cuit', 300], ['Jambon blanc', 100], ['Lait demi-écrémé', 100], ['Emmental', 20], ['Pommes de terre, vapeur', 150]]),
+    collation: plat('Tartine thon', [['Thon au naturel, égoutté', 160], ['Pain complet', 60]]),
+    soir: plat('Hachis parmentier maison', [['Bœuf haché 5 %, cuit', 160], ['Pommes de terre, vapeur', 250], ['Lait demi-écrémé', 50], ['Emmental', 15]]) },
+  { // Mercredi
+    matin: plat('Yaourt grec, noix, clémentines', [['Yaourt grec 0 %', 200], ['Noix', 20], ['Clémentine', 140]]),
+    midi: plat('Dinde hachée, pâtes, sauce tomate', [['Dinde hachée 5 %, cuite', 180], ['Pâtes complètes, cuites', 200], ['Tomates concassées (conserve)', 200], ['Oignon', 50]]),
+    collation: plat('Shaker whey et banane', [['Whey isolate (poudre)', 25], ['Banane', 120]]),
+    soir: plat('Wok de bœuf, nouilles et chou', [['Bœuf, filet cuit', 160], ['Nouilles de riz, cuites', 180], ['Chou, cuit', 150], ['Carotte crue', 80], ['Huile de colza', 10]]) },
+  { // Jeudi
+    matin: plat('Fromage blanc, muesli, poire', [['Fromage blanc 0 %', 200], ['Muesli sans sucre ajouté', 40], ['Poire', 120]]),
+    midi: plat('Curry de lentilles corail et œufs', [['Lentilles, cuites', 200], ['Œuf entier', 100], ['Épinards, cuits', 100], ['Riz basmati, cuit', 100]]),
+    collation: plat('Cottage cheese et orange', [['Cottage cheese', 250], ['Orange', 150]]),
+    soir: plat('Poulet, lentilles, carottes', [['Poulet, blanc cuit', 180], ['Lentilles, cuites', 200], ['Carotte crue', 120]]) },
+  { // Vendredi
+    matin: plat('Fromage blanc, pain, jambon', [['Fromage blanc 0 %', 200], ['Pain complet', 60], ['Jambon blanc', 40]]),
+    midi: plat('Lieu noir, fondue de poireaux, pommes de terre', [['Lieu noir, cuit', 200], ['Poireau, cuit', 200], ['Pommes de terre, vapeur', 150]]),
     collation: plat('Yaourt grec et amandes', [['Yaourt grec 0 %', 350], ['Amandes', 15]]),
-    soir: plat('Potée légère au filet mignon', [['Porc, filet mignon cuit', 160], ['Chou, cuit', 200], ['Carotte crue', 100], ['Pommes de terre, vapeur', 150]]) }
+    soir: plat('Saumon, pâtes complètes, brocoli', [['Saumon, cuit', 150], ['Pâtes complètes, cuites', 200], ['Brocoli, cuit', 150]]) },
+  { // Samedi
+    matin: plat('Skyr, granola, pomme', [['Skyr nature', 200], ['Granola', 30], ['Pomme', 80]]),
+    midi: plat('Cabillaud, purée de panais, épinards', [['Cabillaud, cuit', 180], ['Panais, cuit', 200], ['Épinards, cuits', 100], ['Huile d’olive', 5]]),
+    collation: plat('Fromage blanc, whey et fruits rouges', [['Fromage blanc 0 %', 350], ['Whey isolate (poudre)', 20], ['Fruits rouges surgelés', 100]]),
+    soir: plat('Saumon, riz complet, poireaux', [['Saumon, cuit', 150], ['Riz complet, cuit', 150], ['Poireau, cuit', 150]]) },
+  { // Dimanche
+    matin: plat('Œufs brouillés, pain de seigle, orange', [['Œuf entier', 150], ['Pain de seigle', 60], ['Orange', 150]]),
+    midi: plat('Omelette aux champignons, mâche', [['Œuf entier', 150], ['Champignons de Paris', 100], ['Mâche', 50], ['Pain complet', 50]]),
+    collation: plat('Skyr, whey et pomme', [['Skyr nature', 300], ['Whey isolate (poudre)', 10], ['Pomme', 80]]),
+    soir: plat('Bœuf haché, lentilles, carottes', [['Bœuf haché 5 %, cuit', 180], ['Lentilles, cuites', 200], ['Carotte crue', 100]]) },
+  { // Lundi
+    matin: plat('Porridge, skyr, poire', [['Flocons d’avoine, crus', 60], ['Skyr nature', 150], ['Poire', 150]]),
+    midi: plat('Potée légère au filet mignon', [['Porc, filet mignon cuit', 160], ['Chou, cuit', 200], ['Carotte crue', 100], ['Pommes de terre, vapeur', 150]]),
+    collation: plat('Fromage blanc et clémentines', [['Fromage blanc 0 %', 300], ['Clémentine', 100]]),
+    soir: plat('Dinde, chou-fleur, riz complet', [['Dinde, blanc cuit', 180], ['Chou-fleur, cuit', 200], ['Riz complet, cuit', 150], ['Huile d’olive', 5]]) },
+  { // Mardi
+    matin: plat('Skyr, fruits rouges, chia', [['Skyr nature', 200], ['Fruits rouges surgelés', 100], ['Graines de chia', 10]]),
+    midi: plat('Endives au jambon, pommes de terre', [['Endive', 300], ['Jambon blanc', 120], ['Emmental', 20], ['Pommes de terre, vapeur', 200]]),
+    collation: plat('Skyr et kiwi', [['Skyr nature', 400], ['Kiwi', 70]]),
+    soir: plat('Filet mignon, riz complet, carottes', [['Porc, filet mignon cuit', 180], ['Riz complet, cuit', 180], ['Carotte crue', 150]]) },
+  { // Mercredi
+    matin: plat('Yaourt grec, banane, avoine', [['Yaourt grec 0 %', 200], ['Banane', 120], ['Flocons d’avoine, crus', 40]]),
+    midi: plat('Poulet rôti, patate douce, choux de Bruxelles', [['Poulet rôti, sans peau', 180], ['Patate douce, cuite', 200], ['Chou de Bruxelles, cuit', 150]]),
+    collation: plat('Tartine jambon blanc', [['Jambon blanc', 120], ['Pain complet', 60]]),
+    soir: plat('Pot-au-feu maison', [['Bœuf, filet cuit', 160], ['Carotte crue', 120], ['Navet, cuit', 120], ['Poireau, cuit', 100], ['Pommes de terre, vapeur', 150]]) },
+  { // Jeudi
+    matin: plat('Omelette, pain complet, clémentines', [['Œuf entier', 150], ['Pain complet', 60], ['Clémentine', 140]]),
+    midi: plat('Poulet, purée de potiron, riz', [['Poulet, blanc cuit', 180], ['Potiron, cuit', 200], ['Riz basmati, cuit', 150], ['Huile d’olive', 5]]),
+    collation: plat('Wrap de dinde et mâche', [['Dinde, blanc cuit', 140], ['Pain complet', 50], ['Mâche', 30]]),
+    soir: plat('Velouté poireaux-carottes, œufs, pain', [['Poireau, cuit', 150], ['Carotte crue', 100], ['Pommes de terre, vapeur', 150], ['Œuf entier', 150], ['Pain complet', 40]]) },
+  { // Vendredi
+    matin: plat('Skyr, avoine, cacahuètes', [['Skyr nature', 200], ['Flocons d’avoine, crus', 60], ['Cacahuètes', 15]]),
+    midi: plat('Saumon, butternut rôtie, mâche', [['Saumon, cuit', 150], ['Courge butternut, cuite', 250], ['Mâche', 50]]),
+    collation: plat('Shaker whey et lait', [['Whey isolate (poudre)', 30], ['Lait écrémé', 250]]),
+    soir: plat('Velouté de potiron, poulet, pain', [['Potiron, cuit', 300], ['Poulet, blanc cuit', 150], ['Pain complet', 50]]) },
+  { // Samedi
+    matin: plat('Fromage blanc, muesli, kiwi', [['Fromage blanc 0 %', 200], ['Muesli sans sucre ajouté', 40], ['Kiwi', 100]]),
+    midi: plat('Cabillaud, riz, poireaux', [['Cabillaud, cuit', 180], ['Riz basmati, cuit', 180], ['Poireau, cuit', 150]]),
+    collation: plat('Cottage cheese et pain complet', [['Cottage cheese', 300], ['Pain complet', 40]]),
+    soir: plat('Filet mignon, purée de céleri', [['Porc, filet mignon cuit', 180], ['Céleri-rave, cuit', 200], ['Pommes de terre, vapeur', 100]]) },
+  { // Dimanche
+    matin: plat('Porridge, yaourt grec, banane', [['Flocons d’avoine, crus', 50], ['Yaourt grec 0 %', 150], ['Banane', 100]]),
+    midi: plat('Bœuf haché, pommes de terre, mâche', [['Bœuf haché 5 %, cuit', 180], ['Pommes de terre, vapeur', 250], ['Mâche', 60]]),
+    collation: plat('Skyr, whey et poire', [['Skyr nature', 300], ['Whey isolate (poudre)', 15], ['Poire', 80]]),
+    soir: plat('Saumon, boulgour, betterave', [['Saumon, cuit', 150], ['Boulgour, cuit', 180], ['Betterave, cuite', 100]]) }
 ];
 
 
@@ -533,6 +564,34 @@ function sauverRepas() {
   localStorage.setItem(JOURS_KEY, JSON.stringify(joursModifs));
 }
 
+// Version 1.25 : les plats ont changé de jour (plats rapides en fin de semaine).
+// Les modifications répétées tous les 14 jours suivent leur plat à sa nouvelle place.
+const ORDRE_MENUS_KEY = 'musculation-ordre-menus';
+const ORDRE_MENUS = 2;
+const DEPLACEMENTS = {
+  E: {"1-matin": "0-matin", "1-soir": "0-midi", "10-collation": "0-collation", "4-midi": "0-soir", "3-matin": "1-matin", "11-midi": "1-midi", "11-collation": "1-collation", "0-soir": "1-soir", "6-matin": "2-matin", "1-midi": "2-midi", "13-collation": "2-collation", "9-soir": "2-soir", "12-matin": "3-matin", "5-midi": "3-midi", "2-collation": "3-collation", "5-soir": "3-soir", "5-matin": "4-matin", "12-midi": "4-midi", "6-collation": "4-collation", "9-midi": "4-soir", "10-matin": "5-matin", "11-soir": "5-midi", "1-collation": "5-collation", "2-soir": "5-soir", "8-matin": "6-matin", "2-midi": "6-midi", "12-collation": "6-collation", "8-soir": "6-soir", "13-soir": "7-midi", "3-collation": "7-collation", "3-soir": "7-soir", "11-matin": "8-matin", "0-collation": "8-collation", "3-midi": "8-soir", "2-matin": "9-matin", "10-soir": "9-midi", "5-collation": "9-collation", "7-soir": "9-soir", "4-matin": "10-matin", "7-collation": "10-collation", "0-midi": "10-soir", "9-matin": "11-matin", "12-soir": "11-midi", "9-collation": "11-collation", "7-midi": "11-soir", "0-matin": "12-matin", "6-soir": "12-midi", "8-collation": "12-collation", "6-midi": "12-soir", "4-collation": "13-collation", "4-soir": "13-soir"},
+  H: {"12-matin": "0-matin", "4-soir": "0-midi", "12-collation": "0-collation", "10-soir": "0-soir", "6-matin": "1-matin", "11-soir": "1-midi", "0-collation": "1-collation", "6-midi": "1-soir", "5-matin": "2-matin", "9-soir": "2-midi", "7-collation": "2-collation", "8-midi": "2-soir", "13-matin": "3-matin", "5-soir": "3-midi", "9-collation": "3-collation", "11-midi": "3-soir", "7-matin": "4-matin", "6-soir": "4-midi", "13-collation": "4-collation", "13-midi": "4-soir", "3-matin": "5-matin", "1-soir": "5-midi", "2-collation": "5-collation", "4-midi": "5-soir", "9-matin": "6-matin", "8-soir": "6-midi", "4-collation": "6-collation", "1-midi": "6-soir", "0-matin": "7-matin", "13-soir": "7-midi", "1-collation": "7-collation", "3-midi": "7-soir", "11-matin": "8-matin", "3-soir": "8-midi", "5-collation": "8-collation", "10-midi": "8-soir", "10-matin": "9-matin", "5-midi": "9-midi", "11-collation": "9-collation", "2-midi": "9-soir", "1-matin": "10-matin", "0-midi": "10-midi", "8-collation": "10-collation", "0-soir": "10-soir", "8-matin": "11-matin", "2-soir": "11-midi", "10-collation": "11-collation", "7-soir": "11-soir", "2-matin": "12-matin", "12-soir": "12-midi", "6-collation": "12-collation", "7-midi": "12-soir", "4-matin": "13-matin", "12-midi": "13-midi", "3-collation": "13-collation", "9-midi": "13-soir"}
+};
+
+function migrerOrdreMenus(modifs) {
+  const neuf = {};
+  Object.entries(modifs || {}).forEach(([k, v]) => {
+    const m = k.match(/^(H?)(\d+-\w+)$/);
+    if (!m) { neuf[k] = v; return; }
+    neuf[m[1] + (DEPLACEMENTS[m[1] ? 'H' : 'E'][m[2]] || m[2])] = v;
+  });
+  return neuf;
+}
+
+(function migrerSiBesoin() {
+  try {
+    if (Number(localStorage.getItem(ORDRE_MENUS_KEY)) >= ORDRE_MENUS) return;
+    repasModifs = migrerOrdreMenus(repasModifs);
+    sauverRepas();
+    localStorage.setItem(ORDRE_MENUS_KEY, String(ORDRE_MENUS));
+  } catch (e) { /* non bloquant */ }
+})();
+
 function jourISO(j) {
   const d = new Date(DEBUT_PLAN);
   d.setDate(d.getDate() + j);
@@ -574,9 +633,14 @@ function menusDe(j) {
 
 const libelleSaison = (j) => (saisonDe(j) === 'hiver' ? 'Menus d’automne-hiver' : 'Menus de printemps-été');
 
+// Rang dans la rotation : le jour 0 de chaque rotation est un lundi, quel que soit le jour de début
+function rangRotation(j) {
+  return (j + (DEBUT_PLAN.getDay() + 6) % 7) % ROTATION;
+}
+
 // Clé d'une modification répétée tous les 14 jours, propre à chaque saison
 function cleRang(j, cle) {
-  return `${saisonDe(j) === 'hiver' ? 'H' : ''}${j % ROTATION}-${cle}`;
+  return `${saisonDe(j) === 'hiver' ? 'H' : ''}${rangRotation(j)}-${cle}`;
 }
 
 // Repas tel qu'il s'affiche ce jour-là, par priorité : repas plaisir, plat choisi pour ce jour,
@@ -588,7 +652,7 @@ function repasDuJour(j, cle) {
   if (jm) return { nom: jm.nom, items: jm.items, plaisir: false, modifie: true, ponctuel: true };
   const k = cleRang(j, cle);
   if (repasModifs[k]) return { nom: repasModifs[k].nom, items: repasModifs[k].items, plaisir: false, modifie: true };
-  const base = menusDe(j)[j % ROTATION][cle];
+  const base = menusDe(j)[rangRotation(j)][cle];
   return { nom: base.nom, items: base.items, plaisir: false, modifie: false };
 }
 
@@ -623,7 +687,7 @@ function appliquer(j, cle, items, nom, jourSeul = false) {
   } else if (jourSeul || joursModifs[kJour]) {
     joursModifs[kJour] = { nom: nom || repasDuJour(j, cle).nom, items };
   } else {
-    repasModifs[cleRang(j, cle)] = { nom: nom || menusDe(j)[j % ROTATION][cle].nom, items };
+    repasModifs[cleRang(j, cle)] = { nom: nom || menusDe(j)[rangRotation(j)][cle].nom, items };
   }
   sauverRepas();
   return true;

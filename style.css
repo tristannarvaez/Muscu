@@ -713,7 +713,7 @@ button.lien-maison {
 .boites-jour small { color: var(--discret); font-size: 0.78rem; line-height: 1.35; }
 .boites-jour small.jourj { color: var(--texte); }
 .boites-jour li.hors { opacity: 0.6; }
-.alerte-fraicheur { color: #ff9a3d !important; }
+.boites-jour small.minute { color: var(--accent); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; font-size: 0.68rem; }
 .recettes { display: flex; flex-direction: column; margin-top: 8px; }
 .recette { border-top: 1px solid var(--bord); }
 .recette summary { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 11px 0; cursor: pointer; list-style: none; font-weight: 600; }

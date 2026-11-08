@@ -525,6 +525,12 @@ function supprimerMesure(i) {
 /* ---------- À propos : historique des évolutions ---------- */
 
 const EVOLUTIONS = [
+  { version: '1.25', titre: 'Plats rapides en fin de semaine', items: [
+    'Les menus sont réorganisés : du lundi au vendredi midi, des plats qui se préparent au batch du dimanche ; le vendredi soir et le week-end, des plats rapides cuisinés le jour même (poisson, œufs, steak).',
+    'Les plats fragiles (épinards, courgettes, haché, pancakes) tombent en début de semaine, pour que tout reste frais. Chaque jour garde au moins 160 g de protéines.',
+    'Un poisson prévu au déjeuner en semaine est indiqué « la veille au soir », pour la boîte.',
+    'Tes menus modifiés suivent leur plat à son nouveau jour.'
+  ]},
   { version: '1.24', titre: 'Onglet Cuisine : batch cooking', items: [
     'Nouvel onglet Cuisine : le batch du dimanche est calculé à partir de tes menus de la semaine, modifications comprises, pour le nombre de personnes choisi.',
     'Planning minuté avec cases à cocher, organisé selon le four, l’air fryer, le cuiseur et les plaques, plus la liste de ce que tu prépares avec les quantités à acheter.',
@@ -674,7 +680,7 @@ function vueReglages() {
 
 function exporter() {
   // La nutrition (repas modifiés, repas plaisir, courses) est stockée à part : on l'ajoute à l'export
-  const sauvegarde = { ...state, nutrition: { repas: repasModifs, plaisirs, jours: joursModifs, courses, debut: planLance ? jourISO(0) : null, personnes, batch } };
+  const sauvegarde = { ...state, nutrition: { repas: repasModifs, plaisirs, jours: joursModifs, courses, debut: planLance ? jourISO(0) : null, personnes, batch, ordreMenus: ORDRE_MENUS } };
   const blob = new Blob([JSON.stringify(sauvegarde, null, 2)], { type: 'application/json' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
@@ -698,7 +704,8 @@ function importer(fichier) {
       sauver();
       // Les anciennes sauvegardes n'ont pas de nutrition : on garde alors celle de l'appareil
       if (nut && typeof nut === 'object') {
-        repasModifs = nut.repas || {};
+        // Sauvegarde d'avant la version 1.25 : les plats n'étaient pas aux mêmes jours
+        repasModifs = nut.ordreMenus >= ORDRE_MENUS ? (nut.repas || {}) : migrerOrdreMenus(nut.repas);
         plaisirs = nut.plaisirs || {};
         joursModifs = nut.jours || {};
         courses = nut.courses || {};
@@ -707,7 +714,7 @@ function importer(fichier) {
         appliquerDebutImporte(nut.debut);
         if (nut.personnes) definirPersonnes(nut.personnes);
         if (nut.batch && typeof nut.batch === 'object') {
-          batch = { coches: nut.batch.coches || {}, heure: nut.batch.heure || '10:00', finSemaine: nut.batch.finSemaine === 'express' ? 'express' : 'dimanche' };
+          batch = { coches: nut.batch.coches || {}, heure: nut.batch.heure || '10:00' };
           sauverBatch();
         }
       }
@@ -730,7 +737,7 @@ function tout_effacer() {
   courses = {};
   reinitialiserDebut();
   personnes = 1;
-  batch = { coches: {}, heure: '10:00', finSemaine: 'dimanche' };
+  batch = { coches: {}, heure: '10:00' };
   aller('seances');
 }
 
