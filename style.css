@@ -750,6 +750,13 @@ button.lien-maison {
 .suggestion.monte { background: rgba(200, 255, 61, 0.12); }
 .suggestion.baisse { background: rgba(255, 154, 61, 0.14); }
 .suggestion.baisse strong { color: #ff9a3d; }
+.suggestion.leger { background: rgba(94, 200, 160, 0.14); }
+.suggestion.leger strong { color: #5ec8a0; }
+.bandeau-legere { margin: 10px 0 4px; padding: 10px 12px; border-radius: 10px; background: rgba(94, 200, 160, 0.14); font-size: 0.88rem; line-height: 1.45; }
+.bandeau-legere strong { color: #5ec8a0; }
+.carte.legere { border-color: #5ec8a0; }
+.carte.legere p { color: var(--discret); font-size: 0.88rem; line-height: 1.45; }
+.carte.legere h3 { color: #5ec8a0; }
 
 .proposition { border-color: var(--accent); }
 .proposition p { color: var(--discret); font-size: 0.88rem; line-height: 1.45; }

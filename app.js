@@ -73,6 +73,7 @@ const DEFAUT = {
   journal: [],
   mensurations: [],
   decalages: {},   // lundi de la semaine 'AAAA-MM-JJ' -> { id de séance: jour (0 = lundi) }
+  legeres: {},     // lundi de la semaine -> true (semaine légère choisie) / false (reportée)
   version: 4
 };
 
@@ -106,6 +107,7 @@ function migrer(s) {
     s.version = 4;
   }
   s.decalages = s.decalages || {};
+  s.legeres = s.legeres || {};
   return s;
 }
 
@@ -259,6 +261,84 @@ function decalerSeance(id, nouveauJour) {
   vueSeances();
 }
 
+/* ---------- Semaine légère (une toutes les 6 semaines) ---------- */
+
+const CYCLE_LEGERE = 6;   // 5 semaines normales puis 1 légère
+
+// Lundi de la 1re semaine d'entraînement : début du programme, sinon 1re séance notée
+function debutCycle() {
+  if (planLance) return lundiDe(DEBUT_PLAN);
+  const premiere = state.journal.map((j) => j.date).sort()[0];
+  return premiere ? lundiDe(lireDate(premiere)) : null;
+}
+
+// { legere, force, numero } pour la semaine qui commence ce lundi.
+// Compte les semaines normales depuis la dernière légère ; un choix manuel remet le compteur à zéro.
+function etatLegere(lundi) {
+  const debut = debutCycle();
+  const cle = isoDate(lundi);
+  const force = state.legeres[cle];
+  if (!debut || lundi < debut) return { legere: force === true, force: force ?? null, numero: null };
+  let normales = 0;
+  let legere = false;
+  let numero = 0;
+  for (const d = new Date(debut); d <= lundi; d.setDate(d.getDate() + 7)) {
+    numero++;
+    const f = state.legeres[isoDate(d)];
+    legere = f ?? normales >= CYCLE_LEGERE - 1;
+    normales = legere ? 0 : normales + 1;
+  }
+  return { legere, force: force ?? null, numero };
+}
+
+const estLegere = (iso) => etatLegere(lundiDe(lireDate(iso) || new Date())).legere;
+
+// Lundi de la prochaine semaine légère après celle-ci
+function prochaineLegere(lundi) {
+  const d = new Date(lundi);
+  for (let i = 0; i < CYCLE_LEGERE + 1; i++) {
+    d.setDate(d.getDate() + 7);
+    if (etatLegere(d).legere) return d;
+  }
+  return null;
+}
+
+const seriesLegeres = (n) => Math.max(1, n - 1);
+
+function choisirLegere(choix) {
+  const auj = lireDate(today());
+  const cle = isoDate(lundiDe(auj));
+  if (choix === 'auto') delete state.legeres[cle];
+  else state.legeres[cle] = choix === 'oui';
+  sauver();
+  vueSeances();
+}
+
+function blocLegere() {
+  if (!debutCycle()) return '';
+  const auj = lireDate(today());
+  const lundi = lundiDe(auj);
+  const e = etatLegere(lundi);
+  const fmt = (d) => d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' });
+  if (e.legere) {
+    return `
+      <section class="carte legere">
+        <h3>🌿 Semaine légère</h3>
+        <p>Une série de moins par exercice, charges −10&nbsp;%, et 3 répétitions gardées en réserve. Tes muscles et tes articulations récupèrent, et tu repars plus fort la semaine suivante.</p>
+        <p class="vide">Les séances de cette semaine ne comptent pas dans le calcul des charges conseillées.</p>
+        <button class="secondaire" data-legere="${e.force === true ? 'auto' : 'non'}">${e.force === true ? 'Annuler' : 'Reporter d’une semaine'}</button>
+      </section>`;
+  }
+  const prochaine = prochaineLegere(lundi);
+  return `
+    <section class="carte">
+      <h3>Semaine légère</h3>
+      <p class="graphe-legende">${prochaine ? `Prochaine : semaine du ${esc(fmt(prochaine))}.` : ''} Une semaine plus facile toutes les ${CYCLE_LEGERE} semaines pour récupérer.</p>
+      <p class="vide">Fatigué, douleurs, sommeil en vrac ? Tu peux la faire maintenant.</p>
+      <button class="secondaire" data-legere="${e.force === false ? 'auto' : 'oui'}">${e.force === false ? 'Revenir au calendrier prévu' : 'Faire la semaine légère maintenant'}</button>
+    </section>`;
+}
+
 function blocPropositionV4() {
   if (!state.propositionV4) return '';
   return `
@@ -273,7 +353,7 @@ function blocPropositionV4() {
 }
 
 function vueSeances() {
-  $('#app').innerHTML = '<h2>Programme</h2>' + blocEtatProgramme() + blocPropositionV4() + blocSemaine() + state.programme.map((s, si) => `
+  $('#app').innerHTML = '<h2>Programme</h2>' + blocEtatProgramme() + blocPropositionV4() + blocSemaine() + blocLegere() + state.programme.map((s, si) => `
     <section class="carte">
       <h3>${esc(s.nom)}</h3>
       ${s.exos.map((e, ei) => `
@@ -352,10 +432,11 @@ function fourchette(reps) {
 }
 
 // Séances passées de cet exercice, de la plus récente à la plus ancienne
-function historiqueExo(nom) {
+// (sansLegeres : on ignore les semaines légères, pour calculer la progression)
+function historiqueExo(nom, sansLegeres) {
   return state.journal
     .map((j, i) => ({ j, i }))
-    .filter(({ j }) => j.exos.some((e) => e.nom === nom && e.sets.length))
+    .filter(({ j }) => !(sansLegeres && j.legere) && j.exos.some((e) => e.nom === nom && e.sets.length))
     .sort((a, b) => b.j.date.localeCompare(a.j.date) || b.i - a.i)
     .map(({ j }) => ({ date: j.date, sets: j.exos.find((e) => e.nom === nom).sets }));
 }
@@ -365,11 +446,12 @@ const chargeDe = (sets) => {
   return c.length ? Math.max(...c) : null;
 };
 
-function suggestion(exo, nom) {
+function suggestion(exo, nom, legere) {
   const f = fourchette(exo.reps);
-  const histo = historiqueExo(nom);
+  const histo = historiqueExo(nom, true);
   if (!f) return null;
   const unite = f.secondes ? 's' : 'reps';
+  if (legere) return suggestionLegere(exo, f, histo);
   if (!histo.length) {
     return { charge: null, reps: f.max, texte: f.secondes
       ? `Première fois : tiens ${f.min} s, propre et gainé.`
@@ -415,6 +497,17 @@ function suggestion(exo, nom) {
     texte: `Garde ${W} kg et vise ${cible} ${unite} sur chaque série (dernière fois : jusqu’à ${meilleure}).` };
 }
 
+// Semaine légère : une série de moins, −10 % sur la charge, bas de fourchette
+function suggestionLegere(exo, f, histo) {
+  const n = seriesLegeres(exo.series);
+  const W = histo.length ? chargeDe(histo[0].sets) : null;
+  if (f.secondes) return { charge: null, reps: f.min, legere: true, texte: `Semaine légère : ${n} série${n > 1 ? 's' : ''} de ${f.min} s, sans forcer.` };
+  if (!W) return { charge: null, reps: f.min, legere: true, texte: `Semaine légère : ${n} série${n > 1 ? 's' : ''} de ${f.min} répétitions, en gardant 3 en réserve.` };
+  const c = arrondiCharge(W * 0.9);
+  return { charge: c, reps: f.min, legere: true,
+    texte: `Semaine légère : −10 %, ${n} série${n > 1 ? 's' : ''} de ${f.min}. Facile, 3 répétitions en réserve.` };
+}
+
 function dernierResultat(nom) {
   const h = historiqueExo(nom)[0];
   if (!h) return 'Pas encore de donnée';
@@ -433,6 +526,7 @@ function vueJournal() {
   seanceChoisie = seance.id;
   const options = state.programme.map((s) =>
     `<option value="${s.id}" ${s.id === seance.id ? 'selected' : ''}>${esc(s.nom)}</option>`).join('');
+  const legere = estLegere(dateJournal || today());
 
   $('#app').innerHTML = `
     <h2>Journal</h2>
@@ -445,15 +539,17 @@ function vueJournal() {
         <button class="${lieuChoisi === 'salle' ? 'principal' : 'secondaire'}" data-lieu="salle">Salle</button>
         <button class="${lieuChoisi === 'maison' ? 'principal' : 'secondaire'}" data-lieu="maison">Maison</button>
       </div>
+      ${legere ? '<p class="bandeau-legere">🌿 <strong>Semaine légère</strong> : une série de moins, charges −10&nbsp;%. Ces séances ne freinent pas ta progression.</p>' : ''}
       <p class="vide">La charge en gris est celle conseillée : si tu la gardes, tape seulement tes répétitions.</p>
       ${lieuChoisi === 'maison' ? '<p class="vide">Version maison : haltères, barre de traction et élastiques. Sans charge, laisse « kg » vide et note tes répétitions.</p>' : ''}
       <div id="j-exos">
         ${seance.exos.map((e0, ei) => {
           const e = { ...e0, nom: nomSelonLieu(e0.nom, lieuChoisi) };
-          const sug = suggestion(e, e.nom);
+          const sug = suggestion(e, e.nom, legere);
           const f = fourchette(e.reps);
+          const nbSeries = legere ? seriesLegeres(e.series) : e.series;
           let lignes = '';
-          for (let i = 0; i < e.series; i++) {
+          for (let i = 0; i < nbSeries; i++) {
             lignes += `
               <div class="serie">
                 <span>S${i + 1}</span>
@@ -461,10 +557,10 @@ function vueJournal() {
                 <input inputmode="numeric" placeholder="${sug ? `${sug.reps}${f && f.secondes ? ' s' : ''}` : 'reps'}" data-ex="${ei}" data-s="${i}" data-f="reps">
               </div>`;
           }
-          const classe = sug ? (sug.monte ? ' monte' : sug.baisse ? ' baisse' : '') : '';
+          const classe = sug ? (sug.legere ? ' leger' : sug.monte ? ' monte' : sug.baisse ? ' baisse' : '') : '';
           return `
             <div class="exo">
-              <div class="exo-titre"><strong>${esc(e.nom)}</strong><small>${esc(e.series)} × ${esc(e.reps)} · ${esc(dernierResultat(e.nom))}</small></div>
+              <div class="exo-titre"><strong>${esc(e.nom)}</strong><small>${esc(nbSeries)} × ${esc(e.reps)} · ${esc(dernierResultat(e.nom))}</small></div>
               ${sug ? `<p class="suggestion${classe}"><strong>${sug.charge ? `🎯 ${sug.charge} kg` : '🎯'}</strong> ${esc(sug.texte)}</p>` : ''}
               ${e.nom !== e0.nom ? `<button class="lien-maison" data-demo="${esc(e.nom)}">Comment faire ?</button>` : ''}
               ${lignes}
@@ -480,9 +576,10 @@ function vueJournal() {
 function enregistrerSeance() {
   const seance = state.programme.find((s) => s.id === $('#j-seance').value);
   const date = $('#j-date').value || today();
+  const legere = estLegere(date);
   const exos = seance.exos.map((e, ei) => {
     const sets = [];
-    for (let i = 0; i < e.series; i++) {
+    for (let i = 0; i < (legere ? seriesLegeres(e.series) : e.series); i++) {
       const champ = document.querySelector(`[data-ex="${ei}"][data-s="${i}"][data-f="charge"]`);
       const reps = num(document.querySelector(`[data-ex="${ei}"][data-s="${i}"][data-f="reps"]`).value);
       // Charge laissée vide mais répétitions notées : c'est la charge conseillée qui a été utilisée
@@ -496,7 +593,7 @@ function enregistrerSeance() {
     alert('Rien à enregistrer : renseigne au moins une série.');
     return;
   }
-  state.journal.push({ date, seance: seance.id, lieu: lieuChoisi, exos });
+  state.journal.push({ date, seance: seance.id, lieu: lieuChoisi, exos, ...(legere ? { legere: true } : {}) });
   sauver();
   dateJournal = null;
   vueJournal();
@@ -512,7 +609,7 @@ function historiqueJournal() {
       const seance = state.programme.find((s) => s.id === j.seance);
       return `
         <div class="histo">
-          <div><strong>${j.date}</strong><br><small>${esc(seance ? seance.nom : '')}${j.lieu === 'maison' ? ' · maison' : ''}</small></div>
+          <div><strong>${j.date}</strong><br><small>${esc(seance ? seance.nom : '')}${j.lieu === 'maison' ? ' · maison' : ''}${j.legere ? ' · 🌿 légère' : ''}</small></div>
           <button data-supp="${i}" class="danger" aria-label="Supprimer">✕</button>
         </div>`;
     }).join('');
@@ -663,6 +760,11 @@ function supprimerMesure(i) {
 /* ---------- À propos : historique des évolutions ---------- */
 
 const EVOLUTIONS = [
+  { version: '1.29', titre: 'Semaine légère', items: [
+    'Toutes les 6 semaines, une semaine plus facile pour récupérer : une série de moins par exercice, charges −10 %, 3 répétitions gardées en réserve.',
+    'L’onglet Programme indique la prochaine semaine légère ; tu peux la faire plus tôt (fatigue, douleurs) ou la reporter d’une semaine.',
+    'Dans le Journal, un bandeau vert et des charges adaptées pendant cette semaine. Ces séances ne comptent pas dans la progression : la semaine suivante, tu repars de tes charges habituelles.'
+  ]},
   { version: '1.28', titre: 'Programme rééquilibré', items: [
     'Environ 10 séries par semaine pour chaque grand groupe musculaire : jambes sur les trois séances (leg curl, hip thrust, squat gobelet en plus), développé épaules et triceps ajoutés.',
     'La séance B devient « Dos, épaules et fessiers » ; face pulls et rotations externes restent pour la posture des épaules.',
@@ -920,6 +1022,7 @@ $('#app').addEventListener('click', (e) => {
     return vueSeances();
   }
   if (b.dataset.planJour !== undefined) return decalerSeance(b.dataset.planSeance, Number(b.dataset.planJour));
+  if (b.dataset.legere !== undefined) return choisirLegere(b.dataset.legere);
   if (b.dataset.progV4 !== undefined) {
     if (b.dataset.progV4 === 'oui') {
       if (!confirm('Remplacer ton programme par la version rééquilibrée ? Tes jours et ton historique sont gardés.')) return;
@@ -956,7 +1059,11 @@ $('#app').addEventListener('click', (e) => {
 });
 
 $('#app').addEventListener('change', (e) => {
-  if (e.target.id === 'j-date') dateJournal = e.target.value || null;
+  if (e.target.id === 'j-date') {
+    const avant = estLegere(dateJournal || today());
+    dateJournal = e.target.value || null;
+    if (estLegere(dateJournal || today()) !== avant) vueJournal();   // le nombre de séries change
+  }
   if (e.target.id === 'j-seance') {
     seanceChoisie = e.target.value;
     vueJournal();
