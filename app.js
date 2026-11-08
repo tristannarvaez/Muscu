@@ -279,16 +279,94 @@ function demo(nom) {
 
 /* ---------- Journal ---------- */
 
-function dernierResultat(nom) {
-  for (let i = state.journal.length - 1; i >= 0; i--) {
-    const j = state.journal[i];
-    const e = j.exos.find((x) => x.nom === nom);
-    if (e && e.sets.length) {
-      const s = e.sets[e.sets.length - 1];
-      return `Dernier : ${s.charge ?? '–'} kg × ${s.reps ?? '–'} (${j.date})`;
-    }
+/* ---------- Charge suggérée : double progression ---------- */
+
+// Pas d'augmentation de la charge quand le haut de la fourchette est atteint partout
+const PAS_CHARGE = {
+  'Presse à cuisses': 5,
+  'Développé incliné haltères': 2, 'Développé épaules haltères': 2, 'Rowing haltère': 2,
+  'Fentes': 2, 'Squat bulgare haltères': 2,
+  'Curl haltères': 1, 'Élévations latérales': 1, 'Face pulls': 1, 'Rotations externes': 1
+};
+const pasCharge = (nom) => PAS_CHARGE[nom] || 2.5;
+const arrondiCharge = (kg) => Math.round(kg * 2) / 2;
+
+// '8-12' → { min: 8, max: 12 } ; '30-45 s' → en secondes
+function fourchette(reps) {
+  const m = String(reps).match(/(\d+)\s*(?:-\s*(\d+))?/);
+  if (!m) return null;
+  return { min: Number(m[1]), max: Number(m[2] || m[1]), secondes: /\bs\b/.test(reps) };
+}
+
+// Séances passées de cet exercice, de la plus récente à la plus ancienne
+function historiqueExo(nom) {
+  return state.journal
+    .map((j, i) => ({ j, i }))
+    .filter(({ j }) => j.exos.some((e) => e.nom === nom && e.sets.length))
+    .sort((a, b) => b.j.date.localeCompare(a.j.date) || b.i - a.i)
+    .map(({ j }) => ({ date: j.date, sets: j.exos.find((e) => e.nom === nom).sets }));
+}
+
+const chargeDe = (sets) => {
+  const c = sets.map((s) => s.charge).filter((x) => x !== null && x !== undefined);
+  return c.length ? Math.max(...c) : null;
+};
+
+function suggestion(exo, nom) {
+  const f = fourchette(exo.reps);
+  const histo = historiqueExo(nom);
+  if (!f) return null;
+  const unite = f.secondes ? 's' : 'reps';
+  if (!histo.length) {
+    return { charge: null, reps: f.max, texte: f.secondes
+      ? `Première fois : tiens ${f.min} s, propre et gainé.`
+      : `Première fois : prends une charge avec laquelle tu fais ${f.max} répétitions propres en en gardant 2 en réserve.` };
   }
-  return 'Pas encore de donnée';
+  const dernier = histo[0];
+  const W = chargeDe(dernier.sets);
+  const reps = dernier.sets.map((s) => s.reps ?? 0);
+  const toutesAuMax = dernier.sets.length >= exo.series && reps.every((r) => r >= f.max);
+  const sousMin = (sets) => sets.some((s) => (s.reps ?? 0) < f.min);
+
+  // Exercice au poids du corps ou gainage : on progresse en répétitions (ou en secondes)
+  if (W === null || W === 0) {
+    if (f.secondes) {
+      const cible = toutesAuMax ? Math.max(...reps) + 5 : Math.min(f.max, Math.max(...reps, f.min) + 5);
+      return { charge: null, reps: cible, texte: toutesAuMax ? `Objectif ${cible} s : tu as tenu ${f.max} s à chaque série.` : `Objectif ${cible} s par série.` };
+    }
+    const cible = Math.min(Math.max(...reps) + 1, toutesAuMax ? Math.max(...reps) + 2 : f.max);
+    return { charge: null, reps: cible, texte: toutesAuMax
+      ? `Haut de fourchette atteint : vise ${cible} répétitions, ou rends l’exercice plus dur (lest, tempo lent, pieds surélevés).`
+      : `Vise ${cible} répétitions par série.` };
+  }
+
+  if (toutesAuMax) {
+    const c = arrondiCharge(W + pasCharge(nom));
+    return { charge: c, reps: f.min, monte: true,
+      texte: `+${pasCharge(nom)} kg : ${f.max} ${unite} à toutes les séries la dernière fois. Repars à ${f.min}-${f.max} ${unite}.` };
+  }
+  // Deux séances de suite sous le bas de la fourchette avec la même charge : on allège
+  const precedent = histo[1];
+  if (sousMin(dernier.sets) && precedent && chargeDe(precedent.sets) === W && sousMin(precedent.sets)) {
+    const c = arrondiCharge(W * 0.9);
+    return { charge: c, reps: f.min, baisse: true,
+      texte: `Allège à ${c} kg (−10 %) : deux séances sous ${f.min} ${unite}. Tu remonteras vite avec une technique propre.` };
+  }
+  const meilleure = Math.max(...reps);
+  if (dernier.sets.length < exo.series && reps.every((r) => r >= f.max)) {
+    return { charge: W, reps: f.max,
+      texte: `Garde ${W} kg et fais les ${exo.series} séries à ${f.max} ${unite} : la charge montera ensuite.` };
+  }
+  const cible = Math.min(f.max, Math.max(f.min, Math.min(...reps) + 1));
+  return { charge: W, reps: cible,
+    texte: `Garde ${W} kg et vise ${cible} ${unite} sur chaque série (dernière fois : jusqu’à ${meilleure}).` };
+}
+
+function dernierResultat(nom) {
+  const h = historiqueExo(nom)[0];
+  if (!h) return 'Pas encore de donnée';
+  const d = new Date(`${h.date}T00:00:00`).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
+  return `Dernière fois (${d}) : ${h.sets.map((s) => (s.charge ? `${s.charge}×${s.reps ?? '–'}` : `${s.reps ?? '–'}`)).join(' · ')}`;
 }
 
 // Lieu de la séance, mémorisé sur l'appareil : 'salle' ou 'maison'
@@ -314,22 +392,27 @@ function vueJournal() {
         <button class="${lieuChoisi === 'salle' ? 'principal' : 'secondaire'}" data-lieu="salle">Salle</button>
         <button class="${lieuChoisi === 'maison' ? 'principal' : 'secondaire'}" data-lieu="maison">Maison</button>
       </div>
+      <p class="vide">La charge en gris est celle conseillée : si tu la gardes, tape seulement tes répétitions.</p>
       ${lieuChoisi === 'maison' ? '<p class="vide">Version maison : haltères, barre de traction et élastiques. Sans charge, laisse « kg » vide et note tes répétitions.</p>' : ''}
       <div id="j-exos">
         ${seance.exos.map((e0, ei) => {
           const e = { ...e0, nom: nomSelonLieu(e0.nom, lieuChoisi) };
+          const sug = suggestion(e, e.nom);
+          const f = fourchette(e.reps);
           let lignes = '';
           for (let i = 0; i < e.series; i++) {
             lignes += `
               <div class="serie">
                 <span>S${i + 1}</span>
-                <input inputmode="decimal" placeholder="kg" data-ex="${ei}" data-s="${i}" data-f="charge">
-                <input inputmode="numeric" placeholder="reps" data-ex="${ei}" data-s="${i}" data-f="reps">
+                <input inputmode="decimal" placeholder="${sug && sug.charge ? `${sug.charge} kg` : 'kg'}" data-suggere="${sug && sug.charge ? sug.charge : ''}" data-ex="${ei}" data-s="${i}" data-f="charge">
+                <input inputmode="numeric" placeholder="${sug ? `${sug.reps}${f && f.secondes ? ' s' : ''}` : 'reps'}" data-ex="${ei}" data-s="${i}" data-f="reps">
               </div>`;
           }
+          const classe = sug ? (sug.monte ? ' monte' : sug.baisse ? ' baisse' : '') : '';
           return `
             <div class="exo">
-              <div class="exo-titre"><strong>${esc(e.nom)}</strong><small>${esc(dernierResultat(e.nom))}</small></div>
+              <div class="exo-titre"><strong>${esc(e.nom)}</strong><small>${esc(e.series)} × ${esc(e.reps)} · ${esc(dernierResultat(e.nom))}</small></div>
+              ${sug ? `<p class="suggestion${classe}"><strong>${sug.charge ? `🎯 ${sug.charge} kg` : '🎯'}</strong> ${esc(sug.texte)}</p>` : ''}
               ${e.nom !== e0.nom ? `<button class="lien-maison" data-demo="${esc(e.nom)}">Comment faire ?</button>` : ''}
               ${lignes}
             </div>`;
@@ -347,8 +430,10 @@ function enregistrerSeance() {
   const exos = seance.exos.map((e, ei) => {
     const sets = [];
     for (let i = 0; i < e.series; i++) {
-      const charge = num(document.querySelector(`[data-ex="${ei}"][data-s="${i}"][data-f="charge"]`).value);
+      const champ = document.querySelector(`[data-ex="${ei}"][data-s="${i}"][data-f="charge"]`);
       const reps = num(document.querySelector(`[data-ex="${ei}"][data-s="${i}"][data-f="reps"]`).value);
+      // Charge laissée vide mais répétitions notées : c'est la charge conseillée qui a été utilisée
+      const charge = num(champ.value) ?? (reps !== null ? num(champ.dataset.suggere) : null);
       if (charge !== null || reps !== null) sets.push({ charge, reps });
     }
     return { nom: nomSelonLieu(e.nom, lieuChoisi), sets };
@@ -525,6 +610,13 @@ function supprimerMesure(i) {
 /* ---------- À propos : historique des évolutions ---------- */
 
 const EVOLUTIONS = [
+  { version: '1.27', titre: 'Charge conseillée', items: [
+    'Dans le Journal, chaque exercice affiche la charge à prendre et l’objectif de répétitions, calculés d’après ta dernière séance.',
+    'Double progression : quand tu atteins le haut de la fourchette à toutes les séries, la charge monte d’un cran (2,5 kg en général, 2 kg aux haltères, 1 kg pour les petits muscles, 5 kg à la presse).',
+    'Deux séances de suite sous le bas de la fourchette avec la même charge : l’app conseille d’alléger de 10 %.',
+    'La charge conseillée est préremplie en gris : tape seulement tes répétitions si tu la gardes.',
+    'Exercices au poids du corps et gainage : objectif en répétitions ou en secondes.'
+  ]},
   { version: '1.26', titre: 'Recettes du monde et menus sans fin', items: [
     '34 recettes du monde (Asie, Inde et Moyen-Orient, Méditerranée, Amériques et Afrique), dont 13 végétariennes, avec leur préparation au batch.',
     'Bibliothèque de recettes avec filtres par région et « Végétarien ».',
