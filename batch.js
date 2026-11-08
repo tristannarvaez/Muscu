@@ -506,7 +506,7 @@ function planifier(taches) {
         return { x, d, rs, debut, fin: debut + d };
       }).sort((a, b) => a.fin - b.fin)[0];
       choix.rs.forEach((r) => occ[r].push([choix.debut, choix.fin]));
-      evts.push({ id: `${t.id}#${i}`, debut: choix.debut, fin: choix.fin, r: choix.x.r, titre: t.titre, txt: choix.x.txt, premier: i === 0, tache: t });
+      evts.push({ id: `${t.id}#${i}`, debut: choix.debut, fin: choix.fin, r: choix.x.r, titre: t.titre, txt: choix.x.txt, m: !!choix.x.m, premier: i === 0, tache: t });
       pret = choix.fin;
     });
   });
@@ -519,6 +519,44 @@ function planifier(taches) {
   evts.sort((a, b) => a.debut - b.debut || (a.r === 'toi' ? -1 : 1));
   const actif = occ.toi.reduce((s, [a, b]) => s + b - a, 0) + (taches.length ? 15 : 0);
   return { evts, total: taches.length ? fin + 15 : 0, actif, boites };
+}
+
+// Le planning vu comme ta liste d'actions : préparer (mains occupées), lancer une cuisson,
+// puis l'arrêter quand elle est prête. Une ligne par action, dans l'ordre de l'horloge.
+const FIN_CUISSON = {
+  four: 'Sors le plat du four.',
+  plaques: 'Coupe le feu, égoutte si besoin.',
+  cuiseur: 'Le cuiseur a fini : ouvre-le et aère.',
+  airfryer: 'Sors le panier de l’air fryer.'
+};
+const ICONE_APPAREIL = { four: '♨️', plaques: '🔥', cuiseur: '🍚', airfryer: '💨' };
+
+function actionsPlanning(plan) {
+  const ingredients = (t) => Object.entries(t.items)
+    .filter(([n]) => !QUANTITES_SANS_ACHAT.has(n))
+    .map(([n, g]) => { const a = quantiteAchat(n, g); return `${a.label} ${a.quantite}`; }).join(' · ');
+  const actions = [];
+  plan.evts.forEach((e) => {
+    const qte = e.premier && e.tache ? `Pour ${e.tache.portions} portion${e.tache.portions > 1 ? 's' : ''} : ${ingredients(e.tache)}` : '';
+    if (e.id === 'four') {
+      actions.push({ id: e.id, t: e.debut, ordre: 0, type: 'lance', r: 'four', tag: '♨️ Lance · Four', titre: 'Four', txt: 'Allume le four à 200 °C (chaleur tournante si tu l’as) : il sera chaud dans 10 à 15 min.' });
+      return;
+    }
+    if (e.r === 'toi') {
+      actions.push({ id: e.id, t: e.debut, ordre: 1, type: 'prep', r: 'toi', tag: `✋ À faire · ${e.fin - e.debut} min`, titre: e.titre, qte, txt: e.txt });
+      return;
+    }
+    const nom = APPAREILS[e.r].nom;
+    const d = e.fin - e.debut;
+    const suite = e.tache && plan.evts.some((x) => x.tache === e.tache && x.debut >= e.fin && x.id !== e.id);
+    actions.push({ id: e.id, t: e.debut, ordre: 2, type: 'lance', r: e.r, tag: `${ICONE_APPAREIL[e.r]} Lance · ${nom} · ${d} min`, titre: e.titre, qte, txt: e.txt,
+      pied: `⏰ Prêt à <strong>${heureDe(e.fin)}</strong>${e.m ? ' · reste à côté pour remuer'
+        : /ajoute|retourne|remue|mélange à mi|à mi-cuisson/i.test(e.txt) ? ' · passe à la suite, mais reviens pour les ajouts indiqués'
+        : ' · ça cuit tout seul, passe à la suite'}` });
+    actions.push({ id: `${e.id}~fin`, t: e.fin, ordre: -1, type: 'alarme', r: e.r, tag: `⏰ C’est prêt · ${nom}`, titre: e.titre,
+      txt: `${FIN_CUISSON[e.r]} ${suite ? 'L’étape suivante de ce plat vient juste après.' : 'Étale ou laisse tiédir à découvert avant la mise en boîte.'}` });
+  });
+  return actions.sort((a, b) => a.t - b.t || a.ordre - b.ordre);
 }
 
 function heureDe(min) {
@@ -738,17 +776,27 @@ function vueCuisine() {
   const lundi = debutSemaine(s);
   const dimanche = new Date(DEBUT_PLAN);
   dimanche.setDate(dimanche.getDate() + lundi - 1);
-  const faits = plan.evts.filter((e) => coches[e.id]).length;
   const appareils = [...new Set(plan.evts.map((e) => e.r).filter((r) => r !== 'toi'))].map((r) => APPAREILS[r].nom);
 
-  const etapes = plan.evts.map((e) => `
-    <label class="etape-batch${coches[e.id] ? ' faite' : ''}">
-      <input type="checkbox" data-batch-coche="${esc(e.id)}" ${coches[e.id] ? 'checked' : ''}>
-      <span class="etape-heure">${heureDe(e.debut)}</span>
-      <span class="etape-texte"><strong>${esc(e.titre)}</strong><span class="etape-app ${e.r}">${esc(APPAREILS[e.r].nom)}${e.fin > e.debut && e.r !== 'toi' ? ` · ${e.fin - e.debut} min` : ''}</span>
-        ${e.premier && e.tache ? `<small class="etape-qte">${esc(quantitesTache(e.tache))}</small>` : ''}
-        <span>${esc(e.txt)}</span></span>
-    </label>`).join('');
+  const actions = actionsPlanning(plan);
+  const faits = actions.filter((a) => coches[a.id]).length;
+  let heurePrec = null;
+  const etapes = actions.map((a) => {
+    const h = heureDe(a.t);
+    const entete = h !== heurePrec ? `<div class="planning-heure">${h}</div>` : '';
+    heurePrec = h;
+    return `${entete}
+    <label class="etape-batch ${a.type} ${a.r}${coches[a.id] ? ' faite' : ''}">
+      <input type="checkbox" data-batch-coche="${esc(a.id)}" ${coches[a.id] ? 'checked' : ''}>
+      <span class="etape-texte">
+        <span class="etape-tag ${a.r}">${a.tag}</span>
+        <strong>${esc(a.titre)}</strong>
+        ${a.qte ? `<small class="etape-qte">${esc(a.qte)}</small>` : ''}
+        <span>${esc(a.txt)}</span>
+        ${a.pied ? `<small class="etape-pied">${a.pied}</small>` : ''}
+      </span>
+    </label>`;
+  }).join('');
 
   const preps = ORDRE_CAT.map((cat) => {
     const ts = taches.filter((t) => t.cat === cat);
@@ -817,8 +865,8 @@ function vueCuisine() {
     </section>
 
     <section class="carte">
-      <div class="titre-ligne"><h3>Planning minuté</h3><span class="prot-jour${faits === plan.evts.length ? ' ok' : ''}">${faits} / ${plan.evts.length}</span></div>
-      <p class="graphe-legende">Coche chaque étape une fois faite. Les heures supposent que tu enchaînes.</p>
+      <div class="titre-ligne"><h3>Planning minuté</h3><span class="prot-jour${faits === actions.length ? ' ok' : ''}">${faits} / ${actions.length}</span></div>
+      <p class="graphe-legende">Ta liste d’actions dans l’ordre, heure par heure. <strong>À faire</strong> : tu as les mains occupées. <strong>Lance</strong> : tu mets en route, puis ça cuit tout seul. <strong>⏰ C’est prêt</strong> : une cuisson se termine, va l’arrêter. Coche au fur et à mesure.</p>
       <div class="planning-batch">${etapes}</div>
       ${faits ? '<button class="secondaire" data-cuisine="decocher">Tout décocher</button>' : ''}
     </section>

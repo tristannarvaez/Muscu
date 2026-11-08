@@ -759,6 +759,11 @@ function supprimerMesure(i) {
 /* ---------- À propos : historique des évolutions ---------- */
 
 const EVOLUTIONS = [
+  { version: '1.33', titre: 'Planning minuté plus clair', items: [
+    'Le planning du batch devient ta liste d’actions, regroupée heure par heure.',
+    'Trois types d’étapes : « À faire » (tu as les mains occupées), « Lance » (tu mets en route une cuisson, avec l’heure où elle sera prête) et « C’est prêt » (rappel pour sortir le plat ou couper le feu).',
+    'Chaque appareil a sa couleur ; les quantités à utiliser sont rappelées à la première étape de chaque préparation.'
+  ]},
   { version: '1.32', titre: 'Glissement corrigé', items: [
     'Glisser entre les pages suit de nouveau l’ordre de la barre du bas : Programme, Journal, Progrès, Nutrition, Cuisine, Mesures.',
     'Le geste ne part plus depuis la barre du bas ni depuis les Réglages.'

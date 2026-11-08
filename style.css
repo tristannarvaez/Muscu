@@ -678,7 +678,22 @@ button.lien-maison {
 .titre-section { margin: 22px 4px 4px; }
 .avant-batch { margin: 8px 0 0; padding-left: 18px; line-height: 1.5; }
 .planning-batch { display: flex; flex-direction: column; margin-top: 10px; }
-.etape-batch { display: grid; grid-template-columns: 22px 46px 1fr; gap: 8px; align-items: start; padding: 10px 0; border-top: 1px solid var(--bord); margin: 0; font-weight: 400; text-transform: none; letter-spacing: normal; font-size: 0.9rem; color: var(--texte); }
+.etape-batch { display: grid; grid-template-columns: 22px 1fr; gap: 10px; align-items: start; padding: 10px 10px; margin: 0 0 6px; border: 1px solid var(--bord); border-left: 3px solid var(--bord); border-radius: 12px; font-weight: 400; text-transform: none; letter-spacing: normal; font-size: 0.9rem; color: var(--texte); }
+.etape-batch.prep { border-left-color: var(--accent); }
+.etape-batch.lance.four, .etape-batch.alarme.four { border-left-color: #ff9a3d; }
+.etape-batch.lance.plaques, .etape-batch.alarme.plaques { border-left-color: #ff5f7e; }
+.etape-batch.lance.airfryer, .etape-batch.alarme.airfryer { border-left-color: #5fb8ff; }
+.etape-batch.lance.cuiseur, .etape-batch.alarme.cuiseur { border-left-color: #b58cff; }
+.etape-batch.alarme { background: rgba(255, 255, 255, 0.035); border-style: dashed; border-left-style: solid; }
+.planning-heure { font-variant-numeric: tabular-nums; font-weight: 800; font-size: 0.95rem; color: var(--accent); margin: 12px 0 6px; display: flex; align-items: center; gap: 8px; }
+.planning-heure::after { content: ''; flex: 1; height: 1px; background: var(--bord); }
+.etape-tag { font-size: 0.72rem; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 0.04em; }
+.etape-tag.four { color: #ff9a3d; }
+.etape-tag.plaques { color: #ff5f7e; }
+.etape-tag.airfryer { color: #5fb8ff; }
+.etape-tag.cuiseur { color: #b58cff; }
+.etape-pied { color: var(--discret); font-size: 0.8rem; }
+.etape-pied strong { color: var(--texte); }
 .nut-nav small.sans-maj { text-transform: none; }
 .etape-batch input { width: 20px; height: 20px; margin: 2px 0 0; accent-color: var(--accent); }
 .etape-heure { font-variant-numeric: tabular-nums; font-weight: 700; color: var(--accent); }
